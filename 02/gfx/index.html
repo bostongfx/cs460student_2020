@@ -1,0 +1,44 @@
+<html>
+	<head>
+		<title>CS460 Assignment 02 </title>
+		<style>
+			body {
+				background-color: black;
+				color: white; /* font color */
+				font-family: sans-serif;
+			}
+			#logo {
+				position: absolute;
+				right: 10px; /*10px from the right side */
+				top: 10px; /*10 px from top*/
+			}
+		</style>
+		<!-- inline javascript in html -->
+		<script type='text/javascript'> 
+			window.onload = function() {
+				var mytext = 'hello students!';
+				var mynumber = 8;
+				var myfloat = 3.1415;
+				var myboolean = true;
+				<!-- automatic cast mynumber to a string from int -->
+				console.log(mytext + mynumber);
+				<!-- does not cast --> 
+				console.log(mytext, mynumber, myfloat);
+				<!-- Try these in console:
+					parseInt(mynumber)
+					typeof "myboolean"
+				-->
+				<!-- This is produce an error because output is not defined yet, unless if you load the page first as a function, as done above. -->
+				document.getElementById('output').
+					innerHTML = 'hello';
+			}
+		</script>
+	</head>
+	
+	<body>
+		<h1>CS460 Assignmnet 2</h1>
+		<img id='logo' src='../gfx/cs460.png'style='
+			height:60px'>
+		<div id= 'output'></div>
+	</body>
+<html>
