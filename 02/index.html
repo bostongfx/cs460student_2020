@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CS460 Assignment 2</title>
+    <style>
+        body {
+            background-color: black;
+            color: white;
+            font-family: sans-serif;
+        }
+        #header {
+            text-align: center;
+        }
+        #logo {
+            margin: auto;
+            display: block;
+        }
+        @media screen and (min-width: 500px) {
+            #header {
+                text-align: left;
+            }
+            #logo {
+                height: 60px;
+                position: absolute;
+                right: 10px;
+                top: 10px;
+            }
+        }
+    </style>
+    <script type="text/javascript">
+        window.addEventListener("load", function() {
+            document.getElementById('msg').innerText = "Hello World"
+        })
+    </script>
+</head>
+<body>
+    <img src="gfx/cs460.png" id="logo">
+    <h1 id="header">CS460 Assignment 2</h1>
+    <div id="msg"></div>
+</body>
+</html>
