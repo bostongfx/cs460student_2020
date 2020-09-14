@@ -1,0 +1,313 @@
+<html lang="en"><head>
+
+<title>DENNIS / popcorn_10 / Always &amp; Forever / NHX</title>
+
+
+<link href="build.css?1433342950822" rel="stylesheet">
+
+<meta charset="utf-8">
+<meta name="description" content="An interactive, audio-responsive music video for popcorn_10's &quot;Dennis&quot;, directed by Always &amp;amp; Forever Computer Entertainment and presented by NHX.">
+<meta name="viewport" content="user-scalable=no, width=device-width, initial-scale=1, maximum-scale=1">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="google" value="notranslate">
+
+<meta name="twitter:image" content="http://www.dennis.video/assets/img/share/poster-twitter.png?1433342950822">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="DENNIS / popcorn_10 / Always &amp; Forever / NHX">
+<meta name="twitter:description" content="An interactive, audio-responsive music video for popcorn_10's &quot;Dennis&quot;, directed by Always &amp;amp; Forever Computer Entertainment and presented by NHX.">
+
+<meta property="og:image" content="http://www.dennis.video/assets/img/share/poster-facebook.png?1433342950822">
+<meta property="og:url" content="http://www.dennis.video">
+<meta property="og:type" content="article">
+<meta property="og:title" content="DENNIS / popcorn_10 / Always &amp; Forever / NHX">
+<meta property="og:description" content="An interactive, audio-responsive music video for popcorn_10's &quot;Dennis&quot;, directed by Always &amp;amp; Forever Computer Entertainment and presented by NHX.">
+
+<link rel="shortcut icon" href="http://www.dennis.video/assets/img/favico.png" type="image/x-icon">
+<link rel="icon" href="http://www.dennis.video/assets/img/favico.png" type="image/x-icon">
+<link rel="canonical" href="http://www.dennis.video">
+
+<script async="" src="//www.google-analytics.com/analytics.js"></script><script>
+(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+})(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+ga('create', 'UA-63658978-1', 'auto');
+ga('send', 'pageview');
+</script>
+
+
+</head>
+<body class="webgl loaded">
+
+<div id="container" class="paused title-screen controls pinned" style="height: 949px; top: 0px; left: 0px; width: 1510px;">
+    <div id="stage-shade"></div>
+<div id="stage-container">
+<div id="stage-shade"></div>
+    <div id="stage">
+        <div id="canvas-container">
+
+            <canvas id="canvas" height="949" width="1510" style="touch-action: pan-y; user-select: none; -webkit-user-drag: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0); width: 1510px; height: 949px;"></canvas>
+
+        </div>
+
+        <div id="debug-container">
+
+            <canvas id="debug-canvas" height="949" width="1510"></canvas>
+
+            <div id="debug-center"></div>
+
+            <dl id="debug-csv"></dl>
+
+            <div id="debug-sync" class="hidden">
+                <p>
+                    <span id="sync-match">default</span>
+                    <span id="sync-display">0.195</span>
+                    <span id="quarter-note"></span>
+                    <span id="user-agent">Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/80.0.3987.149 Safari/537.36</span>
+                </p>
+                <div id="sync-down" class="sync-button">-</div>
+                <div id="sync-up" class="sync-button">+</div>
+            </div>
+
+        </div>
+
+        <div id="header" class="bar">
+            <div class="background hides up d0"></div>
+
+            <div class="button share-button hides grows up d0" id="twitter" style="touch-action: pan-y; user-select: none; -webkit-user-drag: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0);">
+                <svg viewBox="-2 -2 38.857 38.857">
+                    <use xlink:href="assets/img/sprites.svg#circle" fill="#fff" class="stroke"></use>
+                    <use xlink:href="assets/img/sprites.svg#twitter" fill="#fff" class="logo"></use>
+                </svg>
+            </div>
+            <div class="button share-button hides grows up d1" id="fb" style="touch-action: pan-y; user-select: none; -webkit-user-drag: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0);">
+                <svg viewBox="-2 -2 38.857 38.857">
+                    <use xlink:href="assets/img/sprites.svg#circle" fill="#fff" class="stroke"></use>
+                    <use xlink:href="assets/img/sprites.svg#facebook" fill="#fff" class="logo"></use>
+                </svg>
+            </div>
+            <a target="_blank" href="http://soundcloud.com/popcorn10" class="button share-button hides grows up d2" id="soundcloud">
+                <svg viewBox="-2 -2 38.857 38.857">
+                    <use xlink:href="assets/img/sprites.svg#circle" fill="#fff" class="stroke"></use>
+                    <use xlink:href="assets/img/sprites.svg#soundcloud" fill="#fff" class="logo"></use>
+                </svg>
+            </a>
+        </div>
+
+
+        <a target="_blank" href="http://chordslayer.com/" id="logo" class="hides down d7">
+
+            <svg viewBox="-95 0 380.002 126.304">
+                <use xlink:href="assets/img/sprites.svg#n" fill="#fff"></use>
+                <use xlink:href="assets/img/sprites.svg#h" fill="#fff"></use>
+                <use xlink:href="assets/img/sprites.svg#x" fill="#fff"></use>
+            </svg>
+
+        </a>
+        <div id="big-play" class="hides grows still d1" style="touch-action: pan-y; user-select: none; -webkit-user-drag: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0);">
+
+            <svg viewBox="0 0 116 116">
+                <use class="play" xlink:href="assets/img/sprites.svg#big-play" fill="#fff"></use>
+            </svg>
+
+        </div>
+
+        <div id="orientationMessage" style="display:none" class="hides down">
+            HOL IT LANDSCAPE
+        </div>
+
+        <div id="credit" class="caption">
+               <span class="cred hides up d3">Music</span> <a target="_blank" href="http://soundcloud.com/popcorn10" class="hides up d4">popcorn_10</a>
+               <span class="cred hides up d5">Art &amp; Code</span>  <a target="_blank" href="http://aaf.nyc" class="hides up d6">Always &amp; Forever</a>
+        </div>
+
+        <div id="about-button" class="caption hides down d0">
+            The music video
+            <a href="#about">About</a>
+        </div>
+
+        <div id="presented" class="caption hides down">
+        </div>
+
+        <div id="end-container">
+
+            <a href="/" class="end-credit" id="end-play-again">
+                Play it again
+            </a>
+
+            <a target="_blank" href="http://soundcloud.com/popcorn10" class="end-credit" id="end-play-again">
+                Popcorn_10 on SoundCloud
+            </a>
+
+            <a target="_blank" href="http://aaf.nyc" class="end-credit" id="end-play-again">
+                Always &amp; Forever Computer Entertainment
+            </a>
+
+            <a href="#about" class="end-credit" id="end-play-again">
+                About the video
+            </a>
+        </div>
+
+    </div>
+</div></div>
+<div id="landing">
+
+    <section class="header">
+
+        <div class="inner">DENNIS</div>
+
+        <a target="_blank" href="https://vimeo.com/129667738" class="header-play grows">
+            <svg id="play-screencap" viewBox="0 0 116 116">
+                <use xlink:href="assets/img/sprites.svg#big-play" fill="#fff"></use>
+            </svg>
+        </a>
+
+    </section>
+
+    <section class="belly-band">
+
+        <div id="progress" class="progress" style="transform: scale(1, 1);"></div>
+        <div class="inner title-text supported">Generating music video</div>
+        <div class="inner title-text unsupported">Real time music video</div>
+
+    </section>
+
+    <section class="content messages">
+
+        <div class="inner hands">
+
+            <svg viewBox="0 25 100 50">
+                <use xlink:href="assets/img/sprites.svg#hands"></use>
+            </svg>
+            <h3 class="text"><strong>Hold your device landscape.</strong></h3>
+
+        </div>
+
+    </section>
+
+    <section class="content buttons">
+
+        <div class="inner">
+
+            <p class="text">Dennis uses WebGL and works best on desktop or the iPhone 5 and up. It's rendered in real time, so the interactive version might feel choppy, out of sync, or entirely broken in your browser.</p>
+            <div class="button-container">
+                <a href="/?lite" class="landing-button title-text hd">Dennis Lite</a>
+                <a target="_blank" href="https://vimeo.com/129667738" class="landing-button title-text screencap">Dennis on Vimeo</a>
+                <a href="/?hd" class="landing-button title-text lite">Dennis HD</a>
+            </div>
+        </div>
+
+    </section>
+
+</div><div id="about" style="display: none;">
+
+
+    <a href="#" id="about-back">
+        <svg viewBox="0 0 100 100">
+            <use xlink:href="assets/img/sprites.svg#larr" fill="#fff"></use>
+        </svg>
+        <span>Watch the video</span>
+    </a>
+
+    <div id="about-contents">
+
+        <section>
+            <h2>Dennis is a real time video<br> powered by the music of <a target="_blank" href="https://soundcloud.com/popcorn10">popcorn_10</a></h2>
+            <img id="about-hero" data-src="assets/img/about/dennis-hero.png">
+
+        </section>
+
+        <section>
+            <div class="image-pair">
+                <img data-src="assets/img/about/gifs/rain.gif">
+                <img data-src="assets/img/about/gifs/bullet.gif">
+            </div>
+        </section>
+
+        <section>
+            <p>Dennis is a music video with music from <a target="_blank" href="https://soundcloud.com/popcorn10">popcorn_10</a> produced by <a target="_blank" href="http://aaf.nyc">Always &amp; Forever</a>. It’s a generative 3D experience whose every movement responds to the song’s finest details. Each frame is created in real time with code—nothing is pre-rendered. An interactive camera allows you to explore the scenes, which are created procedurally every time you press play. You’ll never see the same video twice.</p>
+        </section>
+
+        <section>
+            <h2>Every frame is drawn by code<br> and synchronized to music in real time</h2>
+        </section>
+
+        <section>
+            <div class="image-pair">
+                <img data-src="assets/img/about/stills/1.png" class="still">
+                <img data-src="assets/img/about/gifs/melody.gif">
+            </div>
+        </section>
+
+        <section>
+            <h2>You’ll never see the same video twice</h2>
+        </section>
+
+        <section>
+            <p>Dennis was built with JavaScript in WebGL. It also uses a custom engine that synchronizes animations to distinct musical events from a song’s individual layers. Shapes are sliced to fit programmatically for each playthrough. Dennis would not be possible without incredible open source projects like Three.js, ThreeCSG, Hammer.js or GSAP.</p>
+        </section>
+
+        <section>
+            <div class="image-pair">
+                <img data-src="assets/img/about/stills/2.png" class="still">
+                <img data-src="assets/img/about/gifs/drift.gif">
+            </div>
+        </section>
+
+        <section>
+
+            <h2>Credit</h2>
+
+            <p><a target="_blank" href="http://aaf.nyc">Always &amp; Forever</a> is the studio of <span>George Michael Brower</span>, a designer and developer based in New York. Formerly of Google’s Creative Lab, he’s to blame for George &amp; <span>Jonathan III</span>, Staggering Beauty, dat-gui and numerous <span>Chrome Experiments.</span></p>
+
+            <p><a href="mailto:contact@aaf.nyc">contact@aaf.nyc</a></p><p>
+
+        </p></section>
+
+        <hr>
+
+        <section>
+            <p>Featuring the song <em>Dennis</em> by popcorn_10.<br>Listen to <a target="_blank" href="https://soundcloud.com/popcorn10">popcorn_10</a> on SoundCloud.</p>
+
+            <div id="audio-bio">
+                <audio src="assets/mp3/bio.mp3" preload="none" controls=""></audio>
+                <p>popcorn_10's audio biography.</p>
+            </div>
+            <hr>
+
+            <a class="nhx-about" href="http://chordslayer.com/">
+                <svg viewBox="-95 0 380.002 126.304">
+                    <use xlink:href="assets/img/sprites.svg#n" fill="#fff"></use>
+                    <use xlink:href="assets/img/sprites.svg#h" fill="#fff"></use>
+                    <use xlink:href="assets/img/sprites.svg#x" fill="#fff"></use>
+                </svg>
+            </a>
+
+            <p><a href="http://chordslayer.com/" target="_blank">NHX</a> is a hypermedia record label<br>releasing music on the internet.</p>
+
+            <hr>
+
+            <p class="special">Special thanks to Neil Cline, Gabe Liberti, Jenn Chaney, Josh Knapp, James DeVito and Lindsay Degen.</p>
+
+        </section>
+
+
+
+    </div>
+
+</div>
+<!-- <script src="//connect.soundcloud.com/sdk.js"></script> -->
+<script>
+;(function() {
+if ( window.FontFace ) {
+new FontFace( 'SorrenEx-Medium', "url('assets/fonts/2E29E0_0_0.eot?#iefix') format('embedded-opentype'),url('assets/fonts/2E29E0_0_0.woff2') format('woff2'),url('assets/fonts/2E29E0_0_0.woff') format('woff'),url('assets/fonts/2E29E0_0_0.ttf') format('truetype')", {} ).load();
+}
+document.createElement( 'img' ).src = 'assets/img/landing1.gif';
+document.createElement( 'img' ).src = 'assets/img/landing2.gif';
+})();
+</script>
+<script src="lib.js?1433342950822"></script>
+<script src="build.js?1433342950822"></script>
+
+
+</body></html>
