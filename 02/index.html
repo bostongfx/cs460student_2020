@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CS460 Assignment 2</title>
+    <style>
+       body{
+           background-color: black;
+           color: white;
+           font-family: sans-self;
+       }
+      
+       #logo{
+           position: absolute;
+           /*height: 60px;*/
+           right:10px;
+           top:10px;
+       }
+    </style>
+    
+    <script type="text/javascript">
+
+        window.onload = function(){
+
+        
+        var mytext = 'hello student!';
+        var mynumber = 8;
+        var myfloat = 3.1415;
+        var myboolean = true;
+        console.log(mytext, mynumber, myfloat, myboolean);  
+        
+        document.getElementById('output').innerHTML = 'hello';
+        }    
+    </script>
+</head>
+     
+<body>
+    <h1>CS460 Assignment 2</h1>
+    <img id='logo' src="gfx/cs460.png" 
+        style='height:60px'>
+    <div id= 'output'> </div>    
+</body>
+</html>
