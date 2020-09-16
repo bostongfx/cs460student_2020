@@ -29,9 +29,55 @@
             }
         }
     </style>
+    <script type="text/javascript" src="https://get.goXTK.com/xtk_edge.js"></script>
     <script type="text/javascript">
         window.addEventListener("load", function() {
-            document.getElementById('msg').innerText = "Hello World"
+            let r = new X.renderer3D()
+            r.init()
+
+            let colors = {
+                'o': [1, .5, 0],
+                'w': [1, 1, 1],
+                'g': [0, 1, 0],
+            }
+            let fox = [
+                ' o     o ',
+                ' oo   oo ',
+                ' ooooooo ',
+                ' owwowwo ',
+                ' ooooooo ',
+                ' ooooooo ',
+                '  oowoo  ',
+                '   ooo   ',
+            ]
+            let tree = [
+                '    g    ',
+                '   ggg   ',
+                '   ggg   ',
+                ' ggggggg ',
+                ' ggggggg ',
+                'ggggggggg',
+                'ggggggggg',
+                '   ggg   ',
+                '   ggg   ',
+            ]
+
+            let img = fox
+
+            for (let i = 0; i < img.length; i++) {
+                for (let j = 0; j < img[i].length; j++) {
+                    let c = img[i][j]
+                    if (c !== ' ') {
+                        let cube = new X.cube()
+                        cube.center = [j*25, 0, -i*25]
+                        cube.color = colors[c]
+                        r.add(cube)
+                    }
+                }
+            }
+
+            
+            r.render()
         })
     </script>
 </head>
