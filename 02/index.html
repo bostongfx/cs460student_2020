@@ -16,14 +16,36 @@
         top: 10px;
       }
     </style>
+    <script type="text/javascript" src = "https://get.goXTK.com/xtk_edge.js"></script>
     <script type="text/javascript">
 
     window.onload = function() {
 
-      // this gets called when the site is ready
+      // new renderer
+      var r = new X.renderer3D();
+      r.init();
 
-     myoutput = document.getElementById("output");
-      // we had to remove "var" to make it global
+      //create a cube
+      c = new X.cube();
+
+      //RFB -> Hex not working
+
+      c.color = [0,1,0]
+     
+      c.lengthX =50; // size in to x direction
+
+      c.lengthY = 19;
+      c.lengthZ = 19;
+
+      r.add(c);
+
+      c2 = new X.cube()
+      c2.color = [1,0,0];
+      r.add(c2);
+
+      // start rendering
+
+      r.render();
 
     };
 
