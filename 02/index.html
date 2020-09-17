@@ -43,20 +43,16 @@
                 (frame * pixels.length * pixels[0].length * 4) + y * (pixels.length * 4) + x * 4;
 
             window.render = function render() {
-                // console.log('rendering')
                 for (let i = 0; i < pixels.length; i++) {
                     for (let j = 0; j < pixels[i].length; j++) {
                         let c = coord(i, j);
                         if (pixels[i][j] != null) {
-                            // console.log(frame, i, j)
-                            // console.log(data[c], data[c+1], data[c+2])
                             if (data.data[c] == null) console.error(c)
                             pixels[i][j].color = [
                                 data.data[c] / 255,
                                 data.data[c + 1] / 255,
                                 data.data[c + 2] / 255,
                             ];
-                            // console.log(pixels[i][j].color)
                             pixels[i][j].opacity = data.data[c + 3] / 255;
                         }
                     }
@@ -85,14 +81,11 @@
                     pixels[i] = (Array(height))
                     for (let j = 0; j < height; j++) {
                         let c = coord(i, j);
-                        // console.log(c, data.data[c])
-                        if (data.data[c + 3] != 0) {
-                            let cube = new X.cube();
-                            cube.lengthX = cube.lengthY = cube.lengthZ = 20*scale;
-                            cube.center = [-i*(20+GAP)*scale, 0, -j*(20+GAP)*scale];
-                            r.add(cube);
-                            pixels[i][j] = cube
-                        }
+                        let cube = new X.cube();
+                        cube.lengthX = cube.lengthY = cube.lengthZ = 20*scale;
+                        cube.center = [-i*(20+GAP)*scale, 0, -j*(20+GAP)*scale];
+                        r.add(cube);
+                        pixels[i][j] = cube
                     }
                 }
                 render();
