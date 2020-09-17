@@ -11,22 +11,13 @@
             font-family: sans-serif;
         }
         #header {
-            text-align: center;
+            text-align: left;
         }
         #logo {
-            margin: auto;
-            display: block;
-        }
-        @media screen and (min-width: 500px) {
-            #header {
-                text-align: left;
-            }
-            #logo {
-                height: 60px;
-                position: absolute;
-                right: 10px;
-                top: 10px;
-            }
+            height: 60px;
+            position: absolute;
+            right: 10px;
+            top: 10px;
         }
     </style>
     <script type="text/javascript" src="https://get.goXTK.com/xtk_edge.js"></script>
@@ -35,46 +26,38 @@
             let r = new X.renderer3D()
             r.init()
 
-            let colors = {
-                'o': [1, .5, 0],
-                'w': [1, 1, 1],
-                'g': [0, 1, 0],
-            }
-            let fox = [
-                ' o     o ',
-                ' oo   oo ',
-                ' ooooooo ',
-                ' owwowwo ',
-                ' ooooooo ',
-                ' ooooooo ',
-                '  oowoo  ',
-                '   ooo   ',
-            ]
-            let tree = [
-                '    g    ',
-                '   ggg   ',
-                '   ggg   ',
-                ' ggggggg ',
-                ' ggggggg ',
-                'ggggggggg',
-                'ggggggggg',
-                '   ggg   ',
-                '   ggg   ',
-            ]
+            let image = new Image()
+            image.onload = function() {
+                let canvas = document.createElement('canvas');
+                canvas.width = image.width;
+                canvas.height = image.height;
+                let context = canvas.getContext('2d');
+                context.drawImage(image, 0, 0);
 
-            let img = fox
+                let data = context.getImageData(0, 0, canvas.width, canvas.height);
+                // returns index of pixel in data
+                let coord = (x, y) => y * (data.width * 4) + x * 4;
 
-            for (let i = 0; i < img.length; i++) {
-                for (let j = 0; j < img[i].length; j++) {
-                    let c = img[i][j]
-                    if (c !== ' ') {
-                        let cube = new X.cube()
-                        cube.center = [j*25, 0, -i*25]
-                        cube.color = colors[c]
-                        r.add(cube)
+                console.log(data)
+
+                for (let i = 0; i < canvas.width; i++) {
+                    for (let j = 0; j < canvas.height; j++) {
+                        let c = coord(i, j)
+                        // console.log(c, data.data[c])
+                        if (data.data[c + 3] != 0) {
+                            let cube = new X.cube();
+                            cube.center = [-i*25, 0, -j*25];
+                            cube.color = [
+                                data.data[c] / 256,
+                                data.data[c + 1] / 256,
+                                data.data[c + 2] / 256,
+                            ]
+                            r.add(cube);
+                        }
                     }
                 }
             }
+            image.src = 'gfx/cs460small.png'
 
             
             r.render()
