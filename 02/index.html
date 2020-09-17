@@ -26,33 +26,37 @@
     <script type="text/javascript">
         window.addEventListener("load", function() {
             // gap between boxes
-            const GAP = 0;
+            const GAP = 2;
             // image to load
-            const IMG = 'gfx/tree.png';
+            const IMG = 'gfx/campfire_fire.png';
             // number of frames in animation
-            const FRAMES = 4;
+            const FRAMES = 8;
             // delay between frames
             const DELAY = 500;
 
             // current frame
             let frame = 0;
             // image data
-            let data = null;
+            // let data = null;
             // returns index of pixel in data
-            let coord = (x, y) =>
-                (frame * data.width * data.height) + y * (data.width * 4) + x * 4;
+            coord = (x, y) =>
+                (frame * pixels.length * pixels[0].length * 4) + y * (pixels.length * 4) + x * 4;
 
             window.render = function render() {
-                console.log('rendering')
+                // console.log('rendering')
                 for (let i = 0; i < pixels.length; i++) {
                     for (let j = 0; j < pixels[i].length; j++) {
                         let c = coord(i, j);
                         if (pixels[i][j] != null) {
+                            // console.log(frame, i, j)
+                            // console.log(data[c], data[c+1], data[c+2])
+                            if (data.data[c] == null) console.error(c)
                             pixels[i][j].color = [
                                 data.data[c] / 255,
                                 data.data[c + 1] / 255,
                                 data.data[c + 2] / 255,
                             ];
+                            // console.log(pixels[i][j].color)
                             pixels[i][j].opacity = data.data[c + 3] / 255;
                         }
                     }
@@ -70,13 +74,13 @@
                 let context = canvas.getContext('2d');
                 context.drawImage(image, 0, 0);
 
-                let scale = Math.min(4 / image.height, 8 / image.width)
+                let scale = Math.min(4 * FRAMES / image.height, 8 / image.width)
                 console.log(scale)
 
                 data = context.getImageData(0, 0, canvas.width, canvas.height);
 
                 let height = canvas.height / FRAMES;
-                window.pixels = Array(height)
+                window.pixels = Array(canvas.width)
                 for (let i = 0; i < canvas.width; i++) {
                     pixels[i] = (Array(height))
                     for (let j = 0; j < height; j++) {
