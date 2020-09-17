@@ -17,18 +17,51 @@ font-family: sans-serif;
 }
 </style>
 
-<script type='text/javascript'>
+<script type="text/javascript" src="https://get.goXTK.com/xtk_edge.js"></script>
+
+<script type="text/javascript">
 
 window.onload = function() {
 // gets executed once the page is completely loaded
-var mytext = 'hellow world!';
-var mynumber = 8; /* no strict types in JavaScript */
-var myfloat = 3.1415;
+//var mytext = 'hello world!';
+//var mynumber = 8; /* no strict types in JavaScript */
+//var myfloat = 3.1415;
 
-console.log(mytext, mynumber, myfloat);
-document.getElementById('output').
-    innerHTML = 'HELLO';
-}
+//console.log(mytext, mynumber, myfloat);
+//document.getElementById('output').
+  //  innerHTML = 'HELLO';
+
+  // make a cube
+
+  // new renderer
+  var r = new X.renderer3D();
+  r.init();
+
+  //make the cube
+  c = new X.cube();
+
+  c.color = [0, 0, 0]; //can use hex colors in three.js but not here in XTK.
+
+  //adjust x-direction size
+c.lengthX = 50;
+
+c.center = [100,0,0]; //without this, the cubes overlap lol
+//lecture 4 - he shows "z-fighting" or the overlapping and color struggle that happens,
+// and how to change sizes to fix it so that one overlaps the other
+
+// can't put colors or shapes on just one side of the cube in XTK :(
+
+    // shows how to do loops on lecture 4 towards the end (codes in the console)
+
+  //add to scene
+  r.add(c);
+
+  c2 = new X.cube();
+  c2.color = [1,1,1];
+r.add(c2);
+  //start rendering
+  r.render();
+};
 
 </script>
 
