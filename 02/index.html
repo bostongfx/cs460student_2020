@@ -9,6 +9,8 @@
             background-color: black;
             color: white;
             font-family: sans-serif;
+            height: calc(100vh - 90px);
+            /* width: 90vw */
         }
         #header {
             text-align: left;
@@ -23,8 +25,42 @@
     <script type="text/javascript" src="https://get.goXTK.com/xtk_edge.js"></script>
     <script type="text/javascript">
         window.addEventListener("load", function() {
-            let r = new X.renderer3D()
-            r.init()
+            // gap between boxes
+            const GAP = 0;
+            // image to load
+            const IMG = 'gfx/tree.png';
+            // number of frames in animation
+            const FRAMES = 4;
+            // delay between frames
+            const DELAY = 500;
+
+            // current frame
+            let frame = 0;
+            // image data
+            let data = null;
+            // returns index of pixel in data
+            let coord = (x, y) =>
+                (frame * data.width * data.height) + y * (data.width * 4) + x * 4;
+
+            window.render = function render() {
+                console.log('rendering')
+                for (let i = 0; i < pixels.length; i++) {
+                    for (let j = 0; j < pixels[i].length; j++) {
+                        let c = coord(i, j);
+                        if (pixels[i][j] != null) {
+                            pixels[i][j].color = [
+                                data.data[c] / 255,
+                                data.data[c + 1] / 255,
+                                data.data[c + 2] / 255,
+                            ];
+                            pixels[i][j].opacity = data.data[c + 3] / 255;
+                        }
+                    }
+                } 
+            }
+
+            window.r = new X.renderer3D();
+            r.init();
 
             let image = new Image()
             image.onload = function() {
@@ -34,39 +70,63 @@
                 let context = canvas.getContext('2d');
                 context.drawImage(image, 0, 0);
 
-                let data = context.getImageData(0, 0, canvas.width, canvas.height);
-                // returns index of pixel in data
-                let coord = (x, y) => y * (data.width * 4) + x * 4;
+                let scale = Math.min(4 / image.height, 8 / image.width)
+                console.log(scale)
 
-                console.log(data)
+                data = context.getImageData(0, 0, canvas.width, canvas.height);
 
+                let height = canvas.height / FRAMES;
+                window.pixels = Array(height)
                 for (let i = 0; i < canvas.width; i++) {
-                    for (let j = 0; j < canvas.height; j++) {
-                        let c = coord(i, j)
+                    pixels[i] = (Array(height))
+                    for (let j = 0; j < height; j++) {
+                        let c = coord(i, j);
                         // console.log(c, data.data[c])
                         if (data.data[c + 3] != 0) {
                             let cube = new X.cube();
-                            cube.center = [-i*25, 0, -j*25];
-                            cube.color = [
-                                data.data[c] / 256,
-                                data.data[c + 1] / 256,
-                                data.data[c + 2] / 256,
-                            ]
+                            cube.lengthX = cube.lengthY = cube.lengthZ = 20*scale;
+                            cube.center = [-i*(20+GAP)*scale, 0, -j*(20+GAP)*scale];
                             r.add(cube);
+                            pixels[i][j] = cube
                         }
                     }
                 }
-            }
-            image.src = 'gfx/cs460small.png'
+                render();
+                if (true || frames > 1) {
+                    setInterval(() => {
+                        frame = (frame + 1) % FRAMES;
+                        render();
+                    }, DELAY);
+                }
 
-            
-            r.render()
+                let spin = false;
+                let t0;
+                requestAnimationFrame(function step(t1) {
+                    if (t0 !== undefined && spin) {
+                        r.camera.rotate([(t1-t0) / 2, 0]);
+                    }
+                    t0 = t1;
+                    requestAnimationFrame(step);
+                });
+                window.addEventListener('keydown', (e) => {
+                    if (e.code == 'Space') spin = !spin
+                });
+
+                let prev = [1,.5,0];
+                // setInterval(() => {
+                //     let _tmp = pixels[2][4].color;
+                //     pixels[2][4].color = prev
+                //     prev = _tmp;
+                // }, 1000);
+            }
+            image.src = IMG;
+
+            r.render();
         })
     </script>
 </head>
 <body>
     <img src="gfx/cs460.png" id="logo">
     <h1 id="header">CS460 Assignment 2</h1>
-    <div id="msg"></div>
 </body>
 </html>
