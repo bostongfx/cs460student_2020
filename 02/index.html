@@ -32,7 +32,7 @@
             // number of frames in animation
             const FRAMES = 8;
             // delay between frames
-            const DELAY = 500;
+            const DELAY = 100;
 
             // current frame
             let frame = 0;
@@ -64,18 +64,21 @@
 
             let image = new Image()
             image.onload = function() {
+                // create an offscreen canvas to extract the image data from
                 let canvas = document.createElement('canvas');
                 canvas.width = image.width;
                 canvas.height = image.height;
                 let context = canvas.getContext('2d');
                 context.drawImage(image, 0, 0);
-
-                let scale = Math.min(4 * FRAMES / image.height, 8 / image.width)
-                console.log(scale)
-
                 data = context.getImageData(0, 0, canvas.width, canvas.height);
-
+                
+                // height of each frame
                 let height = canvas.height / FRAMES;
+
+                // scale the scene so it can fit the viewport
+                let scale = Math.min(4 * height, 8 / image.width)
+
+                // initialize the pixel grid
                 window.pixels = Array(canvas.width)
                 for (let i = 0; i < canvas.width; i++) {
                     pixels[i] = (Array(height))
@@ -88,14 +91,17 @@
                         pixels[i][j] = cube
                     }
                 }
+
                 render();
-                if (true || frames > 1) {
+                // not worth using requestAnimationFrame, not enough fps
+                if (FRAMES > 1) {
                     setInterval(() => {
                         frame = (frame + 1) % FRAMES;
                         render();
                     }, DELAY);
                 }
 
+                // rotation animation, we want this to be smooth so use requestAnimationFrame
                 let spin = false;
                 let t0;
                 requestAnimationFrame(function step(t1) {
@@ -109,12 +115,6 @@
                     if (e.code == 'Space') spin = !spin
                 });
 
-                let prev = [1,.5,0];
-                // setInterval(() => {
-                //     let _tmp = pixels[2][4].color;
-                //     pixels[2][4].color = prev
-                //     prev = _tmp;
-                // }, 1000);
             }
             image.src = IMG;
 
