@@ -40,7 +40,7 @@
             var gold  = [1,0.84,0];
             var white = [1,1,1];
 
-            // Variable to store the green blocks
+            // Variable to store the green cubes
             var greens = [];
 
             // Function to add a green block with the given center to the given renderer
@@ -74,7 +74,7 @@
                                 // Add green cubes on the main axes (pi/2 top-down angles)
                                 addGreen(r, [0       , vPos, spacer*h]);
                                 addGreen(r, [spacer*h, vPos, 0       ]);
-                                // if 2 or more blocks from center
+                                // if 2 or more cubes from center
                                 if (Math.abs(h) > 1) {
                                     // add green cubes on diagonals (pi/4 angles)
                                     var half = Math.floor(Math.abs(h)/2) * Math.sign(h);
