@@ -24,15 +24,18 @@
     </style>
     <script type="text/javascript" src="https://get.goXTK.com/xtk_edge.js"></script>
     <script type="text/javascript">
+
+        let params = new URL(document.location).searchParams
+        // gap between boxes
+        const GAP = parseInt((params.get('gap') || 2));
+        // image to load
+        const IMG = (params.get('img') || 'gfx/cs460small.png');
+        // number of frames in animation
+        const FRAMES = parseInt(params.get('frames') || 1);
+        // delay between frames
+        const DELAY = (params.get('delay') || 100);
         window.addEventListener("load", function() {
-            // gap between boxes
-            const GAP = 2;
-            // image to load
-            const IMG = 'gfx/bobby.png';
-            // number of frames in animation
-            const FRAMES = 16;
-            // delay between frames
-            const DELAY = 75;
+            
 
             // current frame
             let frame = 0;
@@ -76,7 +79,7 @@
                 let height = canvas.height / FRAMES;
 
                 // scale the scene so it can fit the viewport
-                let scale = Math.min(4 * height, 8 / image.width)
+                let scale = Math.min(4 / height, 8 / image.width)
 
                 // initialize the pixel grid
                 window.pixels = Array(canvas.width)
@@ -102,7 +105,7 @@
                 }
 
                 // rotation animation, we want this to be smooth so use requestAnimationFrame
-                let spin = false;
+                let spin = !(params.get('spin') == 'false') && true;
                 let t0;
                 requestAnimationFrame(function step(t1) {
                     if (t0 !== undefined && spin) {
