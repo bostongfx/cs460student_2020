@@ -1,0 +1,56 @@
+<html>
+    <head>
+        <title>CS460 Assignment 02 </title>
+        <style>
+            body {
+                background-color: blue;
+                color: white; /* text color */
+                font-family: san-serif;
+            }
+            #logo {
+                position: absolute;
+                right: 10px;
+                top: 10px;
+            }
+        </style>
+        
+        <script type="text/javascript" src="https://get.goXTK.com/xtk_edge.js"> </script>
+        <script type = "text/javascript"> 
+            window.onload = function() {
+
+            // create and initialize renderer window
+            var r = new X.renderer3D(); 
+            r.init();
+
+            // creates cubes
+            c = new X.cube(); 
+            c2 = new X.cube();
+            
+            // update color R G B
+            c.color = [0,1,1];
+            c2.color = [1,0,1];
+
+            // override center (changes if you have multiple objects in scene)
+
+            c.center = [100, 0, 0]
+
+            // update length 
+            c.lengthZ = 70
+            c2.lengthX = 70
+
+            // add objects to renderer scene
+            r.add(c);
+            r.add(c2);
+            
+
+            // starts rendering
+            r.render();
+            
+            };
+        </script>
+    </head>
+    <body>
+        <h1>CS460 Assignment 02</h1>
+        <img id = 'logo' src = 'gfx/cs460.png' style = 'height:60px'>
+    </body>
+</html>
