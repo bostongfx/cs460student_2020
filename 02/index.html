@@ -34,6 +34,9 @@
         const FRAMES = parseInt(params.get('frames') || 1);
         // delay between frames
         const DELAY = (params.get('delay') || 100);
+        // speed of rotation
+        const speed = parseFloat((params.get('spin') || .5))
+
         window.addEventListener("load", function() {
             
 
@@ -105,11 +108,11 @@
                 }
 
                 // rotation animation, we want this to be smooth so use requestAnimationFrame
-                let spin = !(params.get('spin') == 'false') && true;
+                let spin = speed > 0;
                 let t0;
                 requestAnimationFrame(function step(t1) {
                     if (t0 !== undefined && spin) {
-                        r.camera.rotate([(t1-t0) / 2, 0]);
+                        r.camera.rotate([(t1-t0) * speed, 0]);
                     }
                     t0 = t1;
                     requestAnimationFrame(step);
