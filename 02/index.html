@@ -42,8 +42,6 @@
 
             // current frame
             let frame = 0;
-            // image data
-            // let data = null;
             // returns index of pixel in data
             coord = (x, y) =>
                 (frame * pixels.length * pixels[0].length * 4) + y * (pixels.length * 4) + x * 4;
@@ -76,7 +74,7 @@
                 canvas.height = image.height;
                 let context = canvas.getContext('2d');
                 context.drawImage(image, 0, 0);
-                data = context.getImageData(0, 0, canvas.width, canvas.height);
+                window.data = context.getImageData(0, 0, canvas.width, canvas.height);
                 
                 // height of each frame
                 let height = canvas.height / FRAMES;
@@ -90,11 +88,16 @@
                     pixels[i] = (Array(height))
                     for (let j = 0; j < height; j++) {
                         let c = coord(i, j);
-                        let cube = new X.cube();
-                        cube.lengthX = cube.lengthY = cube.lengthZ = 20*scale;
-                        cube.center = [-i*(20+GAP)*scale, 0, -j*(20+GAP)*scale];
-                        r.add(cube);
-                        pixels[i][j] = cube
+                        // if there is only one frame we dont need to create transparent cubes
+                        if (FRAMES > 1 || data.data[c + 3] != 0) {
+                            let cube = new X.cube();
+                            cube.lengthX = cube.lengthY = cube.lengthZ = 20*scale;
+                            cube.center = [-i*(20+GAP)*scale, 0, -j*(20+GAP)*scale];
+                            r.add(cube);
+                            pixels[i][j] = cube
+                        } else {
+                            console.log('blank')
+                        }
                     }
                 }
 
