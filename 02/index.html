@@ -33,6 +33,7 @@
         var cubes = [45];
         var z = 0;
 
+
         // nested for loops build 2d array of cube objects.
         // each cube is 10*10 thus increments of 11 ensure gaps betwene the cubes
         for (var i = 0; i < 89; i += 11) {
@@ -62,12 +63,14 @@
                     cubes[z++] = c;
                 }
                 else {
-                c.color = [0, 0, 0];
+               // c.color = [0, 0, 0];
+                 c = null;
                 }
 
                 // add it to scene
                 r.add(c);
-            }
+            } 
+
 
         // code snippet to animate the pine tree mimicking the "lighting up" of the tree.
         setInterval(function() {
