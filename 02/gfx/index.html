@@ -1,48 +1,161 @@
 <html>
-	<head>
-		<title>CS460 Assigment 02</title>
-	
-	<style>
-		body {
-			background-color: black;
-			color: white;
-			font-family: sans-serif;
-	}
+<head>
+  <title>CS460 Assignment 2</title>
+  <style>
+    body {
+      background-color: black;
+      color: white; /* font color */
+      font-family: sans-serif;
+    }
 
-	#logo {
-		position: absolute;
-		right: 10px;
-		top: 10px;
-	}
-	</style>
-	<script type="text/javascript">
+    #logo {
+      position: absolute;
+      right: 10px;
+      top: 10px;
+    }
+  </style>
 
-		window.onload = function() {
-			// gets executed once the page loaded completely
-		
+  <script type="text/javascript" src="https://get.goXTK.com/xtk_edge.js"></script>
+
+  <script type="text/javascript">
+
+    window.onload = function() {
+
+    // new renderer
+    var r = new X.renderer3D();
+    r.init();
+
+    var s = new X.renderer3D();
+    s.init();
+
+    // fox with eyes 
+    for ( var x = 0; x < 9; x++) {
+      for ( var y = 0; y < 9; y++) {
+
+        var c = new X.cube();
+
+        var black = [0, 0, 0];
+        var white = [1, 1, 1];
+        var orange = [255/255, 128/255, 0];
+        var nose = [54/255, 81/255, 94/255];
+
+        c.center = [x * 3, y * 3, 0];
+
+        c.lengthX = c.lengthY = c.lengthZ = 2;
+        
+        // setting sides to black
+        if (x == 0 || x == 8) { 
+          c.color = black;
+        }
+        
+        // top of face
+        else if( [2, 3, 4, 5, 6].includes(x) & y == 0 ) { 
+          c.color = black;
+        }
+        else if( [3, 4, 5].includes(x) & y == 1 ) { 
+          c.color = black;
+        }
+
+        // now bottom half of face
+        else if( [1, 2, 6, 7, 8].includes(x) & y == 8 ) { 
+          c.color = black;
+        }
+        else if( [1, 7, 8].includes(x) & y == 7 ) { 
+          c.color = black;
+        }
+
+        // left eye
+        else if( [2, 3].includes(x) & y == 4 ) { 
+          c.color = white;
+        }
+
+        // right eye
+        else if( [5, 6].includes(x) & y == 4 ) {  
+          c.color = white;
+        }
+
+        // nose
+        else if( x == 4 & y == 7 ) { 
+          c.color = white;
+        }
+
+        // fill in the rest of the fox
+        else {
+          c.color = orange;
+        }
+
+        r.add(c);
+      }
+    } 
 
 
+  // fox with eyes closed
+  for ( var x = 0; x < 9; x++) {
+      for ( var y = 0; y < 9; y++) {
 
-		var mytext = 'hello students!';
-		var mynumber = 8;
-		var myfloat = 3.1415;
-		var myboolean = true;
+        var c = new X.cube();
 
-		console.log(mytext, mynumber, myfloat, myboolean);
+        var black = [0, 0, 0];
+        var white = [1, 1, 1];
+        var orange = [255/255, 128/255, 0];
+        var nose = [54/255, 81/255, 94/255];
 
-		document.getElementById('output').innerHTML = 'hello';
+        c.center = [x * 3, y * 3, 0];
 
-	}
+        c.lengthX = c.lengthY = c.lengthZ = 2;
+        
+        // setting sides to black
+        if (x == 0 || x == 8) { 
+          c.color = black;
+        }
+        
+        // top of face
+        else if( [2, 3, 4, 5, 6].includes(x) & y == 0 ) { 
+          c.color = black;
+        }
+        else if( [3, 4, 5].includes(x) & y == 1 ) { 
+          c.color = black;
+        }
 
-	</script>
-	</head>
+        // now bottom half of face
+        else if( [1, 2, 6, 7, 8].includes(x) & y == 8 ) { 
+          c.color = black;
+        }
+        else if( [1, 7, 8].includes(x) & y == 7 ) { 
+          c.color = black;
+        }
 
-	<body>
-		<h1>CS460 Assignment 2 </h1>
-		<img id='logo' src='gfx/cs460.png'
-		style = 'height: 60px'>
+        // nose - no eye statements
+        else if( x == 4 & y == 7 ) { 
+          c.color = white;
+        }
 
-		<div id='output'></div>
-	</body>
+        // fill in the rest of the fox
+        else {
+          c.color = orange;
+        }
+
+        s.add(c);
+      }
+    }
+  
+
+    setInterval(function() {
+      r.render();
+      s.render();
+      r.camera.position = [0, 5, 100];
+      s.camera.position = [0, 5, 100];
+    }, 500);
+
+
+  }
+
+</script>
+
+
+</head>
+<body>
+  <h1>CS460 Assignment 2</h1>
+  <div id="logo"><img style="height:60px" src="gfx/cs460.png"></div>
+</body>
 </html>
-
