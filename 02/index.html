@@ -1,3 +1,15 @@
+<!--
+
+  CS 460 Assignment 02
+  9/21/2020
+  Ayah Aboelela
+
+  Inspired by:
+    - https://github.com/nandiniiys/cs460student/tree/master/02
+    - https://github.com/MichaelOToole001/cs460student/tree/master/02
+
+-->
+
 <html>
 
 <head>
@@ -5,7 +17,7 @@
 <style>
 body {
 background-color: lavender;
-color: gray;
+color: rgb(0,0, 0);
 font-family: sans-serif;
 
 }
@@ -23,45 +35,149 @@ font-family: sans-serif;
 
 window.onload = function() {
 // gets executed once the page is completely loaded
-//var mytext = 'hello world!';
-//var mynumber = 8; /* no strict types in JavaScript */
-//var myfloat = 3.1415;
 
-//console.log(mytext, mynumber, myfloat);
-//document.getElementById('output').
-  //  innerHTML = 'HELLO';
+var r = new X.renderer3D();
+r.init();
 
-  // make a cube
+var borders = [];
+var second = [];
+var inner = [];
+var center;
 
-  // new renderer
-  var r = new X.renderer3D();
-  r.init();
+for (var i = 0; i < 325; i+=27) {
+  for (var j = 0; j < 325; j += 27) { //27
+    c = new X.cube();
+   c.lengthX = 25;
+    c.lengthY = 25;
+    c.lengthZ = 25;
+    c.center = [i, j, 0];
+ 
 
-  //make the cube
-  c = new X.cube();
 
-  c.color = [0, 0, 0]; //can use hex colors in three.js but not here in XTK.
+    if ((i == 0 || i ==324) && (j <= 108 || j > 189)) { // top and bottom edge
+      borders.push(c);
+    }
+    else if (i == 162 && j == 162) 
+    {
+      center = c;
+      c.color = [1, 128/255, 0];
+    }
+    else if ((j == 0 || j == 324) && (i <=108 || i >189)) { // left and right edge
+      borders.push(c);
+    }
 
-  //adjust x-direction size
-c.lengthX = 50;
+    
+    //horizontal center
+    else if (i == 162 && j >= 54 && j < 271) 
+    {
+      borders.push(c);
+      } 
+    else if (j == 162 && i >= 54 && i < 271) //vertical center
+    {
+    borders.push(c);
+    } 
 
-c.center = [100,0,0]; //without this, the cubes overlap lol
-//lecture 4 - he shows "z-fighting" or the overlapping and color struggle that happens,
-// and how to change sizes to fix it so that one overlaps the other
+    // the 8 diagonal pieces for the petal borders
+    else if ((i == 27 && j == 135) || (i == 27 && j == 189) || (i == 297 && j == 189) || (i == 297 && j == 135) || (j == 27 && i == 135) || (j == 27 && i == 189) || (j == 297 && i == 135) || (j == 297 && i == 189))
+    {
+    borders.push(c);
+    }
 
-// can't put colors or shapes on just one side of the cube in XTK :(
+    // horizontal inner borders
+    else if ((i == 27) && ((j >= 27 && j<135) || (j>189 && j <324) ) ) 
+    {
+      second.push(c);
+       }
+    else if ((i == 297) && ((j >= 27 && j<135) || (j>189 && j <324) ) ) 
+    { 
+      second.push(c);
+      }
+    else if ((i == 135) && ((j >= 54 && j<162) || (j>162 && j <297) )) { 
+      second.push(c);
+    }
+    else if ((i == 189) && ((j >= 54 && j<162) || (j>162 && j <297) )) 
+    {
+      second.push(c);
+      }
 
-    // shows how to do loops on lecture 4 towards the end (codes in the console)
+    //vertical inner borders
+    else if ((j == 27) && ((i>27 && i <135) || (i>189 && i <297))) 
+    {
+      second.push(c);
+      }
+    else if ((j == 297) && ((i>27 && i < 135) || (i>189 && i <297))) {
+      second.push(c); 
+      }
+    else if ((j == 135) && ((i >= 54 && i<162) || (i>162 && i <297) )) { 
+      second.push(c);
+      }
+    else if ((j == 189) && ((i >= 54 && i<162) || (i>162 && i <297) )) 
+    { 
+      second.push(c);
+      }
 
-  //add to scene
-  r.add(c);
+    // inner petals
+    else if (i >= 54 && i <= 108) {
+      inner.push(c);
+      }
+    else if (i > 189 && i <= 270) {
 
-  c2 = new X.cube();
-  c2.color = [1,1,1];
-r.add(c2);
-  //start rendering
-  r.render();
+      inner.push(c);
+      }
+    
+    else { c = null;}
+    
+    r.add(c);
+  }
+}
+
+
+  r.camera.position = [0, 0,1000];
+
+  var bool = true;
+
+  var lightpink = [255/255, 102/255, 178/255];
+  var mediumpink = [255/255, 0, 127/255];
+  var darkpink = [153/255, 0, 76/255];
+
+  var lightpurple = [211/255, 134/255, 255/255];
+  var mediumpurple = [136/255, 69/255, 175/255];
+  var darkpurple = [78/255, 27/255, 107/255];
+
+  setInterval(function() {
+    bool = !bool;
+    if (bool) {
+      for (var i =0; i < borders.length; i++){
+        borders[i].color = darkpurple;
+      }
+      for (var i =0; i < inner.length; i++){
+        inner[i].color = lightpurple;
+      }
+      for (var i =0; i < second.length; i++){
+        second[i].color = mediumpurple;
+      }      
+      r.render();
+    }
+    else {
+      for (var i = 0; i < borders.length; i++){
+        borders[i].color = darkpurple;
+      }
+      for (var i =0; i < inner.length; i++){
+        inner[i].color = mediumpurple;
+      }
+      for (var i =0; i < second.length; i++){
+        second[i].color = lightpurple;
+      }
+      r.render();
+    }
+  }, 1000);
+
+//  r.render();
+
+
 };
+
+
 
 </script>
 
