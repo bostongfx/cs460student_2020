@@ -48,7 +48,7 @@
               for (j = 0; j != 9; ++j) {
                   if (board[i][j] != 0) {
                       var c = new X.cube();
-                      c.center = [-25 * (j - 4), -25 * (i - 4), 0];
+                      c.center = [25 * (j - 4), -25 * (i - 4), 0];
                       if (board[i][j] == 1) {
                           c.color = [0.5, 0.0, 0.0];
                       } else if (board[i][j] == 2) {
