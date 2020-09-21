@@ -29,7 +29,7 @@
      
           // this gets called when the site is ready
           // create a new scene and renderer
-          r = new X.renderer3D();
+          var r = new X.renderer3D();
           r.init();
      
           // create a cube and add it!
@@ -47,7 +47,7 @@
           for (i = 0; i != 9; ++i) {
               for (j = 0; j != 9; ++j) {
                   if (board[i][j] != 0) {
-                      c = new X.cube();
+                      var c = new X.cube();
                       c.center = [-25 * (j - 4), -25 * (i - 4), 0];
                       if (board[i][j] == 1) {
                           c.color = [0.5, 0.0, 0.0];
