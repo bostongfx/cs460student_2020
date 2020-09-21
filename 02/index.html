@@ -1,56 +1,73 @@
 <html>
-    <head>
-        <title>CS460 Assignment 02 </title>
-        <style>
-            body {
-                background-color: blue;
-                color: white; /* text color */
-                font-family: san-serif;
-            }
-            #logo {
-                position: absolute;
-                right: 10px;
-                top: 10px;
-            }
+    <head> 
+        <title>Assignment 02 Pixel Art</title>
+        <style> 
+        body {
+            background-color: black;
+            color: white;
+            font-family:Impact;
+        }
+        #logo {
+            position: absolute;
+            right: 10px;
+            bottom: 10px;
+        }
         </style>
-        
         <script type="text/javascript" src="https://get.goXTK.com/xtk_edge.js"> </script>
         <script type = "text/javascript"> 
-            window.onload = function() {
 
-            // create and initialize renderer window
-            var r = new X.renderer3D(); 
-            r.init();
-
-            // creates cubes
-            c = new X.cube(); 
-            c2 = new X.cube();
-            
-            // update color R G B
-            c.color = [0,1,1];
-            c2.color = [1,0,1];
-
-            // override center (changes if you have multiple objects in scene)
-
-            c.center = [100, 0, 0]
-
-            // update length 
-            c.lengthZ = 70
-            c2.lengthX = 70
-
-            // add objects to renderer scene
-            r.add(c);
-            r.add(c2);
-            
-
-            // starts rendering
-            r.render();
-            
+            // Function to create rows of cubes across the x plane
+            function createRow(total, xPos, yPos, color) {
+                for (var j = 0; j < total; j++) {
+                    art[i][j] = new X.cube();
+                    art[i][j].center = [xPos + (25 * j), yPos, 0];
+                    art[i][j].color  = color;
+                    r.add(art[i][j]);
+                }
+                i++;
             };
-        </script>
+
+            // creates non-animated pine tree 
+            function tree() { 
+                i = 0;
+                createRow(1, 100, 0, [1,1,0]);
+                createRow(3, 75, 25, [0,.5,0]);
+                createRow(3, 75, 50, [0,.5,0]);
+                createRow(7, 25, 75, [0,.5,0]);
+                createRow(7, 25, 100, [0,.5,0]);
+                createRow(9, 0, 125, [0,.5,0]);
+                createRow(9, 0, 150, [0,.5,0]);
+                createRow(3, 75, 175, [.59,.29,0]);
+                createRow(3, 75, 200, [.59,.29,0]);
+            };
+
+            setInterval(function() {
+                for (var x = 1; x < 7; x++) {
+                    for (var y = 0; y < art[x].length; y += 2) {
+                        if (art[x][y].color[1] != .5) {
+                            art[x][y].color = [0,.5,0];  // Set color dark green
+                         }
+                        else {
+                            art[x][y].color = [1,0,0]; // Set color red
+                        }
+                    }
+                } 
+                
+            }, 1000);
+            
+            window.onload = function() {
+                r = new X.renderer3D();
+                r.init();
+                art = [[],[],[],[],[],[],[],[],[]]; // canvas
+                tree();
+                r.camera.position = [0, 10, 500]; //set camera position
+                r.render();
+                
+            };
+        </script> 
     </head>
     <body>
-        <h1>CS460 Assignment 02</h1>
+        <h1>Will Hem CS460 Assignment 02</h1>
         <img id = 'logo' src = 'gfx/cs460.png' style = 'height:60px'>
     </body>
 </html>
