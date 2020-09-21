@@ -1,0 +1,70 @@
+<html>
+<head>
+
+    <style>
+        body {
+            background-color: black;
+            margin: 0;
+            padding: 0;
+            height: 100;
+            overflow: hidden !important;
+        }
+    </style>
+
+    <script src="https://threejs.org/build/three.min.js" type="text/javascript"></script>
+    <script src="https://threejs.org/examples/js/controls/TrackballControls.js" type="text/javascript"></script>
+
+    <script type = 'text/javascript'>
+    window.onload = function() {
+        
+        console.log('ready for assignment 3');
+
+        //no "var" before them means that it's a global variable
+        scene = new THREE.Scene();
+
+        camera = new THREE.PerspectiveCamera( 75, // fov
+        window.innerWidth / window.innerHeight, // aspect ratio
+        1, //zNear
+        1000 //zFar
+        );
+
+        camera.position.set(0,0,100);
+        renderer = new THREE.WebGLRenderer();
+        renderer.setSize( window.innerWidth, window.innerHeight);
+
+        document.body.appendChild( renderer.domElement); //adds canvas to body
+
+        //LIGHTS
+        ambientLight = new THREE.AmbientLight();
+        scene.add(ambientLight);
+
+        light = new THREE.DirectionalLight( 0xffffff, 5.0);
+        light.position.set(10,100,10);
+        scene.add(light);
+
+        //CUBE
+
+        geometry = new THREE.BoxBufferGeometry(20,20,20);
+        material = new THREE.MeshStandardMaterial({color: 0xffffff});
+        cube = new THREE.Mesh(geometry, material);
+        scene.add(cube);
+        
+        controls = new THREE.TrackballControls( camera, renderer.domElement);
+        animate();
+
+    };
+
+    function animate() {
+        requestAnimationFrame( animate );
+        controls.update();
+        renderer.render( scene, camera);
+
+    };
+    </script>
+</head>
+
+<body>
+
+
+</body>
+</html>
