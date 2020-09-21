@@ -27,20 +27,21 @@
                 i++;
             };
 
-            // creates non-animated pine tree 
+            // Creates pine tree 
             function tree() { 
                 i = 0;
-                createRow(1, 100, 0, [1,1,0]);
-                createRow(3, 75, 25, [0,.5,0]);
+                createRow(1, 100, 0, [1,1,0]);  // Yellow
+                createRow(3, 75, 25, [0,.5,0]); 
                 createRow(3, 75, 50, [0,.5,0]);
                 createRow(7, 25, 75, [0,.5,0]);
                 createRow(7, 25, 100, [0,.5,0]);
                 createRow(9, 0, 125, [0,.5,0]);
-                createRow(9, 0, 150, [0,.5,0]);
-                createRow(3, 75, 175, [.59,.29,0]);
+                createRow(9, 0, 150, [0,.5,0]); 
+                createRow(3, 75, 175, [.59,.29,0]); // Brown
                 createRow(3, 75, 200, [.59,.29,0]);
             };
 
+            // Flashes red light on pine tree
             setInterval(function() {
                 for (var x = 1; x < 7; x++) {
                     for (var y = 0; y < art[x].length; y += 2) {
