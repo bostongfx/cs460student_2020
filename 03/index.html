@@ -14,82 +14,95 @@
     <script src="https://threejs.org/examples/js/controls/TrackballControls.js" type="text/javascript"></script>
     <script>
         window.onload = function() {
-            fov   = 75;
-            ratio = window.innerWidth / window.innerHeight;
-            zNear = 1;
-            zFar  = 10000;
+            var fov   = 75;
+            var ratio = window.innerWidth / window.innerHeight;
+            var zNear = 1;
+            var zFar  = 10000;
 
-            camera       = new THREE.PerspectiveCamera(fov, ratio, zNear, zFar);
-            renderer     = new THREE.WebGLRenderer();
-            scene        = new THREE.Scene();
-            ambientLight = new THREE.AmbientLight( 0x404040, 1 );
-            light        = new THREE.DirectionalLight( 0xffffff, 1 );
-            controls     = new THREE.TrackballControls( camera, renderer.domElement );
-
-            renderer.setSize( window.innerWidth, window.innerHeight );
-            document.body.appendChild( renderer.domElement );
-
-            camera.position.set(0, 0, 100);
-            light.position.set( 10, 100, 10 );
-
-            invisible_plane = new THREE.Mesh(
-                    new THREE.PlaneBufferGeometry( 10000, 10000 ),      // geometry
-                    new THREE.MeshBasicMaterial( { visible: false } )   // material
+            camera          = new THREE.PerspectiveCamera(fov, ratio, zNear, zFar);
+            renderer        = new THREE.WebGLRenderer();
+            scene           = new THREE.Scene();
+            var ambientLight    = new THREE.AmbientLight(0x404040, 1);
+            var light           = new THREE.DirectionalLight(0xffffff, 1);
+            var invisible_plane = new THREE.Mesh(
+                    new THREE.PlaneBufferGeometry(10000, 10000),    // geometry
+                    new THREE.MeshBasicMaterial({visible: false})   // material
             );
 
-            scene.add( ambientLight );
-            scene.add( light );
-            scene.add( invisible_plane );
+            camera.position.set(0, 0, 400);     // Moved camera away a bit for more space
+            light.position.set(10, 100, 50);    // Light moved towards camera. Shape fronts alight!
+
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            document.body.appendChild(renderer.domElement);
+
+            // This must be defined after renderer added to document.
+            controls = new THREE.TrackballControls(camera, renderer.domElement);
+
+            scene.add(ambientLight);
+            scene.add(light);
+            scene.add(invisible_plane);
 
             animate();
 
-
-            shapes = [knot, box, sphere, oct, cone, ring];
-            sceneShapes = [];
-
-            knot = function(color) {
+            // Functions as variables for generating shapes by indexing array of functions
+            var knot = function(color) {
                 var geometry = new THREE.TorusKnotBufferGeometry( 10, 1.5, 64, 8, 4, 3 );
                 var material = new THREE.MeshStandardMaterial( { color: color } );
                 return new THREE.Mesh( geometry, material );
             }
 
-            box = function(color) {
-                var geometry = new THREE.BoxBufferGeometry( 20, 20, 20);
+            var box = function(color) {
+                var geometry = new THREE.BoxBufferGeometry( 18, 18, 18);
                 var material = new THREE.MeshStandardMaterial({ color: color });
                 return new THREE.Mesh( geometry, material);
             }
 
-            sphere = function(color) {
+            var sphere = function(color) {
                 var geometry = new THREE.SphereBufferGeometry( 10, 16, 16 );
                 var material = new THREE.MeshStandardMaterial( {color: color} );
                 return new THREE.Mesh( geometry, material );
             }
 
-            oct = function(color) {
+            var oct = function(color) {
                 var geometry = new THREE.OctahedronBufferGeometry( 10, 0 );
                 var material = new THREE.MeshStandardMaterial( { color: color } );
                 return new THREE.Mesh( geometry, material );
             }
 
-            cone = function(color) {
+            var cone = function(color) {
                 var geometry = new THREE.ConeBufferGeometry( 10, 20, 8 );
                 var material = new THREE.MeshStandardMaterial( { color: color } );
                 return new THREE.Mesh( geometry, material );
             }
 
-            ring = function(color) {
+            var ring = function(color) {
                 var geometry = new THREE.RingBufferGeometry( 10, 20, 5 );
                 var material = new THREE.MeshStandardMaterial( { color: color, side: THREE.DoubleSide } );
                 return new THREE.Mesh( geometry, material );
             }
 
+            // Array, holding shape-generating functions
+            shapes = [knot, box, sphere, oct, cone, ring];
+
+            // re-set shapes array and shuffle
+            var populateShapes = function() {
+                shapes = [knot, box, sphere, oct, cone, ring];
+                shapes.sort(function() { return 0.5 - Math.random(); });
+            }
+
+            // To store created shapes. This both counts the number of shapes and provides
+            // an easy way to clear all shapes
+            sceneShapes = [];
+
+            // Add a shape with a random color at the given position
             addShape = function(x, y, z) {
-                var randomShape = Math.floor(Math.random() * shapes.length);
-                var randomColor = Math.floor(Math.random()*0xFFFFFF)
-                var shape = shapes[randomShape](randomColor);
+                if (shapes.length == 0) populateShapes();
+                var randomColor = Math.floor(Math.random() * 0xFFFFFF)
+                var shape = shapes.pop()(randomColor);
                 shape.position.set(x, y, z);
                 sceneShapes.push(shape);
                 scene.add(shape);
+                if (sceneShapes.length % 50 == 0) console.log(sceneShapes.length);
             }
 
             // Shift+RightClick to clear all shapes
@@ -104,7 +117,8 @@
                 }
             }
 
-            renderer.domElement.onclick = function(e) {
+            // Draw shapes on mouse over
+            window.onmousemove  = function(e) {
                 if (!e.shiftKey) {
                     e.preventDefault();
                     return false;
@@ -113,15 +127,15 @@
                 pixel_coords = new THREE.Vector2( e.clientX, e.clientY );
                 vp_coords = new THREE.Vector2( ( e.clientX / window.innerWidth  ) * 2 - 1,
                                               -( e.clientY / window.innerHeight ) * 2 + 1);
-                vp_coords_near = new THREE.Vector3( vp_coords.x, vp_coords.y, 0);
+                // removed vp_coords_near, as it is not necessary
 
                 raycaster = new THREE.Raycaster();
-                raycaster.setFromCamera(vp_coords_near, camera);
+                raycaster.setFromCamera(vp_coords, camera);
                 intersects = raycaster.intersectObject(invisible_plane);
 
-                console.log('Pixel coordinates', pixel_coords);
-                console.log('Viewport coordinates', vp_coords);
-                console.log('Ray to Invisible Plane', intersects[0].point);
+                // console.log('Pixel coordinates', pixel_coords);
+                // console.log('Viewport coordinates', vp_coords);
+                // console.log('Ray to Invisible Plane', intersects[0].point);
 
                 addShape(intersects[0].point.x, intersects[0].point.y, intersects[0].point.z);
             };
