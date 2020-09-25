@@ -20,32 +20,21 @@
         ratio = window.innerWidth / window.innerHeight;
         zNear = 1;
         zFar = 10000;
-        // console.log(ratio);
         camera = new THREE.PerspectiveCamera(fov, ratio, zNear, zFar);
         camera.position.set( 0, 0, 50);
 
-        renderer = new THREE.WebGLRenderer();
+        renderer = new THREE.WebGLRenderer( {antialias: true} );
         renderer.setSize( window.innerWidth, window.innerHeight );
         document.body.appendChild( renderer.domElement );
 
-        ambientLight = new THREE.AmbientLight();
+        ambientLight = new THREE.AmbientLight( 0x404040 );
         scene.add( ambientLight );
 
         light = new THREE.DirectionalLight( 0xffffff, 5.0 );
         light.position.set( 10, 100, 10 );
         scene.add( light );
 
-
-        // now we add the cube
-        // geometry = new THREE.BoxBufferGeometry( 20, 20, 20);
-        // material = new THREE.MeshStandardMaterial({ color: 0xffffff });
-        // cube = new THREE.Mesh( geometry, material);
-        // scene.add(cube);
-
-
-        //
         // The invisible plane
-        //
         geometry = new THREE.PlaneBufferGeometry( 10000, 10000 );
         material = new THREE.MeshBasicMaterial( {
           visible: false
@@ -54,14 +43,10 @@
         invisible_plane = new THREE.Mesh( geometry, material );
 
         scene.add( invisible_plane );
-        //
-        //
-        //
 
-
+				shapesCreated = 0;
 
         controls = new THREE.TrackballControls( camera, renderer.domElement );
-
         animate();
 
 				// Array filled with functions used to create different geometry.
@@ -93,7 +78,7 @@
 					},
 					function(color) {
 						var geometry = new THREE.RingBufferGeometry( 0.5, 1, 8 );
-            var material = new THREE.MeshStandardMaterial( { color: color, side: THREE.DoubleSide } );
+            var material = new THREE.MeshStandardMaterial( { color: color, side: THREE.DoubleSide,  } );
             return new THREE.Mesh( geometry, material );
 					}
 				]
@@ -103,41 +88,28 @@
 						var rcolor = Math.floor(Math.random() * 0xffffff );
 						var rshape = shapeFunctionsArr[Math.floor(Math.random() * 6)](rcolor);
 						rshape.position.set( x,y,z );
+						//Below is for Part 3 in the assignment. Not needed anymore.
+						//console.log(rshape.geometry.type,rshape.geometry.attributes.uv.array.length);
 						scene.add(rshape);
+						shapesCreated++;
+						//console.log(shapesCreated.toString());
 				}
 
-        //
-        // ACTION!
-        //
-
-        renderer.domElement.onclick = function(e) {
+        renderer.domElement.onmousemove = function(e) {
 
           if (!e.shiftKey) {
             e.preventDefault();
             return false;
           }
 
-          //console.log('yes! you clicked!');
-
           pixel_coords = new THREE.Vector2( e.clientX, e.clientY );
-
-          //onsole.log('Pixel coordinates', pixel_coords);
-
           vp_coords = new THREE.Vector2( ( pixel_coords.x / window.innerWidth ) * 2 - 1,
                                         -( pixel_coords.y / window.innerHeight ) * 2 + 1);
-
-          //console.log('Viewport coordinates', vp_coords);
-
           vp_coords_near = new THREE.Vector3( vp_coords.x, vp_coords.y, 0);
-
           raycaster = new THREE.Raycaster();
           raycaster.setFromCamera(vp_coords_near, camera);
           intersects = raycaster.intersectObject(invisible_plane);
-
-          //console.log('Ray to Invisible Plane', intersects[0].point);
 					createShape(intersects[0].point.x,intersects[0].point.y,intersects[0].point.z);
-          // update cube position
-          // cube.position.set(intersects[0].point.x, intersects[0].point.y, intersects[0].point.z);
 
         };
 
@@ -147,12 +119,9 @@
       };
 
       function animate() {
-
         requestAnimationFrame( animate );
-
         controls.update();
         renderer.render( scene, camera );
-
       };
 
     </script>
