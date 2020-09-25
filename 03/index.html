@@ -1,0 +1,183 @@
+	
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <style>
+      html, body { 
+        background-color:#500;
+        margin: 0;
+        padding: 0;
+        height: 100%;
+        overflow: hidden !important;  
+      }
+    </style>
+    <script src="https://threejs.org/build/three.min.js" type="text/javascript"></script>
+    <script src="https://threejs.org/examples/js/controls/TrackballControls.js" type="text/javascript"></script>
+    <script>
+      window.onload = function() {
+ 
+        scene = new THREE.Scene();
+ 
+        fov = 75;
+        ratio = window.innerWidth / window.innerHeight;
+        zNear = 1;
+        zFar = 10000;
+        // console.log(ratio);
+        camera = new THREE.PerspectiveCamera(fov, ratio, zNear, zFar);
+        camera.position.set( 0, 0, 20);
+ 
+        renderer = new THREE.WebGLRenderer();
+        renderer.setSize( window.innerWidth, window.innerHeight );
+        document.body.appendChild( renderer.domElement );
+        
+        /* ambientLight( color, intensity ) parameters required for shading */
+        ambientLight = new THREE.AmbientLight( 0x404040, 3.0 );
+        scene.add( ambientLight );
+ 
+ 		/* color and intensity of directionalLight */
+        light = new THREE.DirectionalLight( 0x0fffff, 2.0 );
+        //original values 10, 100, 10: I thought these would be better
+        light.position.set( 20, 10, 1 );
+        scene.add( light );
+ 
+ 
+ /* original code
+        // now we add the cube
+         geometry = new THREE.BoxBufferGeometry( 2, 2, 2);
+         /* color of cube 
+         material = new THREE.MeshStandardMaterial({ color: 0x0fffff });
+         cube = new THREE.Mesh( geometry, material);
+         scene.add(cube);
+ */
+ 
+        
+       	count = 0
+        function randomGen() {
+        	//random number decides what shape to add
+        	num = Math.floor(Math.random() * 12)
+        	//console.log("my RANDOM NUMBER: " + num);
+        	if (num == 1) {
+        		geometry =  new THREE.BoxBufferGeometry( 2, 2, 2);
+        	}
+        	else if (num == 2) {
+        		geometry =  new THREE.ConeBufferGeometry( 1, 1, 4 );
+        	}
+        	else if (num == 3) {
+        		geometry =  new THREE.TetrahedronBufferGeometry( 1, 0 );
+        	}
+        	else if (num == 4) {
+        		geometry =  new THREE.IcosahedronBufferGeometry( 1, 0 );
+        	}
+        	else if (num == 5) {
+        		geometry =  new THREE.TorusBufferGeometry( 1, 0.25, 10, 100, 6.3 );
+        	}
+        	else if (num == 6) {
+        		geometry =  new THREE.TorusBufferGeometry( 1, 0.5, 100, 100, 6.3 );
+        	}
+        	else if (num == 7) {
+        		geometry =  new THREE.TorusKnotBufferGeometry( 1, 0.4, 100, 0 );
+        	}
+        	else if (num == 8) {
+        		geometry =  new THREE.TorusKnotBufferGeometry( 1, 0.2, 100, 0 );
+        	}
+        	else if (num == 9) {
+        		geometry =  new THREE.CylinderBufferGeometry( 0.75, 0.8, 1.2, 130 );
+        	}
+        	else if (num == 10) {
+        		geometry =  new THREE.BoxBufferGeometry( 3, 1, 2);
+        	}
+        	else {
+        		geometry =  new THREE.SphereBufferGeometry( 1, 100, 100 );
+        	}
+        	//randomize the color with Math.random()
+        	material = new THREE.MeshStandardMaterial({ color: 0xff726f * Math.random() });
+        	cube = new THREE.Mesh( geometry, material);
+        	scene.add(cube);
+        	//return the shape to display it when function is called
+        	count += 1
+        	console.log("Amount of objects: " + count)
+        	return cube
+        	
+        }
+ 
+ 
+        //
+        // The invisible plane
+        //
+        geometry = new THREE.PlaneBufferGeometry( 10000, 10000 );
+        material = new THREE.MeshBasicMaterial( {
+          visible: false
+        });
+ 
+        invisible_plane = new THREE.Mesh( geometry, material );
+ 
+        scene.add( invisible_plane );
+        //
+        //
+        //
+ 
+ 
+        //controls = new THREE.TrackballControls( camera );
+        controls = new THREE.TrackballControls( camera, renderer.domElement );
+        
+ 
+        animate();
+ 
+ 
+        //
+        // ACTION!
+        //
+ 
+        //renderer.domElement.onclick = function(e) {
+ 		renderer.domElement.onmousemove = function(e) {
+          if (!e.shiftKey) {
+            e.preventDefault();
+            return false;
+          }
+ 
+          console.log('yes! you clicked!');
+          pixel_coords = new THREE.Vector2( e.clientX, e.clientY );
+ 
+          console.log('Pixel coordinates', pixel_coords);
+ 
+          vp_coords = new THREE.Vector2( ( pixel_coords.x / window.innerWidth ) * 2 - 1,
+                                        -( pixel_coords.y / window.innerHeight ) * 2 + 1);
+ 
+          console.log('Viewport coordinates', vp_coords);
+ 
+          vp_coords_near = new THREE.Vector3( vp_coords.x, vp_coords.y, 0);
+ 
+          raycaster = new THREE.Raycaster();
+          raycaster.setFromCamera(vp_coords_near, camera);
+          intersects = raycaster.intersectObject(invisible_plane);
+ 
+          console.log('Ray to Invisible Plane', intersects[0].point);
+ 		/* original code
+          //update cube position
+          cube.position.set(intersects[0].point.x, intersects[0].point.y, intersects[0].point.z);
+        */
+          //add new shapes with updated position
+          randomGen().position.set(intersects[0].point.x, intersects[0].point.y, intersects[0].point.z);
+        
+        };
+ 
+        
+ 
+ 
+      };
+ 
+      function animate() {
+ 
+        requestAnimationFrame( animate );
+ 
+        controls.update();
+        renderer.render( scene, camera );
+ 
+      };
+ 
+    </script>
+  </head>
+  <body>
+  	<h1 style="color: white;">CS460 Assignment 3 - Alvin Lam</h1>
+  </body>
+</html>
