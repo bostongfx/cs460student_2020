@@ -134,6 +134,8 @@
 
         if (!infoPrinted) {
           infoPrinted = true;
+          // Is there a way to get the number of polygons in a scene?
+          // https://stackoverflow.com/questions/40274612/is-there-a-way-to-get-the-number-of-polygons-in-a-scene
           console.log('objects: ', renderer.info.render.calls, ', triangles: ', renderer.info.render.triangles);
         }
 
