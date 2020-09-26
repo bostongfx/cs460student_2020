@@ -21,6 +21,7 @@
         ratio = window.innerWidth / window.innerHeight;
         zNear = 1;
         zFar = 10000;
+        count = 0;
         // console.log(ratio);
         camera = new THREE.PerspectiveCamera(fov, ratio, zNear, zFar);
         camera.position.set( 0, 0, 100);
@@ -37,16 +38,9 @@
         scene.add( light );
  
  
-        // now we add the cube
-        //geometry = new THREE.BoxBufferGeometry( 20, 20, 20);
-         //material = new THREE.MeshStandardMaterial({ color: 0xffffff });
-         //cube = new THREE.Mesh( geometry, material);
-         //scene.add(cube);
- 
- 
         //
         // The invisible plane
-        //
+        // 
         geometry = new THREE.PlaneBufferGeometry( 10000, 10000 );
         material = new THREE.MeshBasicMaterial( {
           visible: false
@@ -65,13 +59,11 @@
         // ACTION!
         //
  
-        renderer.domElement.onclick = function(e) {
- 
+        renderer.domElement.onmousemove = function(e) {
           if (!e.shiftKey) {
             e.preventDefault();
             return false;
-          }
- 
+          }       
           console.log('yes! you clicked!');
  
           pixel_coords = new THREE.Vector2( e.clientX, e.clientY );
@@ -91,16 +83,19 @@
  
           console.log('Ray to Invisible Plane', intersects[0].point);
  
-          // update cube position
-          // create Box object
-          //geometry = new THREE.BoxBufferGeometry( 20, 20, 20 );
+          // create random geometry with random color
           material = new THREE.MeshStandardMaterial({ color: getRandomColor() });
-          target = new THREE.Mesh( getRandomGeometry(), material );
+          var geometry = getRandomGeometry();
+          target = new THREE.Mesh( geometry, material );
         
           target.position.set( intersects[0].point.x,intersects[0].point.y, intersects[0].point.z);
 
           scene.add( target );
+          
+          count++;
+          console.log("the number of all geometries is " ,count);
         };
+
       };
  
       function animate() {
@@ -116,26 +111,31 @@
           return Math.floor(Math.random()* 0xffffff); 
       }
       
+      count1 = 0;
+        count2 = 0;
+        count3 = 0;
+
       function getRandomGeometry(){
         var choice = Math.floor(Math.random() * 6);
+
         switch(choice) {
           case 0: 
-              geometry = new THREE.TorusKnotBufferGeometry( 5, 2, 64, 8 );
+              geometry = new THREE.TorusKnotBufferGeometry(5, 2, 64, 8);
               break;
           case 1:
-              geometry = new THREE.SphereBufferGeometry(8, 32, 32 );
+              geometry = new THREE.SphereBufferGeometry(8, 32, 32);
               break;
           case 2:
-              geometry = new THREE.OctahedronBufferGeometry(10,0);
+              geometry = new THREE.OctahedronBufferGeometry(10, 0);
               break;
           case 3:
-              geometry = new THREE.ConeBufferGeometry( 10, 5, 8);  
+              geometry = new THREE.ConeBufferGeometry(10, 5, 8);  
               break;
           case 4:
-              geometry = new THREE.RingBufferGeometry( 2, 10, 16 );
+              geometry = new THREE.RingBufferGeometry(2, 10, 16);
               break;
           case 5:
-              geometry = new THREE.BoxBufferGeometry( 10, 10, 10 );
+              geometry = new THREE.BoxBufferGeometry(10, 10, 10);
               break;              
         }
         return geometry;
