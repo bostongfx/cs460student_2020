@@ -1,0 +1,226 @@
+<html>
+<head>
+    <meta charset="UTF-8" />
+    <style>
+        html, body {
+            background-color:#000;
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            overflow: hidden !important;
+        }
+    </style>
+    <script src="https://threejs.org/build/three.min.js" type="text/javascript"></script>
+    <script src="Body.js" type="text/javascript"></script>
+    <script src="https://threejs.org/examples/js/controls/TrackballControls.js" type="text/javascript"></script>
+    <script>
+        // Constants
+        G           = 6.67428e-11       // Universal Gravitational Constant
+        AU          = 149.6e6 * 1000    // 149.6 million km, in meters.
+        STARSCALE   = 10                // number to scale up the size of the sun
+        PLANETSCALE = 1000              // number to scale up the size of planets
+        PLUTOSCALE  = 20000             // because Pluto is so small
+
+        // Colors
+        sunYellow  = new THREE.Color(1   , 1   , 0.6 );
+        orangeRed  = new THREE.Color(1   , 0.27, 0   );
+        darkYellow = new THREE.Color(0.8 , 0.8 , 0   );
+        blue       = new THREE.Color(0   , 0   , 1   );
+        red        = new THREE.Color(1   , 0   , 0   );
+        peachpuff  = new THREE.Color(1   , 0.85, 0.72);
+        tan        = new THREE.Color(0.82, 0.70, 0.55);
+        powderblue = new THREE.Color(0.68, 0.88, 0.90);
+        royalblue  = new THREE.Color(0.25, 0.41, 0.88);
+        wheat      = new THREE.Color(0.96, 0.87, 0.70);
+        black      = new THREE.Color(0   , 0   , 0   );
+
+        // Bodies          name     , mass      ,  x coord   , y  ,xVel,  yVel ,  Radius               , texture     , color (for orbit)
+        sun     = new Body('sun'    , 1.98892e30,  0.0   * AU, 0.0, 0.0,      0, 6.957e8  * STARSCALE  , 'sun'       , sunYellow);
+        mercury = new Body('mercury', 3.3e23    ,  0.387 * AU, 0.0, 0.0, -47400, 2.439e6  * PLANETSCALE, 'mercury'   , orangeRed);
+        venus   = new Body('venus'  , 4.8685e24 , -0.723 * AU, 0.0, 0.0,  35020, 6.052e6  * PLANETSCALE, 'venus_atmo', darkYellow);
+        earth   = new Body('earth'  , 5.9742e24 , -1     * AU, 0.0, 0.0,  29783, 6.371e6  * PLANETSCALE, 'earth_day' , blue);
+        mars    = new Body('mars'   , 6.42e23   , -1.524 * AU, 0.0, 0.0,  24100, 3.397e6  * PLANETSCALE, 'mars'      , red);
+        jupiter = new Body('jupiter', 1.9e27    , -5.203 * AU, 0.0, 0.0,  13100, 71.492e6 * PLANETSCALE, 'jupiter'   , peachpuff);
+        saturn  = new Body('saturn' , 5.69e26   ,  9.582 * AU, 0.0, 0.0,  -9600, 60.268e6 * PLANETSCALE, 'saturn'    , tan);
+        uranus  = new Body('uranus' , 8.68e25   ,  20.07 * AU, 0.0, 0.0,  -6800, 25.559e6 * PLANETSCALE, 'uranus'    , powderblue);
+        neptune = new Body('neptune', 1.03e26   ,  30.05 * AU, 0.0, 0.0,  -5400, 24.764e6 * PLANETSCALE, 'neptune'   , royalblue);
+        pluto   = new Body('pluto'  , 1.46e22   , -39.48 * AU, 0.0, 0.0,   4740, 1.185e6  * PLUTOSCALE , 'pluto'     , wheat);
+        stars   = new Body('stars'  , 0.0       ,   0        , 0  , 0  ,      0,       45 * AU         , 'stars'     , black);
+        // Textures found from: https://www.solarsystemscope.com/textures/
+        // Except pluto, found on http://planetpixelemporium.com/pluto.html
+
+        bodies = [sun, mercury, venus, earth, mars, jupiter, saturn, uranus, neptune, pluto];
+
+        timestep = 86400; // 1 day
+        timePerDay = 1;
+        step = 1;
+        future = [];
+
+        iterate = function() {
+            if (future.length > 0) {
+                var force = future.shift();
+                for (body of bodies) {
+                    var forces = force[body.name];
+                    body.xVel = forces[0];
+                    body.yVel = forces[1];
+                    body.x = forces[2];
+                    body.y = forces[3];
+                    body.mesh.position.set(body.x, body.y, 0);
+                }
+            }
+        }
+
+        log = function() {
+            if (step == 1 || step % 10 == 0) {
+                console.log(`Step ${step}`);
+                for (body of bodies) {
+                    var vel = Math.sqrt(body.xVel * body.xVel + body.yVel * body.yVel)
+                    var s = `${(body.name).padEnd(8)}  Pos=(${(body.x).toFixed(3)} ${(body.y).toFixed(3)}) Vel=(${(body.xVel).toFixed(3)} ${(body.yVel).toFixed(3)}) - ${vel.toFixed(3)}`;
+                    console.log(s);
+                }
+                console.log();
+            }
+            step++;
+        }
+
+
+        stepFuture = function() {
+            if (future.length < 31557600 / timestep) {
+                var force = {};
+                for (body of bodies) {
+                    var totalFx = 0.0;
+                    var totalFy = 0.0;
+                    for (other of bodies) {
+                        if (body == other) { continue; } // body doesn't act on itself
+                        var forces = body.attraction(other, future);
+                        totalFx += forces[0];
+                        totalFy += forces[1];
+                    }
+                    force[body.name] = [totalFx, totalFy];
+                }
+                for (body of bodies) {
+                    var forces = force[body.name];
+                    if (future.length == 0) {
+                        var xVel = body.xVel + (forces[0] / body.mass) * timestep;
+                        var yVel = body.yVel + (forces[1] / body.mass) * timestep;
+                        var x = body.x + xVel * timestep;
+                        var y = body.y + yVel * timestep;
+                    } else {
+                        var lastForce = future[future.length-1][body.name];
+                        var xVel = lastForce[0] + (forces[0] / body.mass) * timestep;
+                        var yVel = lastForce[1] + (forces[1] / body.mass) * timestep;
+                        var x = lastForce[2] + xVel * timestep;
+                        var y = lastForce[3] + yVel * timestep;
+                    }
+
+                    if (future.length < 4 && future.length > 0) {
+                        // console.log(body.name, future[future.length-1][body.name][0], body.xVel + (forces[0] / body.mass) * timestep, forces, body.xVel, xVel, yVel, body.mass, body.x, x, y)
+                    }
+                    force[body.name] = [xVel, yVel, x, y];
+                }
+                future.push(force);
+                // if (future.length < 30) {
+                //     console.log(future.length, force['mercury']);
+                // }
+            }
+        }
+
+        window.onload = function() {
+            var fov   = 75;
+            var ratio = window.innerWidth / window.innerHeight;
+            // var ratio = canvas.width / canvas.height;
+            var zNear = 1;
+            var zFar  = 80 * AU;
+
+            camera          = new THREE.PerspectiveCamera(fov, ratio, zNear, zFar);
+            renderer        = new THREE.WebGLRenderer( {alpha: true, antialias: true} );
+            scene           = new THREE.Scene();
+            var ambientLight    = new THREE.AmbientLight(0x202020, 1);
+            var light           = new THREE.PointLight(0xffffff, 1);
+
+            camera.position.set(0, 0, 2 * AU);
+            light.position.set(0, 0, 0);
+
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            document.body.appendChild(renderer.domElement);
+
+            controls = new THREE.TrackballControls(camera, renderer.domElement);
+
+            scene.add(ambientLight);
+            scene.add(light);
+
+            starDome = {
+                scene: new THREE.Scene(),
+                camera: new THREE.PerspectiveCamera(fov, ratio, zNear, zFar),
+                texture: new THREE.TextureLoader().load( 'textures/' + stars.texture + '.jpg' )
+            }
+
+            starDome.geometry = new THREE.SphereBufferGeometry(stars.radius, 32, 32);
+            starDome.material = new THREE.MeshMatcapMaterial( { map: starDome.texture } );
+            starDome.material.side = THREE.BackSide;
+            starDome.mesh = new THREE.Mesh(starDome.geometry, starDome.material);
+            scene.add(starDome.mesh);
+
+
+            bodyMeshes = [];
+
+            var makeBody = function(body) {
+                var geometry = new THREE.SphereBufferGeometry(body.radius, 32, 32);
+                if (body.name === "sun") {
+                    var material = new THREE.MeshMatcapMaterial( {
+                        color: 0xffffff,
+                        map: new THREE.TextureLoader().load( 'textures/' + body.texture + '.jpg' )
+                         } );
+                } else {
+                    var material = new THREE.MeshPhongMaterial( {
+                        color: 0xffffff,
+                        specular: 0x050505,
+                        shininess: 100,
+                        map: new THREE.TextureLoader().load( 'textures/' + body.texture + '.jpg' )
+                    } );
+                }
+                var bodyMesh = new THREE.Mesh(geometry, material);
+                body.mesh = bodyMesh;
+                bodyMesh.position.set(body.x, body.y, 0);
+                bodyMeshes.push(bodyMesh);
+                scene.add(bodyMesh);
+
+                geometry = new THREE.TorusBufferGeometry(body.x, body.radius/4, 4, 64);
+                material = new THREE.MeshBasicMaterial( { color: body.color, transparent: true, opacity: 0.15 } );
+                bodyMesh = new THREE.Mesh(geometry, material);
+                bodyMesh.position.set(0,0,0);
+                scene.add(bodyMesh);
+
+            }
+
+            for (body of bodies) {
+                makeBody(body);
+            }
+
+            animate();
+
+            setInterval(function() {
+                // log();
+                iterate();
+            }, 1000);
+
+            // renderer.domElement.onclick = function(e) {
+            //     log();
+            //     iterate();
+            // }
+
+
+        };
+
+        function animate() {
+            requestAnimationFrame( animate );
+            starDome.camera.quaternion = camera.quaternion;
+            controls.update();
+            stepFuture();
+            renderer.render( starDome.scene, starDome.camera );
+            renderer.render( scene, camera );
+        };
+    </script>
+</head>
+<body></body>
+</html>

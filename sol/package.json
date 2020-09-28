@@ -1,0 +1,8 @@
+{
+  "name": "sol",
+  "version": "1.0.0",
+  "dependencies": {},
+  "devDependencies": {
+    "three": "^0.120.1"
+  }
+}
