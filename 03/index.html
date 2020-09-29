@@ -1,0 +1,119 @@
+<html>
+<head>
+	<meta charset="UTF-8" />
+	<style>
+		html, body { 
+			background-color: #000;
+			margin: 0;
+			padding: 0;
+			height: 100%;
+			overflow: hidden !important;  
+		}
+	</style>
+	<script src="https://threejs.org/build/three.min.js" type="text/javascript"></script>
+	<script src="https://threejs.org/examples/js/controls/TrackballControls.js" type="text/javascript"></script>
+	<script>
+		function randomRange(min, max) {
+			return Math.random() * (max - min) + min;
+		}
+
+		window.onload = function() {
+			scene = new THREE.Scene();
+
+			fov = 75;
+			ratio = window.innerWidth / window.innerHeight;
+			zNear = 1;
+			zFar = 10000;
+			camera = new THREE.PerspectiveCamera( fov, ratio, zNear, zFar );
+			camera.position.set( 0, 0, 200 );
+
+			renderer = new THREE.WebGLRenderer();
+			renderer.setSize( window.innerWidth, window.innerHeight );
+			document.body.appendChild( renderer.domElement );
+			
+			ambientLight = new THREE.AmbientLight(0xa1a1a1, 1);
+			scene.add( ambientLight );
+
+			directionalLight = new THREE.DirectionalLight( 0xffffff, 1 );
+			directionalLight.position.set( 10, 100, 10 );
+			scene.add( directionalLight );
+
+			shapes = ["box", "torus", "sphere", "octahedron", "cone", "ring"];
+			shapeCount = [0, 0, 0, 0, 0, 0];
+			totalCount = 0;
+			function newShape(x = 0, y = 0, z = 0) {
+				var geometry;
+				const randomShape = shapes[Math.floor(Math.random() * shapes.length)];
+				switch(randomShape) {
+					case "box": 
+						geometry = new THREE.BoxBufferGeometry( 25, 25, randomRange(15, 25) );
+						shapeCount[0]++;
+						break;
+					case "torus":
+						geometry = new THREE.TorusKnotBufferGeometry( 10, 5, 64, 15 );
+						shapeCount[1]++;
+						break; 
+					case "sphere":
+						geometry = new THREE.SphereBufferGeometry( 15, 15, 15 );
+						shapeCount[2]++;
+						break;
+					case "octahedron":
+						geometry = new THREE.OctahedronBufferGeometry( 18 );
+						shapeCount[3]++;
+						break;
+					case "cone":
+						geometry = new THREE.ConeBufferGeometry( 15, 30, 20 );
+						shapeCount[4]++;
+						break;
+					case "ring":
+						geometry = new THREE.TorusBufferGeometry( 10, 5, 20, 20 );
+						shapeCount[5]++;
+						break;
+				}
+				material = new THREE.MeshStandardMaterial({ color: Math.random() * 0xffffff });
+				shape = new THREE.Mesh( geometry, material );
+				shape.position.set( x, y, z );
+				scene.add( shape );
+				totalCount++;
+			}
+
+			geometry = new THREE.PlaneBufferGeometry( 10000, 10000 );
+			material = new THREE.MeshBasicMaterial({ visible: false });
+			invisiblePlane = new THREE.Mesh( geometry, material );
+			scene.add( invisiblePlane );
+
+			controls = new THREE.TrackballControls( camera, renderer.domElement );
+
+			animate();
+
+			renderer.domElement.onmousemove = function(e) {
+				if (!e.shiftKey) {
+					e.preventDefault();
+					return false;
+				}
+
+				pixelCoords = new THREE.Vector2( e.clientX, e.clientY );
+				// console.log("pixel coordinates:", pixelCoords);
+
+				vpCoords = new THREE.Vector2( (pixelCoords.x / window.innerWidth) * 2 - 1, - (pixelCoords.y / window.innerHeight) * 2 + 1 );
+				vpCoordsNear = new THREE.Vector3( vpCoords.x, vpCoords.y, 0 );
+				// console.log("viewport coordinates:", vpCoords);
+
+				raycaster = new THREE.Raycaster();
+				raycaster.setFromCamera(vpCoordsNear, camera);
+				intersect = raycaster.intersectObject(invisiblePlane);
+				// console.log("ray to invisible plane:", intersect[0].point);
+
+				newShape(intersect[0].point.x, intersect[0].point.y, intersect[0].point.z);
+				console.log(shapeCount + " = " + totalCount);
+			};
+		};
+
+		function animate() {
+			requestAnimationFrame( animate );
+			controls.update();
+			renderer.render( scene, camera );
+		};
+	</script>
+</head>
+</html>
