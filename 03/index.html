@@ -29,6 +29,11 @@
         // let's listen to clicks on the canvas
         //
         renderer.domElement.onmousemove = function(e) {
+          
+          if (!e.shiftKey) {
+            e.preventDefault();
+            return false;
+          }
 
           pixel_coords = new THREE.Vector2(e.clientX, e.clientY); // screen space
 
