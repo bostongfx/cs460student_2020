@@ -1,0 +1,156 @@
+	
+<html>
+  <head>
+    <meta charset="UTF-8" />    
+    <style>
+      html, body { 
+        background-color:#000;
+        margin: 0;
+        padding: 0;
+        height: 100%;
+        overflow: hidden !important;  
+      }
+    </style>
+    <script src="https://threejs.org/build/three.min.js" type="text/javascript"></script>
+    <script src="https://threejs.org/examples/js/controls/TrackballControls.js" type="text/javascript"></script>
+    <script>
+      window.onload = function() {
+ 
+        scene = new THREE.Scene();
+ 
+        camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 1, 10000 );
+        camera.position.set( 0, 0, 100 );
+ 
+        renderer = new THREE.WebGLRenderer({antialias : true});
+        renderer.setSize( window.innerWidth, window.innerHeight );
+        document.body.appendChild( renderer.domElement );
+
+        count = 0;
+
+        
+        // listenig to the clicks of mouse
+        renderer.domElement.onclick = function(e){
+
+          if (!e.shiftKey) {
+            e.preventDefault();
+            return false;
+            }
+          
+          console.log('yes! you clicked!');
+
+          pixel_coords = new THREE.Vector2(e.clientX,e.clientY);     //screen space
+          console.log('Pixel coordinates', pixel_coords);
+
+          vp_coords = new THREE.Vector2( 
+              ( pixel_coords.x / window.innerWidth ) * 2 - 1, // X
+              - ( pixel_coords.y / window.innerHeight ) * 2 + 1 ); // y
+          console.log('Viewport coordinates', vp_coords);
+
+          vp_coords_3d_near = new THREE.Vector3(vp_coords.x, vp_coords.y, 0);  //for zNear
+
+          raycaster = new THREE.Raycaster();
+          raycaster.setFromCamera(vp_coords_3d_near , camera);
+          intersects = raycaster.intersectObject( invisible_plane);
+
+          geometry = []    //creating list
+
+          geometry[1] = new THREE.BoxBufferGeometry( 20, 20, 20 );   //cube(width, height, depth)
+          geometry[2] = new THREE.SphereBufferGeometry(10,32,32);    //sphere(radius, widthSegments, heightSegments)
+          geometry[3] = new THREE.TorusKnotBufferGeometry( 10, 3, 100, 16 );    //torus knot(radius, tubeRadius, tubularSegments, radialSegments)
+          geometry[4] = new THREE.OctahedronBufferGeometry(10);    //octahedron(radius)    8 sides
+          geometry[5] = new THREE.ConeBufferGeometry( 6, 20, 18 );   // cone(radius, height, radialSegments)
+          geometry[6] = new THREE.RingBufferGeometry( 10, 20, 18 );   // ring(innerRadius, outerRadius, thetaSegments)          
+
+
+          material = new THREE.MeshStandardMaterial({ color: 0xffffff });
+          //geo = new THREE.Mesh( geometry[(Math.floor(Math.random() * Math.floor(7)))], material );
+          geo = new THREE.Mesh( geometry[(Math.floor(Math.random() *  (6) + 1))], material );   // getting different geometries on random
+          geo.position.set(intersects[0].point.x, intersects[0].point.y, intersects[0].point.z);   //geometry position on invisble plane
+          geo.material.color = new THREE.Color(0xffffff * Math.random());     //random color at every click
+          geo.material.needsUpdate = true;
+
+          scene.add(geo);
+          
+        };
+
+        /*renderer.domElement.onmousemove = function(e){
+
+          if (!e.shiftKey) {
+            e.preventDefault();
+            return false;
+            }
+          
+          console.log('yes! you clicked!');
+
+          pixel_coords = new THREE.Vector2(e.clientX,e.clientY);     //screen space
+          console.log('Pixel coordinates', pixel_coords);
+
+          vp_coords = new THREE.Vector2( 
+              ( pixel_coords.x / window.innerWidth ) * 2 - 1, // X
+              - ( pixel_coords.y / window.innerHeight ) * 2 + 1 ); // y
+          console.log('Viewport coordinates', vp_coords);
+
+          vp_coords_3d_near = new THREE.Vector3(vp_coords.x, vp_coords.y, 0);  //for zNear
+
+          raycaster = new THREE.Raycaster();
+          raycaster.setFromCamera(vp_coords_3d_near , camera);
+          intersects = raycaster.intersectObject( invisible_plane);
+
+          geometry = []    //creating list
+
+          geometry[1] = new THREE.BoxBufferGeometry( 20, 20, 20 );   //cube(width, height, depth)
+          geometry[2] = new THREE.SphereBufferGeometry(10,32,32);    //sphere(radius, widthSegments, heightSegments)
+          geometry[3] = new THREE.TorusKnotBufferGeometry( 10, 3, 100, 16 );    //torus knot(radius, tubeRadius, tubularSegments, radialSegments)
+          geometry[4] = new THREE.OctahedronBufferGeometry(10);    //octahedron(radius)    8 sides
+          geometry[5] = new THREE.ConeBufferGeometry( 6, 20, 18 );   // cone(radius, height, radialSegments)
+          geometry[6] = new THREE.RingBufferGeometry( 10, 20, 18 );   // ring(innerRadius, outerRadius, thetaSegments)
+          
+
+          material = new THREE.MeshStandardMaterial({ color: 0xffffff, wireframe: true });
+          geo = new THREE.Mesh( geometry[(Math.floor(Math.random() *  (6) + 1))], material );   // getting different geometries on random
+          geo.position.set(intersects[0].point.x, intersects[0].point.y, intersects[0].point.z);   //geometry position on invisble plane
+          geo.material.color = new THREE.Color(0xffffff * Math.random());     //random color at every click
+          geo.material.needsUpdate = true;
+          scene.add(geo);
+
+          count++;
+          console.log('count',count);
+          
+        };
+        */
+
+        ambientLight = new THREE.AmbientLight( 0x404040 );
+        scene.add( ambientLight );
+ 
+        light = new THREE.DirectionalLight( 0xffffff, 5.0 );
+        light.position.set( 10, 100, 10 );
+        scene.add( light );
+ 
+        
+        // setup invisible plane
+        geometry =  new THREE.PlaneBufferGeometry( 10000, 10000);
+        material = new THREE.MeshBasicMaterial ({ visible: false
+        });
+        invisible_plane = new THREE.Mesh(geometry, material);
+        scene.add(invisible_plane);
+ 
+        controls = new THREE.TrackballControls( camera, renderer.domElement );
+ 
+        animate();
+        
+      };
+ 
+      function animate() {
+ 
+        requestAnimationFrame( animate );
+ 
+        controls.update();
+        renderer.render( scene, camera );
+        console.log('render');
+
+ 
+      };
+    </script>
+  </head>
+  <body></body>
+</html>
