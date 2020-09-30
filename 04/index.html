@@ -1,4 +1,4 @@
-<html>
+<html lang="en-US">
   <head>
     <meta content="text/html;charset=utf-8" http-equiv="Content-Type">
     <meta content="utf-8" http-equiv="encoding">
@@ -19,7 +19,6 @@
     </style>
   </head>
   <script type="text/javascript" src="https://cs460.org/js/glmatrix.js"></script>
-
   <script id="vertexshader" type="glsl">
     attribute vec3 position;
 
@@ -29,7 +28,6 @@
 
     }
   </script>
-
   <script id="fragmentshader" type="glsl">
     precision mediump float;
 
@@ -39,12 +37,11 @@
 
     }
   </script>
-
   <script>
 
-    var c, gl;
-    var v_shader, f_shader, shaderprogram;
-    var vertices, v_buffer;
+    let c, gl;
+    let v_shader, f_shader, shaderprogram;
+    let vertices, v_buffer;
 
     window.onload = function() {
 
@@ -72,6 +69,7 @@
       gl.compileShader( v_shader );
 
       if (!gl.getShaderParameter( v_shader, gl.COMPILE_STATUS)) {
+        // Shader compilation failed
         console.log(gl.getShaderInfoLog( v_shader ));
       }
 
@@ -121,7 +119,7 @@
       gl.bindBuffer( gl.ARRAY_BUFFER, v_buffer );
 
       // find the attribute in the shader source
-      var a_position = gl.getAttribLocation( shaderprogram, 'position' );
+      let a_position = gl.getAttribLocation( shaderprogram, 'position' );
 
       gl.vertexAttribPointer( a_position, 3, gl.FLOAT, false, 0, 0 );
 
