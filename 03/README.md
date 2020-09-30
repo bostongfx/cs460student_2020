@@ -5,3 +5,6 @@ index.html is the script for the first part of the homework: "create one of thes
 
 
 index_BONUS.html is the script for the Bonus question part.
+
+
+indext.html contains the link of index_BONUS.html.
