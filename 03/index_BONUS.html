@@ -157,7 +157,8 @@
         scene.add(mesh);
         meshes.push(mesh);
                 console.log('total mesh is',meshes.length);
-         document.getElementById("meshes").innerHTML = "Total Number of Meshes is " + meshes.length;
+         document.getElementById("meshes").innerHTML = "Geometries: " + renderer.info.memory.geometries + '\n' +
+         "Triangles: " + renderer.info.render.triangles;
         
         };
  
@@ -191,6 +192,7 @@
   </head>
   <body>
     <h1 id='meshes' style="position: absolute; color: white;">Total Number of Meshes is 0</h2>>
+         <a href="index.html" style= "color: white;">Please click this link to jump to the "Draw-Geomery-on-each-click"</a>
 
   </body>
 </html>
