@@ -27,9 +27,9 @@
 
         count = 0;
 
-        
+
         // listenig to the clicks of mouse
-        renderer.domElement.onclick = function(e){
+        /*renderer.domElement.onclick = function(e){
 
           if (!e.shiftKey) {
             e.preventDefault();
@@ -71,9 +71,9 @@
 
           scene.add(geo);
           
-        };
+        };*/
 
-        /*renderer.domElement.onmousemove = function(e){
+        renderer.domElement.onmousemove = function(e){
 
           if (!e.shiftKey) {
             e.preventDefault();
@@ -106,7 +106,8 @@
           geometry[6] = new THREE.RingBufferGeometry( 10, 20, 18 );   // ring(innerRadius, outerRadius, thetaSegments)
           
 
-          material = new THREE.MeshStandardMaterial({ color: 0xffffff, wireframe: true });
+          //material = new THREE.MeshStandardMaterial({ color: 0xffffff, wireframe: true });  if we want to see how many triangles used for each geometry
+          material = new THREE.MeshStandardMaterial({ color: 0xffffff });
           geo = new THREE.Mesh( geometry[(Math.floor(Math.random() *  (6) + 1))], material );   // getting different geometries on random
           geo.position.set(intersects[0].point.x, intersects[0].point.y, intersects[0].point.z);   //geometry position on invisble plane
           geo.material.color = new THREE.Color(0xffffff * Math.random());     //random color at every click
@@ -117,7 +118,7 @@
           console.log('count',count);
           
         };
-        */
+        
 
         ambientLight = new THREE.AmbientLight( 0x404040 );
         scene.add( ambientLight );
