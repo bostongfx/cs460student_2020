@@ -11,11 +11,17 @@
             height: 100%;
             overflow: hidden !important;
         }
+        #fps {
+            color: white
+        }
     </style>
     <script src="https://threejs.org/build/three.min.js" type="text/javascript"></script>
     <script src="https://threejs.org/examples/js/controls/TrackballControls.js" type="text/javascript"></script>
     <script>
         window.onload = function () {
+            fps_ind = document.getElementById('fps');
+            last_time = 0;
+
             scene = new THREE.Scene();
             fov = 75;
             ratio = window.innerWidth / window.innerHeight;
@@ -24,7 +30,9 @@
             // console.log(ratio);
             camera = new THREE.PerspectiveCamera(fov, ratio, zNear, zFar);
             camera.position.set(0, 0, 100);
-            renderer = new THREE.WebGLRenderer();
+            renderer = new THREE.WebGLRenderer({
+                antialias: true,
+            });
             renderer.setSize(window.innerWidth, window.innerHeight);
             document.body.appendChild(renderer.domElement);
             ambientLight = new THREE.AmbientLight(0x404040);
@@ -33,11 +41,33 @@
             light.position.set(10, 100, 10);
             scene.add(light);
             // now we add the cube
-            // geometry = new THREE.BoxBufferGeometry(20, 20, 20);
-            // material = new THREE.MeshStandardMaterial({ color: 0xffffff });
-            // cube = new THREE.Mesh(geometry, material);
-            // scene.add(cube);
             //
+            geometries = [
+                [THREE.BoxBufferGeometry, [[10, 30], [10, 30], [10, 30]]],
+                [THREE.TorusKnotGeometry, [[7, 15], [1, 5]]],
+                [THREE.SphereBufferGeometry, [15, 15, 15]],
+                [THREE.OctahedronBufferGeometry, [[5, 20]]],
+                [THREE.ConeBufferGeometry, [[1, 20], [1, 30]]],
+                [THREE.RingBufferGeometry, [[1, 9], [10, 20]]],
+            ];
+            function getGeometry(scale = 1) {
+                let [constr, argspec] = geometries[Math.floor(Math.random() * geometries.length)];
+                let args = [];
+                for (let arg of argspec) {
+                    if (typeof arg == 'number') {
+                        args.push(scale*arg);
+                    } else if (typeof arg == 'function') {
+                        args.push(scale*arg());
+                    } else {
+                        let [lo, hi] = arg;
+                        args.push(scale*(Math.round(lo + (hi-lo)*Math.random())))
+                    }
+                }
+                return new constr(...args);
+            }
+            getMaterial = () =>
+                new THREE.MeshStandardMaterial({ color: Math.round(Math.random() * 0xffffff) });
+                
             // The invisible plane
             //
             geometry = new THREE.PlaneBufferGeometry(10000, 10000);
@@ -54,7 +84,7 @@
             //
             // ACTION!
             //
-            renderer.domElement.onclick = function (e) {
+            renderer.domElement.onmousemove = renderer.domElement.onclick = function (e) {
                 if (!e.shiftKey) {
                     e.preventDefault();
                     return false;
@@ -70,19 +100,27 @@
                 raycaster.setFromCamera(vp_coords_near, camera);
                 intersects = raycaster.intersectObject(invisible_plane);
                 console.log('Ray to Invisible Plane', intersects[0].point);
-                // update cube position
-                // cube.position.set(intersects[0].point.x, intersects[0].point.y, intersects[0].point.z);
-
+                // add cube
+                let scale = e.force || 1;
+                let cube = new THREE.Mesh(getGeometry(), getMaterial());
+                console.log(cube)
+                scene.add(cube);
+                cube.position.set(intersects[0].point.x, intersects[0].point.y, intersects[0].point.z);
             };
-        };
-        function animate() {
-            requestAnimationFrame(animate);
-            controls.update();
-            renderer.render(scene, camera);
+
+            function animate(time) {
+                fps_ind.innerHTML = Math.round(1000 / (time - last_time)) + " FPS"
+                last_time = time
+                requestAnimationFrame(animate);
+                controls.update();
+                renderer.render(scene, camera);
+            };
         };
     </script>
 </head>
 
-<body></body>
+<body>
+    <div id="fps">0</div>
+</body>
 
 </html>
