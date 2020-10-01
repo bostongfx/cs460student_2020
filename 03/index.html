@@ -1,5 +1,6 @@
 <html>
   <head>
+    <meta charset="UTF-8" />
     <style>
       html, body { 
         background-color:#000;
@@ -15,41 +16,188 @@
       window.onload = function() {
 
         scene = new THREE.Scene();
-
-        camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 1, 10000 );
-        camera.position.set( 0, 0, 100 );
-
-        renderer = new THREE.WebGLRenderer();
-        renderer.setSize( window.innerWidth, window.innerHeight );
-        document.body.appendChild( renderer.domElement );
-        
-        ambientLight = new THREE.AmbientLight();
         scene.add( ambientLight );
 
-        light = new THREE.DirectionalLight( 0xffffff, 5.0 );
-        light.position.set( 10, 100, 10 );
+        var fov = 75;
+        var ratio = window.innerWidth / window.innerHeight;
+        var zNear = 1;
+        var zFar = 10000;
+        // console.log(ratio);
+        camera = new THREE.PerspectiveCamera(fov, ratio, zNear, zFar);
+        
+        renderer = new THREE.WebGLRenderer();
+        
+        var ambientLight = new THREE.AmbientLight( 0x404040, 1 );
+        
+        var light = new THREE.DirectionalLight( 0xffffff, 1 );
+
+        var invisible_plane = new THREE.Mesh( 
+          new THREE.PlaneBufferGeometry( 10000, 10000 ),
+          new THREE.MeshBasicMaterial( 
+            { 
+              visible: false 
+          }));
+         scene.add( invisible_plane );
+        
+        camera.position.set( 0, 0, 300);
+
+
+        light.position.set( 10, 100, 40 );
         scene.add( light );
 
-        geometry = new THREE.BoxBufferGeometry( 20, 20, 20 );
-        material = new THREE.MeshStandardMaterial({ color: 0xffffff });
-        cube = new THREE.Mesh( geometry, material );
-        
-        scene.add(cube);
 
-        controls = new THREE.TrackballControls( camera );
+        // now we add the cube
+        // geometry = new THREE.BoxBufferGeometry( 20, 20, 20);
+        // material = new THREE.MeshStandardMaterial({ color: 0xffffff });
+        // cube = new THREE.Mesh( geometry, material);
+        // scene.add(cube);
 
+        renderer.setSize( window.innerWidth, window.innerHeight );
+        document.body.appendChild( renderer.domElement );
+        //
+        // Thype of geometry and type of material
+        //
+          
+        controls = new THREE.TrackballControls( camera, renderer.domElement );
+       
         animate();
+
+        //
+        // The following code partialy has a copyright content incite by JamesEdMichaud@github.
+        //
+
+        // create torus knot geometry
+        var torusKnotGeometry = function(color) {
+                var geometry = new THREE.TorusKnotBufferGeometry( 10, 1.5, 64, 8, 4, 3 );
+                var material = new THREE.MeshStandardMaterial( { color: color } );
+                return new THREE.Mesh( geometry, material );
+            }
+
+        // create box geometry
+        var boxGeometry = function(color) {
+                var geometry = new THREE.BoxBufferGeometry( 18, 18, 18);
+                var material = new THREE.MeshStandardMaterial({ color: color });
+                return new THREE.Mesh( geometry, material);
+            }
+
+        // create sphere geometry
+        var sphereGeometry = function(color) {
+                var geometry = new THREE.SphereBufferGeometry( 10, 16, 16 );
+                var material = new THREE.MeshStandardMaterial( {color: color} );
+                return new THREE.Mesh( geometry, material );
+            }
+
+        // create octahedron geometry
+        var octahedronGeometry = function(color) {
+                var geometry = new THREE.OctahedronBufferGeometry( 10, 0 );
+                var material = new THREE.MeshStandardMaterial( { color: color } );
+                return new THREE.Mesh( geometry, material );
+            }
+
+        // create cone geometry
+        var coneGeometry = function(color) {
+                var geometry = new THREE.ConeBufferGeometry( 10, 20, 8 );
+                var material = new THREE.MeshStandardMaterial( { color: color } );
+                return new THREE.Mesh( geometry, material );
+            }
+
+        // creat ring geometry
+        var ringGeometry = function(color) {
+                var geometry = new THREE.RingBufferGeometry( 10, 20, 5 );
+                var material = new THREE.MeshStandardMaterial( { color: color, side: THREE.DoubleSide } );
+                return new THREE.Mesh( geometry, material );
+            }
+
+            // array of functions used to represent shape generator
+            shapes = [ torusKnotGeometry,
+                       boxGeometry, 
+                       sphereGeometry,
+                       octahedronGeometry, 
+                       coneGeometry,
+                       ringGeometry  ];
+
+            // reset and shuffle geometry shapes
+        var populateShapes = function() {
+              shapes = [ torusKnotGeometry, 
+                         boxGeometry, 
+                         sphereGeometry, 
+                         octahedronGeometry, 
+                         coneGeometry, 
+                         ringGeometry ];
+                shapes.sort(function() { 
+
+                  return 0.5 - Math.random(); 
+                });
+            }
+
+            // store geometry shapes
+            sceneShapes = [];
+
+            // Add randome geometry shapes with different color
+            addShape = function(x, y, z) {
+                if (shapes.length == 0) populateShapes();
+                var randomColor = Math.floor(Math.random() * 0xFFFFFF)
+                var shape = shapes.pop()(randomColor);
+                shape.position.set(x, y, z);
+                sceneShapes.push(shape);
+                scene.add(shape);
+                if (sceneShapes.length % 50 == 0) console.log(sceneShapes.length);
+            }
+
+            // Shift+RightClick to clear all shapes
+            renderer.domElement.oncontextmenu = function(e) {
+                if (!e.shiftKey) {
+                    e.preventDefault();
+                    return false;
+                }
+                var count = sceneShapes.length;
+                for (var i = 0; i < count; i++) {
+                    scene.remove(sceneShapes.shift());
+                }
+            }
+
+        // draw on mouse over
+        renderer.domElement.onmousemove = function(e) {
+
+          if (!e.shiftKey) {
+            e.preventDefault();
+            return false;
+          }
+
+          // console.log('yes! you clicked!');
+
+          pixel_coords = new THREE.Vector2( e.clientX, e.clientY );
+
+          //console.log('Pixel coordinates', pixel_coords);
+
+          vp_coords = new THREE.Vector2( ( e.clientX / window.innerWidth ) * 2 - 1,
+                                        -( e.clientY / window.innerHeight ) * 2 + 1);
+
+          //console.log('Viewport coordinates', vp_coords);
+
+          //vp_coords_near = new THREE.Vector3( vp_coords.x, vp_coords.y, 0);
+
+          raycaster = new THREE.Raycaster();
+          raycaster.setFromCamera(vp_coords, camera);
+          intersects = raycaster.intersectObject(invisible_plane);
+
+          // console.log('Ray to Invisible Plane', intersects[0].point);
+
+          // update cube position
+        addShape(intersects[0].point.x, intersects[0].point.y, intersects[0].point.z);
         
+        };
+
       };
 
+      // animate
       function animate() {
-
         requestAnimationFrame( animate );
-
         controls.update();
         renderer.render( scene, camera );
 
       };
+
     </script>
   </head>
   <body></body>
