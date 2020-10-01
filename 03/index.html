@@ -190,9 +190,12 @@
                 shapesCount[getNum].triangles += 16;
                 break;
             }
+            console.log("Individual shape count");
             //console.log(getNum);
             // Printing the array of objects. So we can see numbers in console
             console.log(shapesCount);
+            totalCount = shapesCount[0].cnt + shapesCount[1].cnt + shapesCount[2].cnt + shapesCount[3].cnt + shapesCount[4].cnt + shapesCount[5].cnt;
+            console.log("Shapes Count = " + totalCount);
             getShape =  shapeArray[getNum]();
             
             getShape.position.set(pointX, pointY, pointZ)
