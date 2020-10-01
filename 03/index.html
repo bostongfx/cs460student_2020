@@ -21,6 +21,7 @@
         window.onload = function () {
             fps_ind = document.getElementById('fps');
             last_time = 0;
+            let num_objs = 0;
 
             scene = new THREE.Scene();
             fov = 75;
@@ -89,6 +90,7 @@
                     e.preventDefault();
                     return false;
                 }
+                num_objs++;
                 console.log('yes! you clicked!');
                 pixel_coords = new THREE.Vector2(e.clientX, e.clientY);
                 console.log('Pixel coordinates', pixel_coords);
@@ -109,8 +111,8 @@
             };
 
             function animate(time) {
-                fps_ind.innerHTML = Math.round(1000 / (time - last_time)) + " FPS"
-                last_time = time
+                fps_ind.innerHTML = Math.round(1000 / (time - last_time)) + " FPS | #objs: " + num_objs; 
+                last_time = time;
                 requestAnimationFrame(animate);
                 controls.update();
                 renderer.render(scene, camera);
