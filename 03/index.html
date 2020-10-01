@@ -64,6 +64,8 @@
         controls = new THREE.TrackballControls( camera, renderer.domElement );
 
         animate();
+
+        // Array of functions of each shape
         var shapeArray = [
             function () {
                 var randomColor = "#" + Math.floor(Math.random()*16777215).toString(16);
@@ -116,6 +118,8 @@
 
             }
         ]
+
+        // Here we are creating a random number array
         arr = [];
         function genNumbers() {
             while(arr.length < 6) {
@@ -123,17 +127,74 @@
                 if(arr.indexOf(r) === -1) arr.push(r);
             }
             return arr;
-        }        
-          
+        }
+        
+        // This array of objects which will keep the count of each shape and its triangles
+        shapesCount = [
+          {
+            shp: "Sphere",
+            cnt: 0,
+            triangles: 0
+          },
+          {
+            shp: "Cone",
+            cnt: 0,
+            triangles: 0
+          },
+          {
+            shp: "Box",
+            cnt: 0,
+            triangles: 0
+          },
+          {
+            shp: "Ring",
+            cnt: 0,
+            triangles: 0
+          },
+          {
+            shp: "Torus",
+            cnt: 0,
+            triangles: 0
+          },
+          {
+            shp: "Cylinder",
+            cnt: 0,
+            triangles: 0
+          }
+        ];
+
         function shape(pointX, pointY, pointZ) {
             if(!arr.length) {
                 genNumbers();
             }
-
-            console.log(arr);
-            var getNumber = arr.pop();
-            console.log(getNumber);
-            getShape =  shapeArray[getNumber]();
+            //console.log(arr);
+            var getNum = arr.pop();
+            shapesCount[getNum].cnt++;
+            switch (getNum) {
+              case 0:
+                shapesCount[getNum].triangles += 480;
+                break;
+              case 1:
+                shapesCount[getNum].triangles += 16;
+                break;
+              case 2:
+                shapesCount[getNum].triangles += 12;
+                break;
+              case 3:
+                shapesCount[getNum].triangles += 10;
+                break;
+              case 4:
+                shapesCount[getNum].triangles += 1024;
+                break;
+              case 5:
+                shapesCount[getNum].triangles += 16;
+                break;
+            }
+            //console.log(getNum);
+            // Printing the array of objects. So we can see numbers in console
+            console.log(shapesCount);
+            getShape =  shapeArray[getNum]();
+            
             getShape.position.set(pointX, pointY, pointZ)
             scene.add(getShape);           
         }
