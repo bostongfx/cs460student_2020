@@ -97,11 +97,9 @@
           intersects = raycaster.intersectObject(invisible_plane);
 
             inter = intersects[0];
-          console.log('Ray to Invisible Plane', intersects[0].point);
-            c1 = Math.random();
-          c2 = Math.random();
-         // c3 = Math.random();
-            col = '0x';
+        
+          
+            color = '0x';
           for (i = 0; i < 6; i++) {
             hexDig = (Math.floor(Math.random() * 2)) == 0 ? '0' : 'f';
             color += hexDig;
