@@ -107,7 +107,7 @@
                 let cube = new THREE.Mesh(getGeometry(), getMaterial());
                 console.log(cube)
                 scene.add(cube);
-                cube.position.set(intersects[0].point.x, intersects[0].point.y, intersects[0].point.z);
+                cube.position.set(intersects[0].point.x, intersects[0].point.y, intersects[0].point.z + Math.random());
             };
 
             function animate(time) {
