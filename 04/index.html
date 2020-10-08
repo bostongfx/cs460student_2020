@@ -1,0 +1,521 @@
+<html>
+  <head>
+    <meta content="text/html;charset=utf-8" http-equiv="Content-Type">
+    <meta content="utf-8" http-equiv="encoding">
+    <title>Fly and Shoot - Vanilla WebGL!</title>
+    <style>
+      html, body { 
+        background-color:#000;
+        margin: 0;
+        padding: 0;
+        height: 100%;
+        overflow: hidden !important;  
+        background-image: url(https://cs460.org/gfx/bg.gif);
+        background-repeat: no-repeat;
+        background-size: 100% 100%;
+      }
+
+      #c {
+        width: 100%;
+        height: 100%;
+      }
+
+      #scoreboard {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+      };
+    </style>
+  </head>
+  <script type="text/javascript" src="https://cs460.org/js/glmatrix.js"></script>
+  
+  <script id="vertexshader" type="glsl">
+    attribute vec3 a_position;
+
+    uniform vec3 u_offset;
+    uniform float u_point_size;
+
+    void main(void) {
+
+      vec3 final_position = a_position;
+      final_position.x += u_offset.x;
+      final_position.y += u_offset.y;
+      final_position.z += u_offset.z;
+    
+      gl_Position = vec4( final_position, 1.);
+
+      gl_PointSize = u_point_size;
+    
+    }
+  </script>
+  
+  <script id="fragmentshader" type="glsl">
+    precision mediump float;
+
+    uniform vec4 u_color;
+
+    void main(void) {
+
+      gl_FragColor = u_color;
+
+    }
+  </script>
+  
+  <script>
+
+    var c, gl;
+    var v_shader, f_shader, shaderprogram;
+    var vertices, indices, v_buffer, i_buffer;
+
+    var step_x = 0.0;
+    var step_y = 0.0;
+    var obstacle_factor = 3; // Hint for the bonus!
+    var direction_y = 0;
+    var direction_x = 0;
+
+    var delta_time = 0.0; // second b/w each frames
+                          // need delta time to make the animation speed indipendent from frame rate
+    var old_time = 0.0; // last recorded time
+
+    const x_velocity = 0.6; // airplane velocity along x-axis
+    const y_velocity = x_velocity * 2; // airplane velocity along y-axis
+
+    var bullet_size = 10.0;
+    var obstacle_size = 30.0;
+
+    // max number of obstacles/bullets can appear on the screen at the same time
+    const max_obstacle = 5; 
+    const max_bullet = 300;
+
+    var shooting = false;
+    var next_round = 0; // bullet id
+
+
+    window.onload = function() {
+
+      //************************************************************//
+      //
+      // INITIALIZE WEBGL
+      //
+      c = document.getElementById( 'c' ); // setup canvas
+      c.width = window.innerWidth;
+      c.height = window.innerHeight;
+
+      gl = c.getContext( 'webgl' ); // setup GL context
+      gl.viewport(0, 0, c.width, c.height );
+
+
+      //************************************************************//
+      //
+      // SHADERS
+      //
+      v_shader = gl.createShader( gl.VERTEX_SHADER );
+      f_shader = gl.createShader( gl.FRAGMENT_SHADER );
+      
+      // compile vertex shader
+      gl.shaderSource( v_shader, document.getElementById( 'vertexshader' ).innerText );
+      gl.compileShader( v_shader );
+      if (!gl.getShaderParameter( v_shader, gl.COMPILE_STATUS)) {
+        console.log(gl.getShaderInfoLog( v_shader ));
+      }
+
+      // compile fragment shader
+      gl.shaderSource( f_shader, document.getElementById( 'fragmentshader' ).innerText );
+      gl.compileShader( f_shader );
+      if (!gl.getShaderParameter( f_shader, gl.COMPILE_STATUS)) {
+        console.log(gl.getShaderInfoLog( f_shader ));
+      }
+
+      // attach and link the shaders
+      shaderprogram = gl.createProgram();
+      gl.attachShader( shaderprogram, v_shader );
+      gl.attachShader( shaderprogram, f_shader );
+      gl.linkProgram( shaderprogram );
+      gl.useProgram( shaderprogram );
+
+
+      // create multiple objects
+      objects = [];
+      objects.push( createAirplane() );
+      for (var i = 0; i < max_obstacle; i++)
+        objects.push( createObstacle() );
+
+      bullets = [];
+      for (var i = 0; i < max_bullet; i++)
+        bullets.push( createBullet() );
+
+      active_bullets = new Set();
+
+      old_time = Date.now();
+      animate();
+
+    };
+
+    function createAirplane() {
+
+      //
+      // Part 1 Starts
+      //
+      var vertices = new Float32Array( [
+        -0.05, 0.025, 0.0, // body
+        -0.05, -0.025, 0.0,
+        0.025, 0.025, 0.0,
+        0.025, -0.025, 0.0,
+        0.075, -0.025, 0.0, // head
+        -0.05, -0.05, 0.0, // wing
+        -0.05, 0.05, 0.0, // tail
+        -0.025, 0.025, 0.0
+      ] );
+
+      var v_buffer = gl.createBuffer(); // create
+      gl.bindBuffer( gl.ARRAY_BUFFER, v_buffer ); // bind
+      gl.bufferData( gl.ARRAY_BUFFER, vertices, gl.STATIC_DRAW ); // put data in
+      gl.bindBuffer( gl.ARRAY_BUFFER, null ); // unbind
+
+      var indices = new Uint8Array( [ 
+        0, 1, 2, // body
+        1, 2, 3,
+        2, 3, 4, // head
+        1, 3, 5, // wing
+        0, 6, 7 // tail
+      ] );
+
+      var v_count = indices.length;
+
+      var i_buffer = gl.createBuffer(); // create
+      gl.bindBuffer( gl.ELEMENT_ARRAY_BUFFER, i_buffer ); //bind
+      gl.bufferData( gl.ELEMENT_ARRAY_BUFFER, indices, gl.STATIC_DRAW ); // put data in
+      gl.bindBuffer( gl.ELEMENT_ARRAY_BUFFER, null ); // unbind
+
+
+      //
+      // Part 1 Ends
+      //
+
+      var offset = [0.,0.,0.];
+      var color = [0.,0.,0.,1.];
+
+      //
+      // Bonus Part 3!
+      //
+      return ['airplane', v_buffer, v_count, i_buffer, vertices, offset, color, gl.TRIANGLES];
+
+    }
+
+    function createObstacle() {
+
+      var vertices = new Float32Array( [ 0.0, 0.0, 0.0 ]);
+
+      var v_buffer = gl.createBuffer(); // create
+      gl.bindBuffer( gl.ARRAY_BUFFER, v_buffer ); // bind
+      gl.bufferData( gl.ARRAY_BUFFER, vertices, gl.STATIC_DRAW ); // put data in
+      gl.bindBuffer( gl.ARRAY_BUFFER, null ); // unbind
+
+      //
+      // Part 2 Starts
+      //
+      var offset = [(Math.random()*2-1), (Math.random()*2-1), 0.];
+
+      var indices = new Uint8Array( [ 0 ] );
+
+      var v_count = 1;
+
+      var i_buffer = gl.createBuffer(); // create
+      gl.bindBuffer( gl.ELEMENT_ARRAY_BUFFER, i_buffer ); //bind
+      gl.bufferData( gl.ELEMENT_ARRAY_BUFFER, indices, gl.STATIC_DRAW ); // put data in
+      gl.bindBuffer( gl.ELEMENT_ARRAY_BUFFER, null ); // unbind
+
+      //
+      // Part 2 Ends
+      //
+
+      var color = [Math.random(), Math.random(), Math.random(), 1.];
+
+      return ['obstacle', v_buffer, v_count, i_buffer, vertices, offset, color, gl.POINTS];
+
+    }
+
+    function createBullet() {
+
+      var vertices = new Float32Array( [ 0.0, 0.0, 0.0 ]);
+
+      var v_buffer = gl.createBuffer(); // create
+      gl.bindBuffer( gl.ARRAY_BUFFER, v_buffer ); // bind
+      gl.bufferData( gl.ARRAY_BUFFER, vertices, gl.STATIC_DRAW ); // put data in
+      gl.bindBuffer( gl.ARRAY_BUFFER, null ); // unbind
+
+      var indices = new Uint8Array( [ 0 ] );
+      var v_count = 1;
+
+      var i_buffer = gl.createBuffer(); // create
+      gl.bindBuffer( gl.ELEMENT_ARRAY_BUFFER, i_buffer ); //bind
+      gl.bufferData( gl.ELEMENT_ARRAY_BUFFER, indices, gl.STATIC_DRAW ); // put data in
+      gl.bindBuffer( gl.ELEMENT_ARRAY_BUFFER, null ); // unbind
+
+      var offset = [0.,0.,0.];
+      var color = [0.,0.,0.,1.];
+
+      return ['bullet', v_buffer, v_count, i_buffer, vertices, offset, color, gl.POINTS];
+
+    }
+
+    //
+    // Part 3 Starts (no coding required, just explanations in PDF)
+    //
+    function calculateBoundingBox(vertices, offset) {
+
+      var minx = 1000;
+      var maxx = -1000;
+      var miny = 1000;
+      var maxy = -1000;
+      var minz = 1000;
+      var maxz = -1000;
+
+      for (var v=0; v<vertices.length; v+=3) {
+
+        var currentx = vertices[v] + offset[0];
+        var currenty = vertices[v+1] + offset[1];
+        var currentz = vertices[v+2] + offset[2];
+
+        minx = Math.min( minx, currentx );
+        miny = Math.min( miny, currenty );
+        minz = Math.min( minz, currentz );
+
+        maxx = Math.max( maxx, currentx );
+        maxy = Math.max( maxy, currenty );
+        maxz = Math.max( maxz, currentz );
+
+      }
+
+      return [minx, maxx, miny, maxy, minz, maxz];
+
+    }
+
+    function detectCollision(bbox, point) {
+
+      var collision = false;
+
+      if (point[0] >= bbox[0] && point[0] <= bbox[1]) {
+        if (point[1] >= bbox[2] && point[1] <= bbox[3]) {
+          if (point[2] >= bbox[4] && point[2] <= bbox[5]) {
+
+            collision = true;
+
+          }
+        }
+      }
+
+      return collision;
+
+    }
+    //
+    // Part 3 Ends
+    //
+
+    //
+    // Part 4 Starts
+    //
+    window.onkeydown = function(e) {
+
+      if ( e.keyCode == 38 || e.keyCode == 87 ) {
+        // player pressed up or W
+        step_y = y_velocity;
+
+      } else if (e.keyCode == 40 || e.keyCode == 83 ) {
+        // player pressed down or S
+        step_y = -y_velocity;
+
+      } else if (e.keyCode == 37 || e.keyCode == 65 ) {
+        // player pressed left or A
+        step_x = -x_velocity;
+
+      } else if (e.keyCode == 39 || e.keyCode == 68 ) {
+        // player pressed right or D
+        step_x = x_velocity;
+
+      }
+
+      if ( e.keyCode == 32 )  // player pressed space key
+        shooting = true;
+
+    };
+
+    window.onkeyup = function(e) {
+
+      if ( e.keyCode == 38 || e.keyCode == 87 || e.keyCode == 40 || e.keyCode == 83 ) {
+        // player released up or W, down or S
+        step_y = 0;
+
+      } else if (e.keyCode == 37 || e.keyCode == 65 || e.keyCode == 39 || e.keyCode == 68 ) {
+        // player released left or A, right or D
+        step_x = 0;
+
+      }
+
+      if ( e.keyCode == 32 )  // player released space key
+        shooting = false;
+
+    };
+    //
+    // Part 4 Ends
+    //
+
+    var framecounter = 0;
+
+    function animate() {
+
+      // compute delta time
+      now_time = new Date();
+      delta_time = (now_time - old_time) / 1000;
+      old_time = now_time;
+
+      /******************************************************************/
+
+      // fire one bullet
+      if (shooting) {
+        active_bullets.add(next_round);
+        bullet_offset = bullets[next_round][5];
+        airplane_offset = objects[0][5];
+        bullet_offset[0] = airplane_offset[0];
+        bullet_offset[1] = airplane_offset[1];
+        bullet_offset[2] = airplane_offset[2];
+        next_round = (next_round + 1) % max_bullet;
+      }
+
+      /******************************************************************/
+
+      framecounter += 1;
+
+      if (framecounter > 150) {
+        // roughly every five seconds with 30 FPS
+        // update score
+        document.getElementById('scoreboard').innerHTML = 
+          parseInt(document.getElementById('scoreboard').innerHTML) + 100;
+        //
+        // Bonus Part 2!
+        //
+        framecounter = 0;
+      }
+
+      gl.clearColor( 0., 0., 0., 0.)
+      gl.clear( gl.COLOR_BUFFER_BIT );
+
+      // drawing bullets
+      for (var b = 0; b < bullets.length; b++) {
+        if (active_bullets.has(b)) {
+          var current_objecttype = bullets[b][0];
+          var current_v_buffer = bullets[b][1];
+          var current_v_count = bullets[b][2];
+          var current_i_buffer = bullets[b][3];
+          var current_vertices = bullets[b][4];
+          var current_offset = bullets[b][5];
+          var current_color = bullets[b][6];
+          var current_drawtype = bullets[b][7];
+      
+          current_offset[0] += x_velocity * 2 * delta_time;
+          if (current_offset[0] >= 1.2) 
+            active_bullets.delete(b); // do not draw bullets outside of the view next time
+
+          gl.bindBuffer( gl.ARRAY_BUFFER, current_v_buffer );
+          gl.bindBuffer( gl.ELEMENT_ARRAY_BUFFER, current_i_buffer );
+
+          // find the attribute in the shader source
+          var a_position = gl.getAttribLocation( shaderprogram, 'a_position' );
+          gl.vertexAttribPointer( a_position, 3, gl.FLOAT, false, 0, 0 );
+          gl.enableVertexAttribArray ( a_position );
+
+          // find the uniform in the shader source
+          var u_offset = gl.getUniformLocation( shaderprogram, 'u_offset' );
+          gl.uniform3fv( u_offset, current_offset)
+
+          var u_color = gl.getUniformLocation( shaderprogram, 'u_color' );
+          gl.uniform4fv( u_color, new Float32Array(current_color) );
+
+          var u_point_size = gl.getUniformLocation( shaderprogram, 'u_point_size' );
+          gl.uniform1f( u_point_size, bullet_size );
+
+          gl.drawElements( current_drawtype, current_v_count, gl.UNSIGNED_BYTE, 0); // INDEXED GEOMETRY
+        }
+      }
+
+      // drawing airplane and obstacles
+      for( var o = 0; o < objects.length; o++ ) {
+        var current_objecttype = objects[o][0];
+        var current_v_buffer = objects[o][1];
+        var current_v_count = objects[o][2];
+        var current_i_buffer = objects[o][3];
+        var current_vertices = objects[o][4];
+        var current_offset = objects[o][5];
+        var current_color = objects[o][6];
+        var current_drawtype = objects[o][7];
+    
+        if (current_objecttype == 'airplane') {
+          // update position, but do not go outside of the view
+          next_x_offset = current_offset[0] + step_x * delta_time;
+          next_y_offset = current_offset[1] + step_y * delta_time;
+          if (next_x_offset > -0.95 && next_x_offset < 0.95) 
+            current_offset[0] = next_x_offset;
+          if (next_y_offset > -0.95 && next_y_offset < 0.95) 
+            current_offset[1] = next_y_offset;
+
+          // get the bounding box of this airplane
+          var bbox_plane = calculateBoundingBox( current_vertices, current_offset);
+
+        } else if (current_objecttype == 'obstacle') {
+          //
+          // Bonus Part 1!
+          //
+          // collision detection using the bounding box of this airplane
+          if (detectCollision(bbox_plane, current_offset)) {
+            document.getElementById('scoreboard').innerHTML += ' AND...GAME OVER!'
+            return;
+          }
+
+        }
+
+        //************************************************************//
+        //
+        // CONNECT SHADER WITH GEOMETRY
+        //
+        
+        gl.bindBuffer( gl.ARRAY_BUFFER, current_v_buffer );
+        gl.bindBuffer( gl.ELEMENT_ARRAY_BUFFER, current_i_buffer );
+
+        // find the attribute in the shader source
+        var a_position = gl.getAttribLocation( shaderprogram, 'a_position' );
+        gl.vertexAttribPointer( a_position, 3, gl.FLOAT, false, 0, 0 );
+        gl.enableVertexAttribArray ( a_position );
+
+        // find the uniform in the shader source
+        var u_offset = gl.getUniformLocation( shaderprogram, 'u_offset' );
+        gl.uniform3fv( u_offset, current_offset)
+
+        var u_color = gl.getUniformLocation( shaderprogram, 'u_color' );
+        gl.uniform4fv( u_color, new Float32Array(current_color) );
+
+        var u_point_size = gl.getUniformLocation( shaderprogram, 'u_point_size' );
+        gl.uniform1f( u_point_size, obstacle_size );
+
+        //************************************************************//
+        //
+        // DRAW!
+        //
+
+        //
+        // Bonus Part 3!
+        //
+        // gl.drawArrays( current_drawtype, 0, current_v_count/3, 0 );
+        gl.drawElements( current_drawtype, current_v_count, gl.UNSIGNED_BYTE, 0); // INDEXED GEOMETRY
+
+      }
+
+      requestAnimationFrame(animate);
+
+    };
+
+  </script>
+  <body>
+    <canvas id="c"></canvas>
+    <div id="scoreboard">0</div>
+  </body>
+</html>

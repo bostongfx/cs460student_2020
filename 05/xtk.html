@@ -1,0 +1,35 @@
+<html>
+  <head>
+    <script type="text/javascript" src="https://get.goXTK.com/xtk_edge.js"></script>
+    <script type="text/javascript" src="http://get.goXTK.com/xtk_xdat.gui.js"></script>
+
+    <style>
+      html, body {
+        background-color:#000;
+        margin: 0;
+        padding: 0;
+        height: 100%;
+        overflow: hidden !important;
+      }
+    </style>
+
+    <script>
+      window.onload = function() {
+        r = new X.renderer3D();
+        r.init();
+        c = new X.cube();
+        r.add(c);
+        r.render();
+
+        var gui = new dat.GUI();
+        var cubeGui = gui.addFolder('Cube');
+        cubeGui.addColor(c, 'color');
+        cubeGui.add(c, 'lengthX', 0, 100).onChange (
+          function() { c.modified(); }
+        );
+
+
+      }
+    </script>
+  </head>
+</html>
