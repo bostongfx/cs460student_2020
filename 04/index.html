@@ -63,32 +63,90 @@
   
   <script>
 
+    /**
+     *    [W]          [↑]
+     * [A][S][D] or [←][↓][→] to move, and [space] to shoot
+     * 
+     * Difficulty level increases as time goes.
+     * As the difficulty level increases, 
+     * there will be more obstacles and they will move faster.
+     * More kills you get, more bullets you can fire.
+     * 
+     **/
+
+    /**
+     * Reference(s) I used:
+     *  How to iterate through a set in JavaScript
+     *  https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Set/forEach
+     * 
+     **/
+
     var c, gl;
     var v_shader, f_shader, shaderprogram;
     var vertices, indices, v_buffer, i_buffer;
 
+    // need delta time to make the animation speed indipendent from frame rate
+    var delta_time = 0.0; // seconds b/w each frames
+    var prev_time = 0.0; // last recorded time
+
+    var isOver = false; // game over?
+
+    /** airplane **/
+
+    const player_id = 0; // airplane index in objects[]
+    var player_life = 3;
+
+    const p_x_velocity = 0.6; // airplane velocity along x-axis
+    const p_y_velocity = p_x_velocity * 2; // airplane velocity along y-axis
+
     var step_x = 0.0;
     var step_y = 0.0;
-    var obstacle_factor = 3; // Hint for the bonus!
-    var direction_y = 0;
-    var direction_x = 0;
 
-    var delta_time = 0.0; // second b/w each frames
-                          // need delta time to make the animation speed indipendent from frame rate
-    var old_time = 0.0; // last recorded time
+    var kill_count = 0;
+    var need_update_score = true;
 
-    const x_velocity = 0.6; // airplane velocity along x-axis
-    const y_velocity = x_velocity * 2; // airplane velocity along y-axis
+    /** obstacles **/
 
-    var bullet_size = 10.0;
-    var obstacle_size = 30.0;
+    const obstacle_size = 30.0;
+    const max_obstacle = 30; // max number of obstacles can draw at the same time
+    var curr_obj_num = 2; // current number of obstacles + airplane
+    var o_x_velocity = 0.3;
+    var o_y_velocity = o_x_velocity * 2;
 
-    // max number of obstacles/bullets can appear on the screen at the same time
-    const max_obstacle = 5; 
-    const max_bullet = 300;
+    /** difficulty level **/
 
-    var shooting = false;
-    var next_round = 0; // bullet id
+    var difficulty_level = 0;
+    const difficulty_up_time_gap = 10.0; // seconds, how often to accelerate
+    var difficulty_cd = difficulty_up_time_gap; // count down
+    const more_obstacle = 2; // how much obstacles to increase each time
+    const more_speed = 0.1; // how much to speed up each time for obstacles
+    const o_min_fire_gap = 1;
+    const o_less_fire_gap = 0.3;
+    
+    /** player's bullets **/
+
+    const bullet_size = 10.0;
+    const max_bullet = 300; // max number of bullets can draw at the same time
+
+    const p_bullet_velocity = p_x_velocity * 2;
+    const p_fire_rate = 6; // airplane bullets shoot at (playrFireRate) rounds per second
+    const p_min_fire_gap = 0.01;
+    const p_less_fire_gap = 0.05;
+    var p_fire_gap = 1.0 / p_fire_rate; // time in seconds between each firing
+    var p_fire_cd = 0.0; // time in seconds till next firing
+    var shooting = false; // the player is holding the firing key [space] or not
+    var p_next_round = 0; // bullet id, index of array, tells you which to fire next
+    // for airplane's bullet with obstacle collison detection
+    var b2o_collision_radius = (bullet_size + obstacle_size)/1000; 
+    var b2b_collision_radius = (bullet_size * 2)/1000; 
+
+    // obstacles' bullets
+    var o_bullet_velocity = 0.2;
+    const o_fire_rate = 0.2;
+    var o_fire_gap = 1 / o_fire_rate;
+    var o_next_round = 0;
+    var o_fire_cds = new Array(max_obstacle+1); // +1 for airplane b/c it's using index of objects[]
+    var o_bullet_velocities = new Array(max_bullet);
 
 
     window.onload = function() {
@@ -100,7 +158,6 @@
       c = document.getElementById( 'c' ); // setup canvas
       c.width = window.innerWidth;
       c.height = window.innerHeight;
-
       gl = c.getContext( 'webgl' ); // setup GL context
       gl.viewport(0, 0, c.width, c.height );
 
@@ -133,26 +190,33 @@
       gl.linkProgram( shaderprogram );
       gl.useProgram( shaderprogram );
 
-
       // create multiple objects
       objects = [];
       objects.push( createAirplane() );
       for (var i = 0; i < max_obstacle; i++)
-        objects.push( createObstacle() );
+        objects.push( createObstacle('obstacle') );
 
+      // create bullet objects
       bullets = [];
-      for (var i = 0; i < max_bullet; i++)
-        bullets.push( createBullet() );
+      o_bullets = [];
+      for (var i = 0; i < max_bullet; i++) {
+        bullets.push( createObstacle('bullet') );
+        o_bullets.push( createObstacle('o_bullet') );
+      }
 
+      // containing index of bullets, will not draw if not in the set
       active_bullets = new Set();
+      active_o_bullets = new Set();
 
-      old_time = Date.now();
+      // index of obstacles that are in the view and ready to fire bullets
+      obstacles_ready = new Set();
+
+      prev_time = Date.now(); // for updating delta time later
       animate();
 
     };
 
     function createAirplane() {
-
       //
       // Part 1 Starts
       //
@@ -166,12 +230,13 @@
         -0.05, 0.05, 0.0, // tail
         -0.025, 0.025, 0.0
       ] );
-
       var v_buffer = gl.createBuffer(); // create
       gl.bindBuffer( gl.ARRAY_BUFFER, v_buffer ); // bind
       gl.bufferData( gl.ARRAY_BUFFER, vertices, gl.STATIC_DRAW ); // put data in
       gl.bindBuffer( gl.ARRAY_BUFFER, null ); // unbind
-
+      //
+      // Bonus Part 3!
+      //
       var indices = new Uint8Array( [ 
         0, 1, 2, // body
         1, 2, 3,
@@ -179,135 +244,85 @@
         1, 3, 5, // wing
         0, 6, 7 // tail
       ] );
-
       var v_count = indices.length;
-
       var i_buffer = gl.createBuffer(); // create
       gl.bindBuffer( gl.ELEMENT_ARRAY_BUFFER, i_buffer ); //bind
       gl.bufferData( gl.ELEMENT_ARRAY_BUFFER, indices, gl.STATIC_DRAW ); // put data in
       gl.bindBuffer( gl.ELEMENT_ARRAY_BUFFER, null ); // unbind
-
-
       //
       // Part 1 Ends
       //
-
       var offset = [0.,0.,0.];
       var color = [0.,0.,0.,1.];
-
-      //
-      // Bonus Part 3!
-      //
       return ['airplane', v_buffer, v_count, i_buffer, vertices, offset, color, gl.TRIANGLES];
-
     }
 
-    function createObstacle() {
-
+    function createObstacle(tag) {
       var vertices = new Float32Array( [ 0.0, 0.0, 0.0 ]);
-
       var v_buffer = gl.createBuffer(); // create
       gl.bindBuffer( gl.ARRAY_BUFFER, v_buffer ); // bind
       gl.bufferData( gl.ARRAY_BUFFER, vertices, gl.STATIC_DRAW ); // put data in
       gl.bindBuffer( gl.ARRAY_BUFFER, null ); // unbind
-
-      //
-      // Part 2 Starts
-      //
-      var offset = [(Math.random()*2-1), (Math.random()*2-1), 0.];
-
-      var indices = new Uint8Array( [ 0 ] );
-
       var v_count = 1;
-
+      var indices = new Uint8Array( [ 0 ] );
       var i_buffer = gl.createBuffer(); // create
       gl.bindBuffer( gl.ELEMENT_ARRAY_BUFFER, i_buffer ); //bind
       gl.bufferData( gl.ELEMENT_ARRAY_BUFFER, indices, gl.STATIC_DRAW ); // put data in
       gl.bindBuffer( gl.ELEMENT_ARRAY_BUFFER, null ); // unbind
-
-      //
-      // Part 2 Ends
-      //
-
-      var color = [Math.random(), Math.random(), Math.random(), 1.];
-
-      return ['obstacle', v_buffer, v_count, i_buffer, vertices, offset, color, gl.POINTS];
-
-    }
-
-    function createBullet() {
-
-      var vertices = new Float32Array( [ 0.0, 0.0, 0.0 ]);
-
-      var v_buffer = gl.createBuffer(); // create
-      gl.bindBuffer( gl.ARRAY_BUFFER, v_buffer ); // bind
-      gl.bufferData( gl.ARRAY_BUFFER, vertices, gl.STATIC_DRAW ); // put data in
-      gl.bindBuffer( gl.ARRAY_BUFFER, null ); // unbind
-
-      var indices = new Uint8Array( [ 0 ] );
-      var v_count = 1;
-
-      var i_buffer = gl.createBuffer(); // create
-      gl.bindBuffer( gl.ELEMENT_ARRAY_BUFFER, i_buffer ); //bind
-      gl.bufferData( gl.ELEMENT_ARRAY_BUFFER, indices, gl.STATIC_DRAW ); // put data in
-      gl.bindBuffer( gl.ELEMENT_ARRAY_BUFFER, null ); // unbind
-
       var offset = [0.,0.,0.];
       var color = [0.,0.,0.,1.];
-
-      return ['bullet', v_buffer, v_count, i_buffer, vertices, offset, color, gl.POINTS];
-
+      if (tag == 'obstacle') {
+        offset = [(Math.random()*2+1), (Math.random()*2-1), 0.];
+        color = [Math.random(), Math.random(), Math.random(), 1.];
+      }
+      return [tag, v_buffer, v_count, i_buffer, vertices, offset, color, gl.POINTS];
     }
 
     //
     // Part 3 Starts (no coding required, just explanations in PDF)
     //
     function calculateBoundingBox(vertices, offset) {
-
       var minx = 1000;
       var maxx = -1000;
       var miny = 1000;
       var maxy = -1000;
       var minz = 1000;
       var maxz = -1000;
-
       for (var v=0; v<vertices.length; v+=3) {
-
         var currentx = vertices[v] + offset[0];
         var currenty = vertices[v+1] + offset[1];
         var currentz = vertices[v+2] + offset[2];
-
         minx = Math.min( minx, currentx );
         miny = Math.min( miny, currenty );
         minz = Math.min( minz, currentz );
-
         maxx = Math.max( maxx, currentx );
         maxy = Math.max( maxy, currenty );
         maxz = Math.max( maxz, currentz );
-
       }
-
       return [minx, maxx, miny, maxy, minz, maxz];
-
     }
 
     function detectCollision(bbox, point) {
-
       var collision = false;
-
       if (point[0] >= bbox[0] && point[0] <= bbox[1]) {
         if (point[1] >= bbox[2] && point[1] <= bbox[3]) {
-          if (point[2] >= bbox[4] && point[2] <= bbox[5]) {
-
-            collision = true;
-
-          }
+          if (point[2] >= bbox[4] && point[2] <= bbox[5]) { collision = true; }
         }
       }
-
       return collision;
-
     }
+
+    function sphereCollision(point1, point2, radius) {
+      // radius is the collision zone
+      // if you want point to sphere collision, set radius to be sphere's radius
+      // if you want sphere to sphere collision, set radius to be the sum of both's radius
+      var d_x = point1[0] - point2[0];
+      var d_y = point1[1] - point2[1];
+      var d_z = point1[2] - point2[2];
+      var distance = Math.sqrt(d_x*d_x + d_y*d_y + d_z*d_z);
+      return (radius > distance);
+    }
+
     //
     // Part 3 Ends
     //
@@ -319,20 +334,16 @@
 
       if ( e.keyCode == 38 || e.keyCode == 87 ) {
         // player pressed up or W
-        step_y = y_velocity;
-
+        step_y = p_y_velocity;
       } else if (e.keyCode == 40 || e.keyCode == 83 ) {
         // player pressed down or S
-        step_y = -y_velocity;
-
+        step_y = -p_y_velocity;
       } else if (e.keyCode == 37 || e.keyCode == 65 ) {
         // player pressed left or A
-        step_x = -x_velocity;
-
+        step_x = -p_x_velocity;
       } else if (e.keyCode == 39 || e.keyCode == 68 ) {
         // player pressed right or D
-        step_x = x_velocity;
-
+        step_x = p_x_velocity;
       }
 
       if ( e.keyCode == 32 )  // player pressed space key
@@ -345,11 +356,9 @@
       if ( e.keyCode == 38 || e.keyCode == 87 || e.keyCode == 40 || e.keyCode == 83 ) {
         // player released up or W, down or S
         step_y = 0;
-
       } else if (e.keyCode == 37 || e.keyCode == 65 || e.keyCode == 39 || e.keyCode == 68 ) {
         // player released left or A, right or D
         step_x = 0;
-
       }
 
       if ( e.keyCode == 32 )  // player released space key
@@ -360,86 +369,244 @@
     // Part 4 Ends
     //
 
-    var framecounter = 0;
+    function respawnObstacle(o) {
+      // given an obstacle's index and reset its position to outside, right side of the screen
+      var o_offset = objects[o][5];
+      o_offset[0] = Math.random()*2+1;
+      o_offset[1] = Math.random()*2-1;
+      obstacles_ready.delete(o);
+    }
 
-    function animate() {
-
-      // compute delta time
+    function updateDeltaTime() {
+      // update delta time
       now_time = new Date();
-      delta_time = (now_time - old_time) / 1000;
-      old_time = now_time;
+      delta_time = (now_time - prev_time) / 1000;
+      prev_time = now_time;
+    }
 
-      /******************************************************************/
-
-      // fire one bullet
-      if (shooting) {
-        active_bullets.add(next_round);
-        bullet_offset = bullets[next_round][5];
-        airplane_offset = objects[0][5];
+    function fireBullet() {
+      // player firing bullet
+      if (p_fire_cd > 0) {
+        p_fire_cd -= delta_time;
+      } else if (shooting) {
+        p_fire_cd = p_fire_gap; // reset cooldown
+        active_bullets.add(p_next_round); // make next bullet ready to be drawn on screen
+        bullet_offset = bullets[p_next_round][5];
+        airplane_offset = objects[player_id][5];
+        // spawn next bullet to airplane's position
         bullet_offset[0] = airplane_offset[0];
         bullet_offset[1] = airplane_offset[1];
         bullet_offset[2] = airplane_offset[2];
-        next_round = (next_round + 1) % max_bullet;
+        // iterate to next bullet because reusing bullet objects
+        p_next_round = (p_next_round + 1) % max_bullet;
       }
+    }
 
-      /******************************************************************/
+    function obstacleFireBullet(o) {
+      if (o_fire_cds[o] == undefined) {
+        o_fire_cds[o] = o_fire_gap;
+      } else if (o_fire_cds[o] > 0) {
+        o_fire_cds[o] -= delta_time;
+      } else {
+        var o_offset = objects[o][5];
+        var o_color = objects[o][6];
+        var p_offset = objects[player_id][5]
+        o_bullet_offset = o_bullets[o_next_round][5];
+        o_bullet_color = o_bullets[o_next_round][6];
+        o_bullet_offset[0] = o_offset[0];
+        o_bullet_offset[1] = o_offset[1];
+        o_bullet_offset[2] = o_offset[2];
+        o_bullet_color[0] = o_color[0];
+        o_bullet_color[1] = o_color[1];
+        o_bullet_color[2] = o_color[2];
 
-      framecounter += 1;
+        var d_x = p_offset[0]-o_offset[0];
+        var d_y = p_offset[1]-o_offset[1];
+        var d_z = p_offset[2]-o_offset[2];
+        var magnitude = Math.sqrt(d_x*d_x + d_y*d_y + d_z*d_z)
+        d_x = d_x / magnitude * (o_bullet_velocity);
+        d_y = d_y / magnitude * (o_bullet_velocity);
+        d_z = d_z / magnitude * (o_bullet_velocity);
+        o_bullet_velocities[o_next_round] = [d_x, d_y, d_z];
 
-      if (framecounter > 150) {
-        // roughly every five seconds with 30 FPS
-        // update score
+        active_o_bullets.add(o_next_round);
+        o_next_round = (o_next_round + 1) % max_bullet;
+        o_fire_cds[o] = o_fire_gap;
+      }
+    }
+
+    function updateScore() {
+      if (need_update_score) {
+        need_update_score = false;
+        // update score (number of obstacles destroyed) whenever player destroyes one
         document.getElementById('scoreboard').innerHTML = 
-          parseInt(document.getElementById('scoreboard').innerHTML) + 100;
-        //
-        // Bonus Part 2!
-        //
-        framecounter = 0;
+          "difficulty level: " + difficulty_level + ", kills: " + kill_count + ", life: " + player_life;
+      }
+    }
+
+    function difficultyUp() {
+      difficulty_level++;
+      if (curr_obj_num < max_obstacle) curr_obj_num += more_obstacle;
+      o_x_velocity += more_speed; // obstacles movement speed up
+      need_update_score = true;
+      if (o_fire_gap > o_min_fire_gap) o_fire_gap -= o_less_fire_gap;
+    }
+
+    function receiveDamage() {
+      need_update_score = true;
+      if (--player_life <= 0) { // game over when no more lives
+        isOver = true;
+        document.getElementById('scoreboard').innerHTML = 
+        "difficulty level: " + difficulty_level + ", kills: " + kill_count + ' AND...GAME OVER!';
+      }
+    }
+
+    // for bullet collison detection
+    var current_b_offset; 
+    var current_b;
+
+    function bulletObstacleCollision(o) {
+      var obstacle_offset = objects[o][5];
+      if (sphereCollision(current_b_offset, obstacle_offset, b2o_collision_radius)) {
+        respawnObstacle(o);
+        active_bullets.delete(current_b);
+        if (p_fire_gap > p_min_fire_gap) p_fire_gap -= p_less_fire_gap;
+        kill_count++;
+        need_update_score = true;
+      }
+    }
+
+    function bulletBulletCollision(o_b) {
+      var o_bullet_offset = o_bullets[o_b][5];
+      if (sphereCollision(current_b_offset, o_bullet_offset, b2b_collision_radius)) {
+        active_bullets.delete(current_b);
+        active_o_bullets.delete(o_b);
+      }
+    }
+
+    function drawAirplaneBullet(b) {
+      var current_objecttype = bullets[b][0];
+      var current_v_buffer = bullets[b][1];
+      var current_v_count = bullets[b][2];
+      var current_i_buffer = bullets[b][3];
+      var current_vertices = bullets[b][4];
+      var current_offset = bullets[b][5];
+      var current_color = bullets[b][6];
+      var current_drawtype = bullets[b][7];
+  
+      // update bullet position
+      current_offset[0] += p_bullet_velocity * delta_time;
+
+      // outside of the view, next time do not draw this bullet 
+      if (current_offset[0] > 1.2) 
+        active_bullets.delete(b);
+
+      // if this bullet hits an obstacle, then destroy both
+      // ignore obstacles outside of the scene for efficiency
+      current_b_offset = current_offset; // pass it to bullet collison functions
+      current_b = b;
+      obstacles_ready.forEach(bulletObstacleCollision);
+      active_o_bullets.forEach(bulletBulletCollision);
+
+      // talk to shader and draw this bullet
+      // bind buffer
+      gl.bindBuffer( gl.ARRAY_BUFFER, current_v_buffer );
+      gl.bindBuffer( gl.ELEMENT_ARRAY_BUFFER, current_i_buffer );
+      // find the attribute in the shader source
+      var a_position = gl.getAttribLocation( shaderprogram, 'a_position' );
+      gl.vertexAttribPointer( a_position, 3, gl.FLOAT, false, 0, 0 );
+      gl.enableVertexAttribArray ( a_position );
+      // find the uniform in the shader source
+      var u_offset = gl.getUniformLocation( shaderprogram, 'u_offset' );
+      gl.uniform3fv( u_offset, current_offset)
+      var u_color = gl.getUniformLocation( shaderprogram, 'u_color' );
+      gl.uniform4fv( u_color, new Float32Array(current_color) );
+      // set bullet size
+      var u_point_size = gl.getUniformLocation( shaderprogram, 'u_point_size' );
+      gl.uniform1f( u_point_size, bullet_size );
+      // INDEXED GEOMETRY
+      gl.drawElements( current_drawtype, current_v_count, gl.UNSIGNED_BYTE, 0); 
+    }
+
+    function drawObstacleBullet(b) {
+      var current_objecttype = o_bullets[b][0];
+      var current_v_buffer = o_bullets[b][1];
+      var current_v_count = o_bullets[b][2];
+      var current_i_buffer = o_bullets[b][3];
+      var current_vertices = o_bullets[b][4];
+      var current_offset = o_bullets[b][5];
+      var current_color = o_bullets[b][6];
+      var current_drawtype = o_bullets[b][7];
+  
+      // update bullet position
+      current_offset[0] += o_bullet_velocities[b][0] * delta_time;
+      current_offset[1] += o_bullet_velocities[b][1] * delta_time;
+      current_offset[2] += o_bullet_velocities[b][2] * delta_time;
+
+      // outside of the view, next time do not draw this bullet 
+      if (current_offset[0] > 1.2 || current_offset[0] < -1.2 ||
+          current_offset[1] > 1.2 || current_offset[1] < -1.2) 
+        active_o_bullets.delete(b);
+
+      var p_vertices = objects[player_id][4];
+      var p_offset = objects[player_id][5];
+      // get the bounding box of this airplane
+      var bbox_plane = calculateBoundingBox( p_vertices, p_offset);
+      // if this bullet hits player
+      if (detectCollision(bbox_plane, current_offset)) {
+        active_o_bullets.delete(b);
+        receiveDamage();
       }
 
+      // talk to shader and draw this bullet
+      // bind buffer
+      gl.bindBuffer( gl.ARRAY_BUFFER, current_v_buffer );
+      gl.bindBuffer( gl.ELEMENT_ARRAY_BUFFER, current_i_buffer );
+      // find the attribute in the shader source
+      var a_position = gl.getAttribLocation( shaderprogram, 'a_position' );
+      gl.vertexAttribPointer( a_position, 3, gl.FLOAT, false, 0, 0 );
+      gl.enableVertexAttribArray ( a_position );
+      // find the uniform in the shader source
+      var u_offset = gl.getUniformLocation( shaderprogram, 'u_offset' );
+      gl.uniform3fv( u_offset, current_offset)
+      var u_color = gl.getUniformLocation( shaderprogram, 'u_color' );
+      gl.uniform4fv( u_color, new Float32Array(current_color) );
+      // set bullet size
+      var u_point_size = gl.getUniformLocation( shaderprogram, 'u_point_size' );
+      gl.uniform1f( u_point_size, bullet_size );
+      // INDEXED GEOMETRY
+      gl.drawElements( current_drawtype, current_v_count, gl.UNSIGNED_BYTE, 0); 
+    }
+
+    // animate() calls each frame and it does the drawing
+    function animate() {
+
+      updateDeltaTime();
+
+      fireBullet();
+
+      updateScore();
+
+      if (difficulty_cd < 0) {
+        difficultyUp();
+        difficulty_cd = difficulty_up_time_gap; // reset timmer
+        console.log('difficulty ' + difficulty_level);
+      } else {
+        difficulty_cd -= delta_time;
+      }
+      
       gl.clearColor( 0., 0., 0., 0.)
       gl.clear( gl.COLOR_BUFFER_BIT );
 
-      // drawing bullets
-      for (var b = 0; b < bullets.length; b++) {
-        if (active_bullets.has(b)) {
-          var current_objecttype = bullets[b][0];
-          var current_v_buffer = bullets[b][1];
-          var current_v_count = bullets[b][2];
-          var current_i_buffer = bullets[b][3];
-          var current_vertices = bullets[b][4];
-          var current_offset = bullets[b][5];
-          var current_color = bullets[b][6];
-          var current_drawtype = bullets[b][7];
-      
-          current_offset[0] += x_velocity * 2 * delta_time;
-          if (current_offset[0] >= 1.2) 
-            active_bullets.delete(b); // do not draw bullets outside of the view next time
+      // drawing airplane's bullets
+      active_bullets.forEach(drawAirplaneBullet);
 
-          gl.bindBuffer( gl.ARRAY_BUFFER, current_v_buffer );
-          gl.bindBuffer( gl.ELEMENT_ARRAY_BUFFER, current_i_buffer );
-
-          // find the attribute in the shader source
-          var a_position = gl.getAttribLocation( shaderprogram, 'a_position' );
-          gl.vertexAttribPointer( a_position, 3, gl.FLOAT, false, 0, 0 );
-          gl.enableVertexAttribArray ( a_position );
-
-          // find the uniform in the shader source
-          var u_offset = gl.getUniformLocation( shaderprogram, 'u_offset' );
-          gl.uniform3fv( u_offset, current_offset)
-
-          var u_color = gl.getUniformLocation( shaderprogram, 'u_color' );
-          gl.uniform4fv( u_color, new Float32Array(current_color) );
-
-          var u_point_size = gl.getUniformLocation( shaderprogram, 'u_point_size' );
-          gl.uniform1f( u_point_size, bullet_size );
-
-          gl.drawElements( current_drawtype, current_v_count, gl.UNSIGNED_BYTE, 0); // INDEXED GEOMETRY
-        }
-      }
+      // drawing obstacles' bullets
+      active_o_bullets.forEach(drawObstacleBullet);
 
       // drawing airplane and obstacles
-      for( var o = 0; o < objects.length; o++ ) {
+      for( var o = 0; o < Math.min(curr_obj_num+1, objects.length); o++ ) {
+
         var current_objecttype = objects[o][0];
         var current_v_buffer = objects[o][1];
         var current_v_count = objects[o][2];
@@ -450,9 +617,10 @@
         var current_drawtype = objects[o][7];
     
         if (current_objecttype == 'airplane') {
-          // update position, but do not go outside of the view
+          // update airplane position
           next_x_offset = current_offset[0] + step_x * delta_time;
           next_y_offset = current_offset[1] + step_y * delta_time;
+          // but do not go outside of the view
           if (next_x_offset > -0.95 && next_x_offset < 0.95) 
             current_offset[0] = next_x_offset;
           if (next_y_offset > -0.95 && next_y_offset < 0.95) 
@@ -465,12 +633,23 @@
           //
           // Bonus Part 1!
           //
+
+          // move obstacle
+          current_offset[0] -= o_x_velocity * delta_time;
+
+          // ready when entering the scene
+          if(current_offset[0] < 1.2) obstacles_ready.add(o); 
+
+          if (obstacles_ready.has(o)) obstacleFireBullet(o);
+
+          // respawn obstacle if moves to outside of the view
+          if (current_offset[0] < -1.2) respawnObstacle(o);
+
           // collision detection using the bounding box of this airplane
           if (detectCollision(bbox_plane, current_offset)) {
-            document.getElementById('scoreboard').innerHTML += ' AND...GAME OVER!'
-            return;
+            respawnObstacle(o);
+            receiveDamage();
           }
-
         }
 
         //************************************************************//
@@ -507,11 +686,13 @@
         // gl.drawArrays( current_drawtype, 0, current_v_count/3, 0 );
         gl.drawElements( current_drawtype, current_v_count, gl.UNSIGNED_BYTE, 0); // INDEXED GEOMETRY
 
-      }
-
+      
+      } // end of drawing airplane and obstacles
+      
+      if (isOver) return;
       requestAnimationFrame(animate);
-
-    };
+      
+    }; // end of anime()
 
   </script>
   <body>
