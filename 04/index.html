@@ -31,7 +31,6 @@
   
   <script id="vertexshader" type="glsl">
     attribute vec3 a_position;
-
     uniform vec3 u_offset;
     uniform float u_point_size;
 
@@ -51,7 +50,6 @@
   
   <script id="fragmentshader" type="glsl">
     precision mediump float;
-
     uniform vec4 u_color;
 
     void main(void) {
@@ -131,7 +129,7 @@
     const p_bullet_velocity = p_x_velocity * 2;
     const p_fire_rate = 6; // airplane bullets shoot at (playrFireRate) rounds per second
     const p_min_fire_gap = 0.01;
-    const p_less_fire_gap = 0.05;
+    const p_less_fire_gap = 0.003;
     var p_fire_gap = 1.0 / p_fire_rate; // time in seconds between each firing
     var p_fire_cd = 0.0; // time in seconds till next firing
     var shooting = false; // the player is holding the firing key [space] or not
@@ -216,10 +214,10 @@
 
     };
 
+    //
+    // Part 1 Starts
+    //
     function createAirplane() {
-      //
-      // Part 1 Starts
-      //
       var vertices = new Float32Array( [
         -0.05, 0.025, 0.0, // body
         -0.05, -0.025, 0.0,
@@ -249,14 +247,17 @@
       gl.bindBuffer( gl.ELEMENT_ARRAY_BUFFER, i_buffer ); //bind
       gl.bufferData( gl.ELEMENT_ARRAY_BUFFER, indices, gl.STATIC_DRAW ); // put data in
       gl.bindBuffer( gl.ELEMENT_ARRAY_BUFFER, null ); // unbind
-      //
-      // Part 1 Ends
-      //
-      var offset = [0.,0.,0.];
+      var offset = [-.6,0.,0.];
       var color = [0.,0.,0.,1.];
       return ['airplane', v_buffer, v_count, i_buffer, vertices, offset, color, gl.TRIANGLES];
     }
+    //
+    // Part 1 Ends
+    //
 
+    //
+    // Part 2 Starts
+    //
     function createObstacle(tag) {
       var vertices = new Float32Array( [ 0.0, 0.0, 0.0 ]);
       var v_buffer = gl.createBuffer(); // create
@@ -277,6 +278,9 @@
       }
       return [tag, v_buffer, v_count, i_buffer, vertices, offset, color, gl.POINTS];
     }
+    //
+    // Part 2 Ends
+    //
 
     //
     // Part 3 Starts (no coding required, just explanations in PDF)
@@ -322,7 +326,6 @@
       var distance = Math.sqrt(d_x*d_x + d_y*d_y + d_z*d_z);
       return (radius > distance);
     }
-
     //
     // Part 3 Ends
     //
@@ -445,6 +448,9 @@
     }
 
     function difficultyUp() {
+      //
+      // Bonus Part 2!
+      //
       difficulty_level++;
       if (curr_obj_num < max_obstacle) curr_obj_num += more_obstacle;
       o_x_velocity += more_speed; // obstacles movement speed up
@@ -578,7 +584,7 @@
       gl.drawElements( current_drawtype, current_v_count, gl.UNSIGNED_BYTE, 0); 
     }
 
-    // animate() calls each frame and it does the drawing
+    // animate() calls each frame and does the drawing
     function animate() {
 
       updateDeltaTime();
@@ -683,7 +689,6 @@
         //
         // Bonus Part 3!
         //
-        // gl.drawArrays( current_drawtype, 0, current_v_count/3, 0 );
         gl.drawElements( current_drawtype, current_v_count, gl.UNSIGNED_BYTE, 0); // INDEXED GEOMETRY
 
       
