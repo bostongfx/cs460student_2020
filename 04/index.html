@@ -427,8 +427,8 @@
 
           // I took this idea from the starter code above because I noticed that the blocks would dissapear once they reached the end of the screen, so this way it just teleports the blocks back to the beginning of the screen (or the left most edge)
           if ( current_offset[0] <= -1. ) {
-            // if obstacle bumps into right end of screen
-            current_offset[0] = 1.; // send back to the very left
+            // if obstacle bumps into left end of screen
+            current_offset[0] = 1.; // send back to the right
           }
        
 
