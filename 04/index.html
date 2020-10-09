@@ -322,10 +322,11 @@
 
 
     var framecounter = 0;
-
+	var spd = 0;
     function animate() {
 
       framecounter += 1;
+	  
 
       if (framecounter > 150) {
 
@@ -337,8 +338,7 @@
         //
         // Bonus Part 2!
         //
-
-
+		spd += 1;
         framecounter = 0;
 
       }
@@ -379,7 +379,8 @@
             direction_y = -1;
           }
           current_offset[1] += direction_y*step_y;
-
+		  
+		  
 
           // get the bounding box of this airplane
           var bbox_plane = calculateBoundingBox( current_vertices, current_offset);
@@ -389,10 +390,14 @@
 
 
           //
-          // Bonus Part 1!
+          // Bonus Part 1 (Inspired by Alvin)! Also Bonus Part 2. Inspired by Ayah
           //
-		  current_offset[0] -= 0.0008
-
+		  current_offset[0] -= 0.0008 + (0.001*spd)
+		  
+		  //get the shapes to repeat. Inspired by Michael O'Toole  
+		  if (current_offset[0] <= -1) {
+			current_offset[0] = 1;
+			}
 
           // collision detection using the bounding box of this airplane
           if (detectCollision(bbox_plane, current_offset)) {
