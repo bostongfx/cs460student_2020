@@ -146,17 +146,17 @@
       var vertices;
       
       vertices = new Float32Array( [
-                                -0.05,  0.05, 0.00, // V0
-                                 0.00, 0.025, 0.00, // V1
-                                -0.05, 0.025, 0.00, // V2
+                                -0.05,  0.05, 0.00, // V0 //0
+                                 0.00, 0.025, 0.00, // V1 //1
+                                -0.05, 0.025, 0.00, // V2 //2
 
-                                 0.05, 0.025, 0.00, // V3
-                                  0.1, -0.025, 0.00, // V4
-                                 0.05, -0.025, 0.00,  // V5
+                                 0.05, 0.025, 0.00, // V3 //3
+                                  0.1, -0.025, 0.00, // V4 //4
+                                 0.05, -0.025, 0.00,  // V5 //5
 
                                  0.05, -0.025, 0.00,  // V5
-                                -0.05, -0.075, 0.00, // V6
-                                -0.05, -0.025, 0.00, // V7
+                                -0.05, -0.075, 0.00, // V6 //6
+                                -0.05, -0.025, 0.00, // V7 //7
 
                                 -0.05, 0.025, 0.00, // V2
                                  0.05, 0.025, 0.00, // V3
@@ -167,12 +167,27 @@
                                 -0.05, -0.025, 0.00, // V7
                                 ] );
 
+      var indices;
+
+      indices = new Uint8Array( [
+                                0, 1, 2,
+                                3, 4, 5,
+                                5, 6, 7,
+                                2, 3, 7,
+                                3, 5, 7
+                                    ] );
+
       var v_buffer;
       v_buffer = gl.createBuffer(); // create
       gl.bindBuffer( gl.ARRAY_BUFFER, v_buffer ); // bind
       gl.bufferData( gl.ARRAY_BUFFER, vertices, gl.STATIC_DRAW ); // put data in
       gl.bindBuffer( gl.ARRAY_BUFFER, null ); // unbind
 
+      var i_buffer;
+      i_buffer = gl.createBuffer(); // create
+      gl.bindBuffer( gl.ELEMENT_ARRAY_BUFFER, i_buffer ); // bind
+      gl.bufferData( gl.ELEMENT_ARRAY_BUFFER, indices, gl.STATIC_DRAW ); // put data in
+      gl.bindBuffer( gl.ELEMENT_ARRAY_BUFFER, null ); // unbind
 
       //
       // Part 1 Ends
@@ -184,7 +199,7 @@
       //
       // Bonus Part 3!
       //
-      return ['airplane', v_buffer, vertices, offset, color, gl.TRIANGLES];
+      return ['airplane', v_buffer, vertices, offset, color, gl.TRIANGLES, i_buffer];
 
     }
 
@@ -363,6 +378,7 @@
         var current_offset = objects[o][3];
         var current_color = objects[o][4];
         var current_drawtype = objects[o][5];
+        var current_i_buffer = objects[o][6];
 
         var current_v_count = current_vertices.length;
         
@@ -440,7 +456,7 @@
         
         gl.bindBuffer( gl.ARRAY_BUFFER, current_v_buffer );
 
-        // gl.bindBuffer( gl.ELEMENT_ARRAY_BUFFER, current_i_buffer );
+        gl.bindBuffer( gl.ELEMENT_ARRAY_BUFFER, current_i_buffer );
 
         // find the attribute in the shader source
         var a_position = gl.getAttribLocation( shaderprogram, 'a_position' );
