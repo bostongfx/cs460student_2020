@@ -3,27 +3,27 @@
   <meta http-equiv="content-type" content="text/html; charset=UTF-8">
   <title>Vanilla WebGL!</title>
   <style>
-    html, body {
-      background-color:#000;
-      margin: 0;
-      padding: 0;
-      height: 100%;
-      overflow: hidden !important;
-      background-image: url(https://cs460.org/gfx/bg.gif);
-      background-repeat: no-repeat;
-      background-size: 100% 100%;
-    }
+      html, body {
+          background-color: #000;
+          margin: 0;
+          padding: 0;
+          height: 100%;
+          overflow: hidden !important;
+          /*background-image: url(https://cs460.org/gfx/bg.gif);*/
+          background-repeat: no-repeat;
+          background-size: 100% 100%;
+      }
 
-    #c {
-      width: 100%;
-      height: 100%;
-    }
+      #c {
+          width: 100%;
+          height: 100%;
+      }
 
-    #scoreboard {
-      position: absolute;
-      top: 10px;
-      right: 10px;
-    }
+      #scoreboard {
+          position: absolute;
+          top: 10px;
+          right: 10px;
+      }
   </style>
 </head>
 <script type="text/javascript" src="https://cs460.org/js/glmatrix.js"></script>
@@ -40,7 +40,8 @@
       final_position.z += u_offset.z;
       gl_Position = vec4( final_position, 1.0);
     }
-  </script>
+
+</script>
 
 <script id="fragmentshader" type="glsl">
     precision mediump float;
@@ -48,330 +49,453 @@
     void main(void) {
       gl_FragColor = u_color;
     }
-  </script>
+
+</script>
 
 <script>
+    let c, gl;
+    let v_shader, f_shader, shaderprogram;
+    let vertices, indices, v_buffer, i_buffer;
 
-  let c, gl;
-  let v_shader, f_shader, shaderprogram;
-  let vertices, indices, v_buffer, i_buffer;
+    let step_x = 0.01;
+    let step_y = 0.01;
+    let direction_y = 0;
+    let direction_x = 0;
+    let airplane;
+    obstacleSpeed = 1;
 
-  let step_x = 0.01;
-  let step_y = 0.01;
-  let obstacle_factor = 3; // Hint for the bonus!
-  let direction_y = 0;
-  let direction_x = 0;
-  let airplane;
+    window.onload = function () {
+        // INITIALIZE WEBGL
+        c = document.getElementById('c'); // setup canvas
+        c.width = window.innerWidth;
+        c.height = window.innerHeight;
 
+        gl = c.getContext('webgl'); // setup GL context
+        gl.viewport(0, 0, c.width, c.height);
 
-  window.onload = function() {
-    //************************************************************//
-    // INITIALIZE WEBGL
-    //************************************************************//
-    c = document.getElementById( 'c' ); // setup canvas
-    c.width = window.innerWidth;
-    c.height = window.innerHeight;
+        // SHADERS
+        v_shader = gl.createShader(gl.VERTEX_SHADER);
+        f_shader = gl.createShader(gl.FRAGMENT_SHADER);
 
-    gl = c.getContext( 'webgl' ); // setup GL context
-    gl.viewport(0, 0, c.width, c.height );
+        // compile vertex shader
+        gl.shaderSource(v_shader, document.getElementById('vertexshader').innerText);
+        gl.compileShader(v_shader);
+        if (!gl.getShaderParameter(v_shader, gl.COMPILE_STATUS)) console.log(gl.getShaderInfoLog(v_shader));
 
-    //************************************************************//
-    // SHADERS
-    //************************************************************//
-    v_shader = gl.createShader( gl.VERTEX_SHADER );
-    f_shader = gl.createShader( gl.FRAGMENT_SHADER );
+        // compile fragment shader
+        gl.shaderSource(f_shader, document.getElementById('fragmentshader').innerText);
+        gl.compileShader(f_shader);
+        if (!gl.getShaderParameter(f_shader, gl.COMPILE_STATUS)) console.log(gl.getShaderInfoLog(f_shader));
 
-    // compile vertex shader
-    gl.shaderSource( v_shader, document.getElementById( 'vertexshader' ).innerText );
-    gl.compileShader( v_shader );
-    if (!gl.getShaderParameter( v_shader, gl.COMPILE_STATUS)) { console.log(gl.getShaderInfoLog( v_shader )); }
+        // attach and link the shaders
+        shaderprogram = gl.createProgram();
+        gl.attachShader(shaderprogram, v_shader);
+        gl.attachShader(shaderprogram, f_shader);
 
-    // compile fragment shader
-    gl.shaderSource( f_shader, document.getElementById( 'fragmentshader' ).innerText );
-    gl.compileShader( f_shader );
-    if (!gl.getShaderParameter( f_shader, gl.COMPILE_STATUS)) { console.log(gl.getShaderInfoLog( f_shader )); }
-
-    // attach and link the shaders
-    shaderprogram = gl.createProgram();
-    gl.attachShader( shaderprogram, v_shader );
-    gl.attachShader( shaderprogram, f_shader );
-
-    gl.linkProgram( shaderprogram );
-    gl.useProgram( shaderprogram );
+        gl.linkProgram(shaderprogram);
+        gl.useProgram(shaderprogram);
 
 
-    // create multiple objects
-    airplane = createAirplane();
-    objects = [];
-    objects.push( airplane );
-    objects.push( createObstacle());
-    objects.push( createObstacle());
-    objects.push( createObstacle());
-    objects.push( createObstacle());
-    objects.push( createObstacle());
-    objects.push( createObstacle());
-    objects.push( createObstacle());
-    objects.push( createObstacle());
-    objects.push( createObstacle());
+        // create multiple objects
+        airplane = createAirplane();
+        objects = [];
+        objects.push(airplane);
+        objects.push(createObstacle());
+        objects.push(createObstacle());
+        objects.push(createObstacle());
+        objects.push(createObstacle());
+        objects.push(createObstacle());
+        objects.push(createObstacle());
+        objects.push(createObstacle());
+        objects.push(createObstacle());
+        objects.push(createObstacle());
 
-    animate();
-  };
+        // 22 walls used to cover the entire viewport in 0.1 sized segments
+        walls = [];
+        for (let i = 0; i < 22; i++) walls.push( createWall() );
+        // Each wall segment will use the previous segment to determine placement.
+        walls[0].prev = walls[walls.length-1]; //wrapped around
+        for (let i = 1; i < walls.length; i++) walls[i].prev = walls[i-1];
 
-  function createAirplane() {
-    //
-    // Part 1 Starts
-    //
-    let vertices = new Float32Array( [
-      -3.0,  2.0, 0.0,
-      -3.0, -2.0, 0.0,
-      -1.0,  1.0, 0.0,
-       1.0,  1.0, 0.0,
-       1.0,  0.0, 0.0,
-       3.0,  0.0, 0.0
-    ] );
-    for (let i = 0; i < vertices.length; i++) vertices[i] /= 64;
+        animate();
+    };
 
-    let indices = new Uint8Array( [
-            0, 1, 2,
-            1, 2, 4,
-            2, 3, 4,
-            3, 4, 5
-    ]);
-
-    let v_buffer = gl.createBuffer(); // create
-    gl.bindBuffer( gl.ARRAY_BUFFER, v_buffer ); // bind
-    gl.bufferData( gl.ARRAY_BUFFER, vertices, gl.STATIC_DRAW ); // put data in
-    gl.bindBuffer( gl.ARRAY_BUFFER, null ); // unbind
-
-    let i_buffer = gl.createBuffer(); // create
-    gl.bindBuffer( gl.ELEMENT_ARRAY_BUFFER, i_buffer ); //bind
-    gl.bufferData( gl.ELEMENT_ARRAY_BUFFER, indices, gl.STATIC_DRAW ); // put data in
-    gl.bindBuffer( gl.ELEMENT_ARRAY_BUFFER, null ); // unbind
-
-
-
-
-    //
-    // Part 1 Ends
-    //
-
-    let offset = [0.0, 0.0, 0.0];
-    let color = [1.0, 1.0, 1.0, 1.0];
-
-    //
-    // Bonus Part 3!
-    //
-    return ['airplane', v_buffer, i_buffer, vertices, offset, color, gl.TRIANGLES, indices];
-  }
-
-  function createObstacle() {
-    let vertices = new Float32Array( [ 0.0, 0.0, 0.0 ]);
-
-    let v_buffer = gl.createBuffer(); // create
-    gl.bindBuffer( gl.ARRAY_BUFFER, v_buffer ); // bind
-    gl.bufferData( gl.ARRAY_BUFFER, vertices, gl.STATIC_DRAW ); // put data in
-    gl.bindBuffer( gl.ARRAY_BUFFER, null ); // unbind
-
-    //
-    // Part 2 Starts
-    //
-    let offset = [2*Math.random()-1, 2*Math.random()-1, 0.0];
-
-    // let indices = new Uint8Array( [ 0, 0, 0 ]);
-    //
-    // let i_buffer = gl.createBuffer(); // create
-    // gl.bindBuffer( gl.ELEMENT_ARRAY_BUFFER, i_buffer ); //bind
-    // gl.bufferData( gl.ELEMENT_ARRAY_BUFFER, indices, gl.STATIC_DRAW ); // put data in
-    // gl.bindBuffer( gl.ELEMENT_ARRAY_BUFFER, null ); // unbind
-
-    //
-    // Part 2 Ends
-    //
-
-    let color = [Math.random(),Math.random(),Math.random(),1.0];
-
-    return ['obstacle', v_buffer, null, vertices, offset, color, gl.POINTS, null];
-  }
-
-
-
-  //
-  // Part 3 Starts (no coding required, just explanations in PDF)
-  //
-  function calculateBoundingBox(vertices, offset) {
-    let minx = 1000;
-    let maxx = -1000;
-    let miny = 1000;
-    let maxy = -1000;
-    let minz = 1000;
-    let maxz = -1000;
-
-    for (let v=0; v<vertices.length; v+=3) {
-      let currentx = vertices[v] + offset[0];
-      let currenty = vertices[v+1] + offset[1];
-      let currentz = vertices[v+2] + offset[2];
-
-      minx = Math.min( minx, currentx );
-      miny = Math.min( miny, currenty );
-      minz = Math.min( minz, currentz );
-
-      maxx = Math.max( maxx, currentx );
-      maxy = Math.max( maxy, currenty );
-      maxz = Math.max( maxz, currentz );
+    // Broke this out into separate method for easier reuse.
+    function makeVBuffer(vertices) {
+        let v_buffer = gl.createBuffer();                                 // create
+        gl.bindBuffer(gl.ARRAY_BUFFER, v_buffer);                         // bind
+        gl.bufferData(gl.ARRAY_BUFFER, vertices, gl.STATIC_DRAW);         // put data in
+        gl.bindBuffer(gl.ARRAY_BUFFER, null);                             // unbind
+        return v_buffer;
     }
-    return [minx, maxx, miny, maxy, minz, maxz];
-  }
 
-  function detectCollision(bbox, point) {
-    let collision = false;
+    // Broke this out too.
+    function makeIBuffer(indices) {
+        let i_buffer = gl.createBuffer();                                 // create
+        gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, i_buffer);                 // bind
+        gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, indices, gl.STATIC_DRAW);  // put data in
+        gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, null);                     // unbind
+        return i_buffer;
+    }
 
-    if (point[0] >= bbox[0] && point[0] <= bbox[1]) {
-      if (point[1] >= bbox[2] && point[1] <= bbox[3]) {
-        if (point[2] >= bbox[4] && point[2] <= bbox[5]) {
-          collision = true;
+    function createAirplane() {
+        let vertices = new Float32Array([
+            -3.0,  2.0, 0.0,    //  *-_                     Top rear fin point
+            -1.0,  1.0, 0.0,    //  |  ``-*_______          Rear fin joint
+             1.0,  1.0, 0.0,    //  |             *--__     Cockpit point
+             3.0,  0.0, 0.0,    //  |              ____:*   Airplane tip
+             1.0,  0.0, 0.0,    //  |     ___---``*         Front fin joint
+            -3.0, -2.0, 0.0     //  *--```                  Bottom rear fin point
+        ]);
+        for (let i = 0; i < vertices.length; i++) vertices[i] /= 64;        // Scale the airplane down
+
+        let indices = new Uint8Array([
+            0, 5, 1,    // Top rear fin
+            5, 1, 4,    // Bottom fin
+            1, 2, 4,    // Cockpit
+            2, 4, 3     // Nose
+        ]);
+
+        let v_buffer = makeVBuffer(vertices);
+        let i_buffer = makeIBuffer(indices);
+
+        let offset = [0.0, 0.0, 0.0];
+        let color = [1.0, 1.0, 1.0, 1.0];
+
+        return ['airplane', v_buffer, vertices, offset, color, gl.TRIANGLES, i_buffer, indices];
+    }
+
+    function createObstacle() {
+        let vertices = new Float32Array([0.0, 0.0, 0.0]);
+        let v_buffer = makeVBuffer(vertices);
+
+        let offset = [2 * Math.random() - 1, 2 * Math.random() - 1, 0.0];  // random spot x,y in [-1,1]
+        let color = [Math.random(), Math.random(), Math.random(), 1.0];    // random color
+
+        return ['obstacle', v_buffer, vertices, offset, color, gl.POINTS];
+    }
+
+    // Used to create the initial wall segments.
+    function createWall() {
+        // center is the middle point between top and bottom walls. Allows walls to move across x axis
+        // gap indicates the amount of space between top and bottom walls
+        let center = 0;
+        let gap    = 2;
+
+        let topVertices = new Float32Array([
+            0.0, 1, 0.0,
+            0.0, 1, 0.0,
+            0.1, 1, 0.0,
+            0.1, 1, 0.0
+        ]);
+
+        let botVertices = new Float32Array([
+            0.0, -1, 0.0,
+            0.0, -1, 0.0,
+            0.1, -1, 0.0,
+            0.1, -1, 0.0
+        ]);
+
+        let indices = new Uint8Array([0, 1, 2, 1, 2, 3]);
+
+        let topVBuffer = makeVBuffer(topVertices);
+        let botVBuffer = makeVBuffer(botVertices);
+        let topIBuffer = makeIBuffer(indices);
+        let botIBuffer = makeIBuffer(indices);
+
+        // The first wall segment starts in front. All other start off screen and updated on first call to animate()
+        let offset = walls.length > 0 ? [-2.0, 0.0, 0.0] : [0.8, 0.0, 0.0];
+        // top wall is lighter than bottom wall
+        let color1 = [0.5, 0.5, 0.5, 1.0];
+        let color2 = [0.25, 0.25, 0.25, 1.0];
+
+        return {
+            objectType: "wall",
+            center: center,
+            gap: gap,
+            offset: offset,
+            topVertices: topVertices,
+            botVertices: botVertices,
+            topVBuffer: topVBuffer,
+            botVBuffer: botVBuffer,
+            topIBuffer: topIBuffer,
+            botIBuffer: botIBuffer,
+            indices: indices,
+            color1: color1,
+            color2: color2,
+            drawType: gl.TRIANGLES
+        };
+    }
+
+    // this is called when a wall segment needs to be moved to the front.
+    function updateWall(current, prev) {
+        // First align center and gap with the segment that comes before
+        let center = prev.center;
+        let gap    = prev.gap;
+
+        // 50% chance for the center to move. If move, 50% chance up vs down. Normalized to 0.1 step size
+        // 50% chance for the gap size to change. If change, 50% chance bigger vs smaller. Normalized to 0.1 step size
+        let direction = Math.random() > 0.5 ? Math.sign(Math.random()-0.5)/10 : 0;
+        let gapChange = Math.random() > 0.5 ? Math.sign(Math.random()-0.5)/10 : 0;
+
+        // A check to make sure the center doesn't move off screen. If close, reverse direction
+        direction = Math.abs(center + direction) >= 0.9 ? (-1*direction) : direction;
+        // And a check to make sure the gap doesn't get too big or too small. If so, reverse it
+        gapChange = (gap+gapChange) > 2 || (gap+gapChange) <= 0.4 ? (-1*gapChange) : gapChange;
+
+        // Rounded to prevent... rounding errors? (like 1.8999999999)
+        // Match the left side y coordinate to previous segment
+        let oldTopY = Math.round((center + gap/2)*10)/10;
+        let oldBotY = Math.round((center - gap/2)*10)/10;
+        // Then add in the changes
+        center      = Math.round((center + direction)*10)/10;
+        gap         = Math.round((gap    + gapChange)*10)/10;
+        // Then calculate the right side y coordinate
+        let newTopY = Math.round((center + gap/2)*10)/10;
+        let newBotY = Math.round((center - gap/2)*10)/10;
+
+        // Move the wall segment from offscreen left to offscreen right (like a repeating background)
+        current.offset[0] = prev.offset[0]+0.1;
+
+        // If this segment is the first segment in the array, it needs to be moved like every other segment
+        // If we don't do this, there will be a small gap between the last and first segments in the array
+        if (current.topVBuffer === walls[0].topVBuffer) current.offset[0] -= obstacleSpeed * 0.001;
+
+        // Set the new y coordinate values in the vertices arrays.
+        current.topVertices[4] = oldTopY;
+        current.topVertices[10] = newTopY;
+        current.botVertices[4] = oldBotY;
+        current.botVertices[10] = newBotY;
+
+        // And update the center and gap values for the next round.
+        current.center = center;
+        current.gap = gap;
+    }
+
+    // Compressed this method a bit...
+    function calculateBoundingBox(vertices, offset) {
+        let xMin = 1000, xMax = -1000;
+        let yMin = 1000, yMax = -1000;
+        let zMin = 1000, zMax = -1000;
+
+        for (let v = 0; v < vertices.length; v += 3) {
+            xMin = Math.min(xMin, vertices[v] + offset[0]);
+            xMax = Math.max(xMax, vertices[v] + offset[0]);
+            yMin = Math.min(yMin, vertices[v + 1] + offset[1]);
+            yMax = Math.max(yMax, vertices[v + 1] + offset[1]);
+            zMin = Math.min(zMin, vertices[v + 2] + offset[2]);
+            zMax = Math.max(zMax, vertices[v + 2] + offset[2]);
         }
-      }
-    }
-    return collision;
-  }
-  //
-  // Part 3 Ends
-  //
-
-
-
-  //
-  // Part 4 Starts
-  //
-  window.onkeydown = function(e) {
-    if      (e.code === "ArrowUp"    ) direction_y =  1;
-    else if (e.code === "ArrowDown"  ) direction_y = -1;
-    else if (e.code === "ArrowLeft"  ) direction_x = -1;
-    else if (e.code === "ArrowRight" ) direction_x =  1;
-  };
-
-  window.onkeyup = function(e) {
-    if      (e.code === "ArrowUp"    ) direction_y = 0;
-    else if (e.code === "ArrowDown"  ) direction_y = 0;
-    else if (e.code === "ArrowLeft"  ) direction_x = 0;
-    else if (e.code === "ArrowRight" ) direction_x = 0;
-  };
-
-  //
-  // Part 4 Ends
-  //
-
-  let framecounter = 0;
-  let obstacleSpeed = 1;
-
-  function animate() {
-    framecounter += 1;
-    if (framecounter > 150) {
-      // roughly every five seconds with 30 FPS
-
-      // update score
-      let currentScore = parseInt(document.getElementById('scoreboard').innerHTML);
-      document.getElementById('scoreboard').innerHTML = currentScore + Math.floor(10*obstacleSpeed);
-
-      //
-      // Bonus Part 2!
-      //
-      obstacleSpeed += 0.05;
-
-
-      framecounter = 0;
+        return [xMin, xMax, yMin, yMax, zMin, zMax];
     }
 
-    gl.clearColor( 0.0, 0.0, 0.0, 0.0);
-    gl.clear( gl.COLOR_BUFFER_BIT );
+    function detectCollision(bbox, point) {
+        if (point[0] >= bbox[0] && point[0] <= bbox[1]
+         && point[1] >= bbox[2] && point[1] <= bbox[3]
+         && point[2] >= bbox[4] && point[2] <= bbox[5]) {
+            document.getElementById('scoreboard').innerHTML += ' AND...GAME OVER!';
+            return true;
+        }
+        return false;
+    }
 
-    for ( let o = 0; o < objects.length; o++ ) {
-      let current_objecttype  = objects[o][0];
-      let current_v_buffer    = objects[o][1];
-      let current_i_buffer    = objects[o][2];
-      let current_vertices    = objects[o][3];
-      let current_offset      = objects[o][4];
-      let current_color       = objects[o][5];
-      let current_drawtype    = objects[o][6];
-      let current_i_count     = objects[o][7] ? objects[o][7].length : null;
+    // I originally tried implementing a triangle collision algorithm, but it was proving to
+    // be WAY too complicated for this project. Instead, I implemented a rough point-line intercept calculation.
+    // It checks whether a corner of the bbox has passed through one of the walls.
+    // Formula found on StackExchange, posted by user 'Inquisitive':
+    // https://math.stackexchange.com/questions/1435779/calculate-if-a-point-lies-above-or-below-or-right-to-left-of-a-line
+    function detectWallCollision(bbox, wall) {
+        let wallXOffset = wall.offset[0];
+        let botWallP1 = [wallXOffset                      , wall.botVertices[4]];
+        let topWallP1 = [wallXOffset                      , wall.topVertices[4]];
+        let botWallP2 = [wallXOffset + wall.botVertices[9], wall.botVertices[10]];
+        let topWallP2 = [wallXOffset + wall.topVertices[9], wall.topVertices[10]];
+        // if the wall segment lines up with the airplane in the x direction
+        if (wallXOffset >= bbox[0] && wallXOffset <= bbox[1] || botWallP2[0] >= bbox[0] && botWallP2[0] <= bbox[1]) {
+            let highPointBottom = Math.max(botWallP1[1], botWallP2[1]);
+            let lowPointTop     = Math.min(topWallP1[1], topWallP2[1]);
+            // Check if high point of bottom wall is within bbox. If so, we look closer
+            if (highPointBottom >= bbox[2]){
+                // We calculate the y value of each corner of the bbox if projected onto the wall.
+                let botWallSlope         = (botWallP2[1] - botWallP1[1]) / (botWallP2[0] - botWallP1[0]);
+                let botWallIntercept     = -1 * botWallSlope * botWallP1[0] + botWallP1[1];
+                let projBBoxXMinOntoWall = botWallSlope * bbox[0] + botWallIntercept;
+                let projBBoxXMaxOntoWall = botWallSlope * bbox[1] + botWallIntercept;
+                // Then we subtract the actual y value from this projection.
+                // If positive, bbox corner is below wall line, and thus inside the wall.
+                if (projBBoxXMinOntoWall - bbox[2] > 0 || projBBoxXMaxOntoWall - bbox[2] > 0) {
+                    document.getElementById('scoreboard').innerHTML += ' AND...GAME OVER!';
+                    return true;
+                }
+            }
+            // Check if low point of top wall is within bbox. If so, we look closer
+            if (lowPointTop <= bbox[3]) {
+                // We calculate the y value of each corner of the bbox if projected onto the wall.
+                let topWallSlope          = (topWallP2[1] - topWallP1[1]) / (topWallP2[0] - topWallP1[0]);
+                let topWallIntercept      = -1 * topWallSlope * topWallP1[0] + topWallP1[1];
+                let projBBoxXMinOntoWall  = topWallSlope * bbox[0] + topWallIntercept;
+                let projBBoxXMaxOntoWall  = topWallSlope * bbox[1] + topWallIntercept;
+                // We subtract the actual y value from this projection.
+                // If negative, bbox corner is above wall line, and thus inside the wall.
+                if (projBBoxXMinOntoWall - bbox[3] < 0 || projBBoxXMaxOntoWall - bbox[3] < 0) {
+                    document.getElementById('scoreboard').innerHTML += ' AND...GAME OVER!';
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
 
-      let current_v_count = current_vertices.length;
+    // Made it so you hold down an arrow key or WSAD to move
+    window.onkeydown = function (e) {
+        if (e.code === "ArrowUp" || e.code === "KeyW") direction_y = 1;
+        else if (e.code === "ArrowDown" || e.code === "KeyS") direction_y = -1;
+        else if (e.code === "ArrowLeft" || e.code === "KeyA") direction_x = -1;
+        else if (e.code === "ArrowRight" || e.code === "KeyD") direction_x = 1;
+    };
 
-      if (current_objecttype === 'airplane') {
-        // Check x and y offset. If airplane bumped edge of screen, nudge towards middle.
-        if (Math.abs(current_offset[0]) >= 1.0) current_offset[0] = Math.sign(current_offset[0]) * 0.95;
-        if (Math.abs(current_offset[1]) >= 1.0) current_offset[1] = Math.sign(current_offset[1]) * 0.95;
+    // And when key is released, airplane stops moving
+    window.onkeyup = function (e) {
+        if (e.code === "ArrowUp" || e.code === "KeyW") direction_y = 0;
+        else if (e.code === "ArrowDown" || e.code === "KeyS") direction_y = 0;
+        else if (e.code === "ArrowLeft" || e.code === "KeyA") direction_x = 0;
+        else if (e.code === "ArrowRight" || e.code === "KeyD") direction_x = 0;
+    };
 
-        // Update airplane offset
-        current_offset[0] += direction_x * step_x;
-        current_offset[1] += direction_y * step_y;
+    let frameCounter = 0;
+    let bbox_plane;
 
-      } else if (current_objecttype === 'obstacle') {
-        //
-        // Bonus Part 1!
-        //
-        if (current_offset[0] <= -1.0) {
-          current_offset[0] = 1.0;
-          current_offset[1] = Math.random()*2 - 1.0;
-          current_color[0] = Math.random();
-          current_color[1] = Math.random();
-          current_color[2] = Math.random();
+    // moved this stuff into separate method to clean up the animate method
+    function drawObject(objectType, vBuffer, vertices, offset, color, drawType, iBuffer, indices) {
+        // CONNECT SHADER WITH GEOMETRY
+        gl.bindBuffer(gl.ARRAY_BUFFER, vBuffer);
+        if (objectType === 'wall') gl.bufferData(gl.ARRAY_BUFFER, vertices, gl.STATIC_DRAW ); // update wall geometry
+        if (objectType !== 'obstacle') gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, iBuffer); // bind i_buffer
+
+        // find the attribute in the shader source
+        let a_position = gl.getAttribLocation(shaderprogram, 'a_position');
+        let u_offset = gl.getUniformLocation(shaderprogram, 'u_offset');
+        let u_color = gl.getUniformLocation(shaderprogram, 'u_color');
+
+        gl.vertexAttribPointer(a_position, 3, gl.FLOAT, false, 0, 0);
+        gl.enableVertexAttribArray(a_position);
+
+        // find the uniform in the shader source
+        gl.uniform3fv(u_offset, offset);
+        gl.uniform4fv(u_color, new Float32Array(color));
+
+        // DRAW!
+        if (objectType === 'obstacle') gl.drawArrays(drawType, 0, vertices.length / 3, 0);
+        else gl.drawElements(gl.TRIANGLES, indices.length, gl.UNSIGNED_BYTE, 0); // INDEXED GEOMETRY
+    }
+
+    stopped = false;
+    controlStrobe = 0;
+    function animate() {
+        if (!stopped) {
+            frameCounter += 1;
+            if (frameCounter > 150) { // roughly every five seconds with 30 FPS
+                // Update score. Score increases faster as time passes
+                let currentScore = parseInt(document.getElementById('scoreboard').innerHTML);
+                document.getElementById('scoreboard').innerHTML
+                    = String(currentScore + Math.floor(10 * obstacleSpeed));
+
+                obstacleSpeed += 0.4; // obstacles speed up over time.
+                frameCounter = 0;
+            }
+
+            gl.clearColor(0.0, 0.0, 0.0, 0.0);
+            gl.clear(gl.COLOR_BUFFER_BIT);
+
+            bbox_plane = calculateBoundingBox(airplane[2], airplane[3]);
+
+            // draw the wall segments first, so the obstacles show on top of walls.
+            for (let i = 0; i < walls.length; i++) {
+                // If the wall segment is off screen left, move it to offscreen right. Else, move it left
+                if  (walls[i].offset[0] <= -1.1) updateWall(walls[i], walls[i].prev);
+                else walls[i].offset[0] -= obstacleSpeed * 0.001;
+
+                let objectType = walls[i].objectType;
+                let topVBuffer = walls[i].topVBuffer;
+                let botVBuffer = walls[i].botVBuffer;
+                let topVertices = walls[i].topVertices;
+                let botVertices = walls[i].botVertices;
+                let offset = walls[i].offset;
+                let color1 = walls[i].color1;
+                let color2 = walls[i].color2;
+                let drawType = walls[i].drawType;
+                let topIBuffer = walls[i].topIBuffer;
+                let botIBuffer = walls[i].botIBuffer;
+                let indices = walls[i].indices;
+
+                if (objectType === "wall" && !stopped && detectWallCollision(bbox_plane, walls[i])) {
+                    stopped = true;
+                    // Turn wall red if collision.
+                    color1[0] = 1.0;
+                    color2[0] = 1.0;
+                }
+                drawObject(objectType, topVBuffer, topVertices, offset, color1, drawType, topIBuffer, indices);
+                drawObject(objectType, botVBuffer, botVertices, offset, color2, drawType, botIBuffer, indices);
+            }
+
+            for (let o = 0; o < objects.length; o++) {
+                let objectType  = objects[o][0];
+                let vBuffer     = objects[o][1];
+                let vertices    = objects[o][2];
+                let offset      = objects[o][3];
+                let color       = objects[o][4];
+                let drawType    = objects[o][5];
+                // Get the indices and ibuffer if object is airplane.
+                let iBuffer     = objectType === "airplane" ? objects[o][6] : null;
+                let indices     = objectType === "airplane" ? objects[o][7] : null;
+
+                if (objectType === "obstacle" && !stopped && detectCollision(bbox_plane, offset)) stopped = true;
+
+                if (objectType === 'airplane') {
+                    // Check x and y offset. If airplane bumped edge of screen, nudge towards middle.
+                    if (Math.abs(offset[0]) >= 1.0) offset[0] = Math.sign(offset[0]) * 0.95;
+                    if (Math.abs(offset[1]) >= 1.0) offset[1] = Math.sign(offset[1]) * 0.95;
+
+                    // Update airplane offset
+                    offset[0] += direction_x * step_x * Math.max(1, obstacleSpeed/10);
+                    offset[1] += direction_y * step_y * Math.max(1, obstacleSpeed/10);
+
+                    // Some randomized airplane color effects :)
+                    if ((direction_x !== 0 || direction_y !== 0) && ++controlStrobe >= 20) {
+                        color[0] = Math.random();
+                        color[1] = Math.random();
+                        color[2] = Math.random();
+                        controlStrobe = 0;
+                    }
+                } else if (objectType === 'obstacle') {
+                    if (offset[0] <= -1.0) {                  // If obstacle went off screen
+                        offset[0] = 1.0 + Math.random()/5;    //   move it to the right side (with some variance)
+                        offset[1] = Math.random() * 2 - 1.0;  //   and randomize y position
+                        color[0]  = Math.random();            //   and randomize color
+                        color[1]  = Math.random();
+                        color[2]  = Math.random();
+                    } else {
+                        offset[0] -= obstacleSpeed * 0.001; // else it moves left
+                    }
+                }
+                drawObject(objectType, vBuffer, vertices, offset, color, drawType, iBuffer, indices);
+            }
+            requestAnimationFrame(animate);
         } else {
-          current_offset[0] -= obstacleSpeed * 0.001;
+            alert("Game over! Click ok (press enter) to play again.");
+            objects = [];
+            walls = [];
+            stopped = false;
+            direction_y = 0;
+            direction_x = 0;
+            obstacleSpeed = 1;
+            document.getElementById('scoreboard').innerHTML = "0";
+            dispatchEvent(new Event('load'));
         }
-
-
-        let bbox_plane = calculateBoundingBox( airplane[3], airplane[4]);
-
-        if (detectCollision(bbox_plane, current_offset)) {
-          console.log("game over");
-          document.getElementById('scoreboard').innerHTML += ' AND...GAME OVER!'
-          return;
-        }
-      }
-      //************************************************************//
-      //
-      // CONNECT SHADER WITH GEOMETRY
-      //
-
-      gl.bindBuffer( gl.ARRAY_BUFFER, current_v_buffer );
-
-      if (current_i_buffer) {
-        gl.bindBuffer( gl.ELEMENT_ARRAY_BUFFER, current_i_buffer );
-      }
-
-      // find the attribute in the shader source
-      let a_position = gl.getAttribLocation( shaderprogram, 'a_position' );
-      let u_offset   = gl.getUniformLocation( shaderprogram, 'u_offset' );
-      let u_color    = gl.getUniformLocation( shaderprogram, 'u_color' );
-
-      gl.vertexAttribPointer( a_position, 3, gl.FLOAT, false, 0, 0 );
-      gl.enableVertexAttribArray ( a_position );
-      // find the uniform in the shader source
-      gl.uniform3fv( u_offset, current_offset);
-      gl.uniform4fv( u_color, new Float32Array(current_color) );
-
-      //************************************************************//
-      //
-      // DRAW!
-      //
-
-      //
-      // Bonus Part 3!
-      //
-      if (current_i_buffer) {
-        // INDEXED GEOMETRY
-        gl.drawElements( gl.TRIANGLES, current_i_count, gl.UNSIGNED_BYTE, 0);
-      } else {
-        // Regular geometry
-        gl.drawArrays( current_drawtype, 0, current_v_count/3, 0 );
-      }
     }
-    requestAnimationFrame(animate);
-  }
 </script>
 <body>
 <canvas id="c"></canvas>
-<div id="scoreboard">0</div>
+<div id="scoreboard" style="color:red">0</div>
 </body>
 </html>
