@@ -55,7 +55,6 @@
 <script>
     let c, gl;
     let v_shader, f_shader, shaderprogram;
-    let vertices, indices, v_buffer, i_buffer;
 
     let step_x = 0.01;
     let step_y = 0.01;
@@ -63,6 +62,7 @@
     let direction_x = 0;
     let airplane;
     obstacleSpeed = 1;
+    let wallResolution = 50;
 
     window.onload = function () {
         // INITIALIZE WEBGL
@@ -110,9 +110,8 @@
         objects.push(createObstacle());
         objects.push(createObstacle());
 
-        // 22 walls used to cover the entire viewport in 0.1 sized segments
         walls = [];
-        for (let i = 0; i < 22; i++) walls.push( createWall() );
+        for (let i = 0; i < 2*wallResolution; i++) walls.push( createWall() );
         // Each wall segment will use the previous segment to determine placement.
         walls[0].prev = walls[walls.length-1]; //wrapped around
         for (let i = 1; i < walls.length; i++) walls[i].prev = walls[i-1];
@@ -180,20 +179,23 @@
         // center is the middle point between top and bottom walls. Allows walls to move across x axis
         // gap indicates the amount of space between top and bottom walls
         let center = 0;
-        let gap    = 2;
+        let topGap = wallResolution;
+        let botGap = wallResolution;
+
+        let width = 2/wallResolution;
 
         let topVertices = new Float32Array([
-            0.0, 1, 0.0,
-            0.0, 1, 0.0,
-            0.1, 1, 0.0,
-            0.1, 1, 0.0
+            0.0  , 1, 0.0,
+            0.0  , 1, 0.0,
+            width, 1, 0.0,
+            width, 1, 0.0
         ]);
 
         let botVertices = new Float32Array([
-            0.0, -1, 0.0,
-            0.0, -1, 0.0,
-            0.1, -1, 0.0,
-            0.1, -1, 0.0
+            0.0  , -1, 0.0,
+            0.0  , -1, 0.0,
+            width, -1, 0.0,
+            width, -1, 0.0
         ]);
 
         let indices = new Uint8Array([0, 1, 2, 1, 2, 3]);
@@ -205,14 +207,15 @@
 
         // The first wall segment starts in front. All other start off screen and updated on first call to animate()
         let offset = walls.length > 0 ? [-2.0, 0.0, 0.0] : [0.8, 0.0, 0.0];
-        // top wall is lighter than bottom wall
+        // top wall is lighter than bottom wall (arbitrary choice. Wanted to make the triangles)
         let color1 = [0.5, 0.5, 0.5, 1.0];
         let color2 = [0.25, 0.25, 0.25, 1.0];
 
         return {
             objectType: "wall",
             center: center,
-            gap: gap,
+            topGap: topGap,
+            botGap: botGap,
             offset: offset,
             topVertices: topVertices,
             botVertices: botVertices,
@@ -229,47 +232,59 @@
 
     // this is called when a wall segment needs to be moved to the front.
     function updateWall(current, prev) {
-        // First align center and gap with the segment that comes before
-        let center = prev.center;
-        let gap    = prev.gap;
-
-        // 50% chance for the center to move. If move, 50% chance up vs down. Normalized to 0.1 step size
-        // 50% chance for the gap size to change. If change, 50% chance bigger vs smaller. Normalized to 0.1 step size
-        let direction = Math.random() > 0.5 ? Math.sign(Math.random()-0.5)/10 : 0;
-        let gapChange = Math.random() > 0.5 ? Math.sign(Math.random()-0.5)/10 : 0;
-
-        // A check to make sure the center doesn't move off screen. If close, reverse direction
-        direction = Math.abs(center + direction) >= 0.9 ? (-1*direction) : direction;
-        // And a check to make sure the gap doesn't get too big or too small. If so, reverse it
-        gapChange = (gap+gapChange) > 2 || (gap+gapChange) <= 0.4 ? (-1*gapChange) : gapChange;
-
-        // Rounded to prevent... rounding errors? (like 1.8999999999)
-        // Match the left side y coordinate to previous segment
-        let oldTopY = Math.round((center + gap/2)*10)/10;
-        let oldBotY = Math.round((center - gap/2)*10)/10;
-        // Then add in the changes
-        center      = Math.round((center + direction)*10)/10;
-        gap         = Math.round((gap    + gapChange)*10)/10;
-        // Then calculate the right side y coordinate
-        let newTopY = Math.round((center + gap/2)*10)/10;
-        let newBotY = Math.round((center - gap/2)*10)/10;
-
         // Move the wall segment from offscreen left to offscreen right (like a repeating background)
-        current.offset[0] = prev.offset[0]+0.1;
+        // It lines up the last tile that this method was called on.
+        current.offset[0] = prev.offset[0] + 2/wallResolution;
 
-        // If this segment is the first segment in the array, it needs to be moved like every other segment
-        // If we don't do this, there will be a small gap between the last and first segments in the array
+        // If this segment is the first segment in the array, it needs to be shifted down the viewport.
+        // The above prev.offset[0] will be shifted last in the array, and would otherwise produce a gap between
+        // this segment and itself.
         if (current.topVBuffer === walls[0].topVBuffer) current.offset[0] -= obstacleSpeed * 0.001;
 
+        // First align center and gap with the segment that comes before
+        let center = prev.center;
+        let topGap = prev.topGap;
+        let botGap = prev.botGap;
+
+        // Match the left side y coordinate to previous segment's right side y coordinate
+        let oldTopY = center + topGap/wallResolution;
+        let oldBotY = center - botGap/wallResolution;
+
+        // 20% chance for the center to move. If move, 50% chance up vs down.
+        let direction = Math.random() < 0.2 ? Math.sign(Math.random()-0.5) : 0;
+
+        // Check to make sure the center doesn't move off screen. If close, reverse direction
+        direction = Math.abs(center + direction/wallResolution) >= 0.9 ? (-1*direction) : direction;
+        center = center + direction/wallResolution;
+
+        // Gap meaning distance from the center. The center shifts up and down the y axis, but never off screen
+        // 50% chance for the gap size to change. If change, 50% chance bigger vs smaller.
+        let topGapChange = Math.random() < 0.5 ? Math.sign(Math.random()-0.5) : 0;
+        let botGapChange = Math.random() < 0.5 ? Math.sign(Math.random()-0.5) : 0;
+
+        // Check to make sure the gap doesn't get too big or too small. If so, reverse the step
+        topGapChange = (topGap+topGapChange) >= wallResolution || (topGap+topGapChange) < (wallResolution*3)/10
+            ? (-1*topGapChange) : topGapChange;
+        botGapChange = (botGap+botGapChange) >= wallResolution || (botGap+botGapChange) < (wallResolution*3)/10
+            ? (-1*botGapChange) : botGapChange;
+
+        // add in the changes
+        topGap = topGap + topGapChange;
+        botGap = botGap + botGapChange;
+        // Then calculate the right side y coordinate
+        let newTopY = center + topGap/wallResolution;
+        let newBotY = center - botGap/wallResolution;
+
         // Set the new y coordinate values in the vertices arrays.
-        current.topVertices[4] = oldTopY;
+        current.topVertices[4]  = oldTopY;
+        current.botVertices[4]  = oldBotY;
         current.topVertices[10] = newTopY;
-        current.botVertices[4] = oldBotY;
         current.botVertices[10] = newBotY;
 
         // And update the center and gap values for the next round.
-        current.center = center;
-        current.gap = gap;
+        current.center    = center;
+        current.topGap    = topGap;
+        current.botGap    = botGap;
     }
 
     // Compressed this method a bit...
