@@ -31,6 +31,7 @@
     <script>
       
       var r, c, scene, cube;
+      var added = false;
 
       window.onload = function() {
 
@@ -107,15 +108,19 @@
           },
           // Part 8: add cube
           'add new': function() {
-            var c2 = new X.cube();
-            c2.center = [50., 50., 50.];
-            r.add(c2);
-            r.render();
-            var geometry = new THREE.BoxBufferGeometry(30, 30, 30);
-            var material = new THREE.MeshStandardMaterial( { color: 0xffffff } );
-            var cube2 = new THREE.Mesh( geometry, material );
-            cube2.position.set(50., 50., 50.);
-            scene.add(cube2);
+            if (!added) {
+              console.log("added new cubes")
+              added = true;
+              var c2 = new X.cube();
+              c2.center = [50., 50., 50.];
+              r.add(c2);
+              r.render();
+              var geometry = new THREE.BoxBufferGeometry(30, 30, 30);
+              var material = new THREE.MeshStandardMaterial( { color: 0xffffff } );
+              var cube2 = new THREE.Mesh( geometry, material );
+              cube2.position.set(50., 50., 50.);
+              scene.add(cube2);
+            }
           }
         };
 
