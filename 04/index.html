@@ -41,7 +41,7 @@
       final_position.x += u_offset.x;
       final_position.y += u_offset.y;
       final_position.z += u_offset.z;
-      gl_PointSize = 30.;
+      gl_PointSize = 20.;
       gl_Position = vec4( final_position, 1.);
     
     }
@@ -181,7 +181,7 @@
           indices = new Uint8Array([0,1,5,
                                     1,2,5,
                                     2,5,4,
-                                    2,3,4]);
+                                    2,3,4,]);
 
           i_buffer = gl.createBuffer(); // create
           gl.bindBuffer( gl.ELEMENT_ARRAY_BUFFER, i_buffer);//bind
@@ -341,7 +341,7 @@
     function animate() {
  
       framecounter += 1;
- 
+  
       if (framecounter > 150) {
  
         // roughly every five seconds with 30 FPS

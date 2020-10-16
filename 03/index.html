@@ -37,7 +37,7 @@
         light.position.set( 10, 100, 10 );
         scene.add( light );
  
- 
+        
         //
         // The invisible plane
         // 
@@ -73,7 +73,7 @@
           vp_coords = new THREE.Vector2( ( pixel_coords.x / window.innerWidth ) * 2 - 1,
                                         -( pixel_coords.y / window.innerHeight ) * 2 + 1);
  
-          console.log('Viewport coordinates', vp_coords);
+          console.log('Viewport coordinates', vp_coords);8
  
           vp_coords_near = new THREE.Vector3( vp_coords.x, vp_coords.y, 0);
  
