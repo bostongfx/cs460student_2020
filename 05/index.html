@@ -41,14 +41,14 @@
       //
       // INITIALIZE WEBGL
       //
-      c = document.getElementById( 'c' ); // setup canvas
-      c.width = window.innerWidth;
-      c.height = window.innerHeight;
+      var can = document.getElementById( 'can' ); // setup canvas
+      can.width = window.innerWidth;
+      can.height = window.innerHeight;
       // console.log(c.width);
       // console.log(c.height);
 
-      gl = c.getContext( 'webgl' ); // setup GL context
-      gl.viewport(0, 0, c.width, c.height );
+      gl = can.getContext( 'webgl' ); // setup GL context
+      gl.viewport(0, 0, can.width, can.height );
         
       //************************************************************//
 
