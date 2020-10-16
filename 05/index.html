@@ -11,10 +11,6 @@
         height: 100%;
         overflow: hidden !important;  
       }
-      #can {
-        width: 100%;
-        height: 100%;
-      }
       #r1{
         width: 50%;
         height: 100%;
@@ -37,21 +33,6 @@
 
 
       window.onload = function() {
-      //************************************************************//
-      //
-      // INITIALIZE WEBGL
-      //
-      var can = document.getElementById( 'can' ); // setup canvas
-      can.width = window.innerWidth;
-      can.height = window.innerHeight;
-      // console.log(c.width);
-      // console.log(c.height);
-
-      gl = can.getContext( 'webgl' ); // setup GL context
-      gl.viewport(0, 0, can.width, can.height );
-        
-      //************************************************************//
-
         // code block for setting up the xkt renederer and scene.
         var r = new X.renderer3D();
         r.container = 'r1';
