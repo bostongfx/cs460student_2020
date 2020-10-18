@@ -27,10 +27,10 @@
     <script type="text/javascript" src="https://get.goXTK.com/xtk_xdat.gui.js"></script>
     <script src="https://threejs.org/build/three.min.js" type="text/javascript"></script>
     <script src="https://threejs.org/examples/js/controls/TrackballControls.js" type="text/javascript"></script>
+    <script type="text/javascript" src="https://spectorcdn.babylonjs.com/spector.bundle.js"></script>
 
 
     <script type="text/javascript">
-
       var r, c;
 
       window.onload = function() {
@@ -52,12 +52,17 @@
         //
         // THREE.JS
         //
+        r1 = document.getElementById('r1');
         r2 = document.getElementById('r2'); // get the div
 
         scene = new THREE.Scene();
+        var zNear = 1;
+        var zFar = 10000;
+        var ratio = r2.clientWidth / r2.clientHeight;
+        var fov = 100;
 
-        camera = new THREE.PerspectiveCamera( 75, r2.clientWidth / r2.clientHeight, 1, 10000 );
-        camera.position.set( 0, 0, 100 );
+        camera = new THREE.PerspectiveCamera( fov, ratio, zNear, zFar );
+        camera.position.set( 0, 0, 150 );
 
         renderer = new THREE.WebGLRenderer({antialias: true});
         renderer.setSize( r2.clientWidth, r2.clientHeight );
@@ -78,6 +83,12 @@
 
         controls = new THREE.TrackballControls( camera, renderer.domElement );
 
+        var spector = new SPECTOR.Spector();
+        spector.displayUI();
+        //spector.captureCanvas(r1);
+        //spector.captureCanvas(r2);
+
+
         animate();
         //
         // END OF THREE.JS
@@ -88,56 +99,57 @@
         // create the User Interface
 
         // HELPER OBJECT
-        controller = {
+        var controller = {
+          'threejs_color': 0xffffff,
+
+          'add new' : function() {
+            var geometry = new THREE.BoxBufferGeometry( 20, 20, 20 );
+            var material = new THREE.MeshStandardMaterial({ color: 0xffffff });
+            var cube1 = new THREE.Mesh( geometry, material );
+            cube1.position.set(50,50,50);
+            scene.add( cube1 );
+
+            var c1 = new X.cube();
+            c1.center = [50,50,50];
+            r.add(c1);
+          },
 
           'rotateX': function() {
-
-            c.transform.rotateX(45);
-            // quaternion example
-            // T = Math.PI/4 // 45 degrees
-
-            // x = Math.sin( T/2 ) * 1 // rotate around X
-            // y = Math.sin( T/2 ) * 0 //
-            // z = Math.sin( T/2 ) * 0
-            // w = Math.cos( T/2 )
-
-
-            // q2 = new THREE.Quaternion(x, y, z, w);
-
+            c.transform.rotateX(20);
+            cube.rotateX(20);
           },
           'rotateY': function() {
-
-            c.transform.rotateY(45);
-
+            c.transform.rotateY(20);
+            cube.rotateY(20);
           },
           'rotateZ': function() {
-
-            c.transform.rotateZ(45);
-
+            c.transform.rotateZ(20);
+            cube.rotateZ(20);
           }
-
         }
-
-
-
         var gui = new dat.GUI();
-        var cubeGui = gui.addFolder('Cube');
-        cubeGui.add(c, 'visible');
-        cubeGui.add(c, 'opacity', 0, 1);
-        cubeGui.addColor(c, 'color');
-        cubeGui.add(c, 'lengthX', 0, 100).onChange(
-          function() {
+        var threejsUI = gui.addFolder('Three.js Cube');
+        threejsUI.add(cube, 'visible');
+        threejsUI.add(cube.material, 'opacity', 0, 1).onChange( function() {
+          cube.material.transparent = true;
+        });
+        threejsUI.addColor(controller, 'threejs_color').onChange( function() {
+          cube.material.color.set( controller.threejs_color );
+        } );
+        threejsUI.open();
 
-            c.modified(); // modify event of XTK's cube since
-                        // we modify the vertices
-          }
-        );
-        cubeGui.add(controller, 'rotateX');
-        cubeGui.add(controller, 'rotateY');
-        cubeGui.add(controller, 'rotateZ');
-        cubeGui.open();
+        var cubeGUI = gui.addFolder('XTK Cube');
+        cubeGUI.add(c, 'visible');
+        cubeGUI.add(c, 'opacity', 0, 1);
+        cubeGUI.addColor(c, 'color');
+        cubeGUI.open();
 
-
+        var both = gui.addFolder('Both Cubes');
+        both.add(controller, 'rotateX');
+        both.add(controller, 'rotateY');
+        both.add(controller, 'rotateZ');
+        both.add(controller, 'add new');
+        both.open();
       };
 
       function animate() {
@@ -146,7 +158,6 @@
 
         controls.update();
         renderer.render( scene, camera );
-
       };
 
     </script>
