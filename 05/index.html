@@ -108,9 +108,9 @@
         // create the User Interface
 
         // HELPER OBJECT
-        controller = {
+        var controller = {
 
-          'threejs_color' : 0xffffff,
+          'threejs_color': 0xffffff,
 
 
           // Was having trouble with adding/centering the added cubes, and saw that zhenrongliew's method seemed really simple and concise, so I decided to use it! 
@@ -130,7 +130,6 @@
             Xcube.center = [50, 50, 50];
             r.add( Xcube );
           },
-
 
           'rotateX': function() {
             c.transform.rotateX(20);
@@ -199,4 +198,4 @@
     <div id='r2'></div>
   </body>
 
-  </html>
+</html>
