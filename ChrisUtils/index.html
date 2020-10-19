@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Basic Proof of Concept</title>
+  <style>
+      html, body {
+          background-color: #000;
+          margin: 0;
+          padding: 0;
+          height: 100%;
+          overflow: hidden !important;
+      }
+  </style>
+  <script type="text/javascript" src="https://threejs.org/build/three.min.js"></script>
+  <script type="text/javascript" src="https://threejs.org/examples/js/controls/TrackballControls.js"></script>
+  <script type="text/javascript" src="https://get.goXTK.com/xtk_xdat.gui.js"></script>
+  <script type="text/javascript" src="ChrisUtils.js"></script>
+  <script type="text/javascript">
+      window.onload = function () {
+          camera   = createBasicCamera(window);
+          renderer = new THREE.WebGLRenderer({antialias: true});
+          scene    = new THREE.Scene();
+
+          createDirectionalLight(scene);
+
+          renderer.setSize(window.innerWidth, window.innerHeight);
+          document.body.appendChild(renderer.domElement);
+
+          // TrackballControls has been deprecated, so this will change to something else soon.
+          controls = new THREE.TrackballControls(camera, renderer.domElement);
+
+          let cube = createBasicCube();
+          scene.add(cube);
+
+          animate();
+      }
+
+      function animate() {
+          requestAnimationFrame(animate);
+          controls.update();
+          renderer.render(scene, camera);
+      }
+  </script>
+</head>
+
+<body></body>
+</html>

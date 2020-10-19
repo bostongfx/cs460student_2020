@@ -1,0 +1,180 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Assignment 5</title>
+  <style>
+      html, body {
+          background-color: #000;
+          margin: 0;
+          padding: 0;
+          height: 100%;
+          overflow: hidden !important;
+      }
+      #r1 {
+          width: 50%;
+          height: 100%;
+          float: left;
+      }
+      #r2 {
+          width: 50%;
+          height: 100%;
+          float: left;
+      }
+  </style>
+</head>
+<script type="text/javascript" src="https://get.goXTK.com/xtk_edge.js"></script>
+<script type="text/javascript" src="https://get.goXTK.com/xtk_xdat.gui.js"></script>
+<script src="https://threejs.org/build/three.min.js" type="text/javascript"></script>
+<script src="https://threejs.org/examples/js/controls/TrackballControls.js" type="text/javascript"></script>
+<script type="text/javascript">
+    window.onload = function() {
+        xtkCubes = [];
+        threeCubes = [];
+
+        // XTK Cube
+        r1 = new X.renderer3D();
+        r1.container = 'r1';
+        r1.init();
+
+        let firstCube = new X.cube();
+        firstCube.center = [0,0,0];
+        firstCube.color = [0.8, 0.8, 0.8];
+        xtkCubes.push(firstCube);
+        r1.add(firstCube);
+        r1.camera.position = [0, 0, -200];
+        r1.render();
+
+        // three.js Setup
+        r2 = document.getElementById('r2'); // get the div container!!!
+
+        let fov   = 75;
+        let ratio = r2.clientWidth / r2.clientHeight; // use the container's clientWidth and clientHeight
+        let zNear = 1;
+        let zFar  = 10000;
+
+        camera   = new THREE.PerspectiveCamera(fov, ratio, zNear, zFar);
+        renderer = new THREE.WebGLRenderer({antialias:true});
+        scene    = new THREE.Scene();
+
+        let ambientLight = new THREE.AmbientLight(0x404040, 1);
+        let light        = new THREE.DirectionalLight(0xffffff, 1);
+
+        camera.position.set(0, 0, -200);
+        light.position.set(10, 100, -50);
+
+        renderer.setSize( r2.clientWidth, r2.clientHeight ); // again use the container
+        r2.appendChild( renderer.domElement ); // and append the domElement to the container
+
+        controls = new THREE.TrackballControls( camera, r2 ); // pass the container to the camera
+
+        scene.add(ambientLight);
+        scene.add(light);
+
+        // three.js cube
+        let geometry = new THREE.BoxBufferGeometry( 22, 22, 22);
+        let material = new THREE.MeshStandardMaterial({ color: [0.8, 0.8, 0.8] });
+        let c = new THREE.Mesh( geometry, material );
+
+        threeCubes.push(c);
+        scene.add(c);
+
+        animate();
+
+        let controller = {
+            'threejs_color': 0xffffff,
+            // I moved some of the properties into the controller, so that I could use them on multiple cubes.
+            'color': 0xffffff,
+            'visible': true,
+            'opacity': 1,
+
+            'rotateX': function() {
+                for (let cube of xtkCubes)   cube.transform.rotateX(20);
+                for (let cube of threeCubes) cube.rotateX(20);
+            },
+            'rotateY': function() {
+                for (let cube of xtkCubes)   cube.transform.rotateY(20);
+                for (let cube of threeCubes) cube.rotateY(20);
+            },
+            'rotateZ': function() {
+                for (let cube of xtkCubes)   cube.transform.rotateZ(20);
+                for (let cube of threeCubes) cube.rotateZ(20);
+            },
+
+            'add_new': function() {
+                let newCube = new X.cube();
+                newCube.center = [50,50,50];
+                newCube.color = [0.8, 0.8, 0.8];
+                xtkCubes.push(newCube);
+                r1.add(newCube);
+
+                let geometry = new THREE.BoxBufferGeometry( 22, 22, 22);
+                let material = new THREE.MeshStandardMaterial({ color: [0.8, 0.8, 0.8] });
+                let newC = new THREE.Mesh( geometry, material );
+                newC.position.set(50,50,50);
+
+                threeCubes.push(newC);
+                scene.add(newC);
+            }
+        };
+
+        let gui = new dat.GUI();
+
+        // XTK controls
+        let cubeGui = gui.addFolder('XTK Cubes');
+
+        cubeGui.addColor(controller, 'color').onChange(function(value) {
+            for (let cube of xtkCubes) {
+                // value is a decimal number, so we need to extract the r,g,b values using some modular arithmetic.
+                let r = Math.floor(value / (256*256))   /256; // extract high bits, then normalize to [0,1]
+                let g = (Math.floor(value / 256) % 256) /256; // extract mid bits, then normalize
+                let b = (value % 256)                   /256; // Extract low bits, then normalize
+                cube.color = [r,g,b];
+            }
+        });
+
+        cubeGui.add(controller, 'visible'    ).onChange(function(val) { xtkCubes.forEach(cube => cube.visible = val) });
+        cubeGui.add(controller, 'opacity',0,1).onChange(function(val) { xtkCubes.forEach(cube => cube.opacity = val) });
+
+        cubeGui.open();
+
+        // threejs controls
+        let threejsUI = gui.addFolder('Three.js Cubes');
+
+        threejsUI.add(controller, 'visible').onChange(function(val) { threeCubes.forEach(cube => cube.visible = val) });
+
+        threejsUI.add(controller, 'opacity', 0, 1).onChange(function (value) {
+            for (let cube of threeCubes) {
+                cube.material.transparent = true;
+                cube.material.opacity = value;
+            }
+        });
+
+        threejsUI.addColor(controller, 'threejs_color').onChange(function () {
+            threeCubes.forEach(cube => cube.material.color.set(controller.threejs_color))
+        });
+
+        threejsUI.open();
+
+        // both controls
+        let both = gui.addFolder('Both Cube Sets');
+        both.add(controller, 'rotateX');
+        both.add(controller, 'rotateY');
+        both.add(controller, 'rotateZ');
+        both.add(controller, 'add_new');
+        both.open();
+
+    }
+
+    function animate() {
+        requestAnimationFrame( animate );
+        controls.update();
+        renderer.render( scene, camera );
+    }
+</script>
+<body>
+<div id="r1"></div>
+<div id="r2"></div>
+</body>
+</html>
