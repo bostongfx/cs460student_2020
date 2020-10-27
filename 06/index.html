@@ -108,6 +108,11 @@
         // bonus 1
         renderer.domElement.onclick = function(event) {
 
+          if (!event.shiftKey) {
+            event.preventDefault();
+            return false;
+          }
+
           pixel_coords = new THREE.Vector2( event.clientX, event.clientY );
           vp_coords = new THREE.Vector2( 
             ( pixel_coords.x / window.innerWidth ) * 2 - 1,
