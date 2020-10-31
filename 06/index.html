@@ -70,8 +70,8 @@
           for (let i = 0; i < N; i++) {
               for (let j = 0; j < N; j++) {
                   for (let k = 0; k < N; k++) {
-                      // Params: x, y, z
-                      robots.push(new Robot(-offset+i, height-offset+j, -offset+k));
+                      // Params: x, y, z, height
+                      robots.push(new Robot(-offset+i, -offset+j, -offset+k, 80));
                   }
               }
           }
