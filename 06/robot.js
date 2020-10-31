@@ -109,7 +109,6 @@ Robot.prototype.raiseLeftArm = function () {
 };
 Robot.prototype.lowerLeftArm = function () {
   this.movement = 'lower left arm';
-
 };
 Robot.prototype.kick = function () {
   this.movement = 'kick';
