@@ -15,9 +15,11 @@
       }
     </style>
 
+    <script src="https://threejs.org/examples/js/libs/dat.gui.min.js" type="text/javascript"></script>
     <script src="https://threejs.org/build/three.min.js" type="text/javascript"></script>
     <script src="https://threejs.org/examples/js/controls/TrackballControls.js" type="text/javascript"></script>
     <script src="https://threejs.org/examples/js/effects/AnaglyphEffect.js" type="text/javascript"></script>
+    <script src="robot.js" type="text/javascript"></script>
 
 
     <script>
@@ -64,22 +66,68 @@
 
         // ROBOT GOES HERE!
 
+        r = new Robot(0, -55, 0); // any position works
+        r.show(scene);
 
+        effect = new THREE.AnaglyphEffect( renderer )
+        effect.setSize( window.innerWidth, window.innerHeight );
+
+        controller = {
+          anaglyph: false,
+
+          'raise_left_arm': function() {
+
+            r.raise_left_arm();
+
+          },
+
+          'lower_left_arm': function() {
+
+            r.lower_left_arm();
+
+          },
+
+          'kick': function() {
+
+            r.kick();
+
+          }
+
+        }
+        var gui = new dat.GUI();
+        var rendering = gui.addFolder( 'Rendering' );
+        rendering.add( controller, 'anaglyph' );
+        rendering.open();
+
+        var moving = gui.addFolder( 'Movement' );
+        moving.add( r.head.position, 'x', -1000, 1000 );
+        moving.add( r.head.position, 'y', -1000, 1000 );
+        moving.add( r.head.position, 'z', -1000, 1000 );
+
+        moving.add( controller, 'raise_left_arm');
+        moving.add( controller, 'lower_left_arm');
+        moving.add( controller, 'kick');
+        moving.open();
 
         animate();
-
 
       };
 
       function animate() {
 
         requestAnimationFrame( animate );
-
-        // TODO
-
         controls.update();
-        renderer.render( scene, camera );
-
+        r.onAnimate();
+        // TODO
+        if(controller.anaglyph == true) {
+          renderer.setClearAlpha(1);
+          effect.render( scene, camera );
+        }
+        
+        else {
+          renderer.setClearAlpha(0);
+          renderer.render( scene, camera );
+        }
       };
 
     </script>
