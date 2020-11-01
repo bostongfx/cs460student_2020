@@ -91,6 +91,7 @@ Robot.prototype.show = function (scene) {
     this.movement = '';
 }
 
+// Actions
 Robot.prototype.raise_left_arm = function() {
 	this.movement = 'raise_left_arm';
 }
@@ -99,6 +100,12 @@ Robot.prototype.lower_left_arm = function() {
 }
 Robot.prototype.left_kick = function() {
 	this.movement = 'left_kick';
+}
+Robot.prototype.rotate_body = function() {
+	this.movement = 'rotate_body';
+}
+Robot.prototype.dance = function() {
+	this.movement = 'dance';
 }
 
 Robot.prototype.onAnimate = function() {
@@ -114,10 +121,6 @@ Robot.prototype.onAnimate = function() {
 	     	Math.cos(T/2)), 0.01);
 	}
 	else if (this.movement == 'lower_left_arm'){
-		T = Math.PI;
-	    x = 1;
-	    y = 0;
-	    z = 0;
 	    this.left_upper_arm.quaternion.slerp(new  THREE.Quaternion (
 	      	0,0,0,1), 0.01);
 	}
@@ -131,16 +134,58 @@ Robot.prototype.onAnimate = function() {
 	       	Math.sin(T/2)*y,
 	      	Math.sin(T/2)*z,
 	     	Math.cos(T/2)), 0.01);
-	    if (quat._x > 0.99) {
+	    if (quat._x > 0.72) {
 	      	this.movement = 'lower_left_leg';
 	    }
 	}
 	else if (this.movement == 'lower_left_leg'){
-		T = Math.PI;
-	    x = 1;
-	    y = 0;
-	    z = 0;
 	    this.left_upper_leg.quaternion.slerp(new  THREE.Quaternion (
 	      	0,0,0,1), 0.01);
+	}
+	else if (this.movement == 'rotate_body'){
+	    T = Math.PI;
+	    x = 0;
+	    y = 1;
+	    z = 0;
+	    this.head.quaternion.slerp(new  THREE.Quaternion (
+	      	Math.sin(T/2)*x,
+	       	Math.sin(T/2)*y,
+	      	Math.sin(T/2)*z,
+	     	Math.cos(T/2)), 0.01);
+	}
+	else if (this.movement == 'dance'){
+	    T = Math.PI;
+	    x = 0;
+	    y = 1;
+	    z = 0;
+	    danceQuat =this.head.quaternion.slerp(new  THREE.Quaternion (
+	      	Math.sin(T/2)*x,
+	       	Math.sin(T/2)*y,
+	      	Math.sin(T/2)*z,
+	     	Math.cos(T/2)), 0.05);
+	    this.left_upper_leg.quaternion.slerp(new  THREE.Quaternion (
+	      	Math.sin(T/2)*y,
+	       	Math.sin(T/2)*x,
+	      	Math.sin(T/2)*z,
+	     	Math.cos(T/2)), 0.05);
+	    this.right_upper_arm.quaternion.slerp(new  THREE.Quaternion (
+	      	Math.sin(T/2)*y,
+	       	Math.sin(T/2)*x,
+	      	Math.sin(T/2)*z,
+	     	Math.cos(T/2)), 0.05);
+	    if (danceQuat._y > 0.9) {
+	      	this.movement = 'dance_back';
+	    }
+	}
+	else if (this.movement == 'dance_back'){
+	    danceQuat = this.head.quaternion.slerp(new  THREE.Quaternion (
+	      	0,0,0,1), 0.05);
+	    this.left_upper_leg.quaternion.slerp(new  THREE.Quaternion (
+	      	0,0,0,1), 0.05);
+	    this.right_upper_arm.quaternion.slerp(new  THREE.Quaternion (
+	      	0,0,0,1), 0.05);
+	    if (danceQuat._y < 0.2) {
+	      	this.movement = 'dance';
+	    }
 	}
 }

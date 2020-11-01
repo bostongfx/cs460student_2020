@@ -89,6 +89,9 @@
           'left_kick': function() {
             r.left_kick();
           },
+          'dance': function() {
+            r.dance();
+          },
         }
         // GUI menu options
         var moving = gui.addFolder( "Movement Robot 1" );
@@ -100,7 +103,34 @@
         action.add(controller, 'raise_left_arm');
         action.add(controller, 'lower_left_arm');
         action.add(controller, 'left_kick');
+        action.add(controller, 'dance');
         action.open();
+
+        camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 1, 10000 );
+        camera.position.set( 0, 0, 500 );
+
+        renderer.domElement.onmousemove = function(e) {
+          // listens to if shift key is pressed
+          if(e.shiftKey) {
+            // where it clicks, screen space
+            pixel_coords = new THREE.Vector2(e.clientX, e.clientY);
+            vp_coords = new THREE.Vector2(( pixel_coords.x / window.innerWidth ) * 2 - 1, // X
+                   - ( pixel_coords.y / window.innerHeight ) * 2 + 1 ); // Y
+
+            vp_coords_3d_near = new THREE.Vector3(vp_coords.x,
+                                          vp_coords.y,
+                                          0); // for zNear
+            raycaster = new THREE.Raycaster();
+            raycaster.setFromCamera(vp_coords_3d_near, camera);
+
+            intersects = raycaster.intersectObject( floor );
+            r.head.position.set(intersects[0].point.x, intersects[0].point.y+100,intersects[0].point.z);
+         
+            console.log(e);
+          }
+
+        }
+        controls = new THREE.TrackballControls( camera, renderer.domElement );
       };
 
       function animate() {
@@ -111,8 +141,6 @@
           o = robots[o]
           o.onAnimate();
         }
-
-
         controls.update();
         renderer.render( scene, camera );
 
