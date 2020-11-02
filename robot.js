@@ -172,7 +172,7 @@ Robot.prototype.onAnimate = function() {
         }
         T = -Math.PI;
         if (this.check == false) {
-            this.select = Math.ceil((Math.random() * 3) + 1);
+            this.select = Math.floor((Math.random() * 3) + 1);
             switch(this.select) {
                 case 1:
                     x = 1;
