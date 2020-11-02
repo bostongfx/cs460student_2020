@@ -4,71 +4,83 @@ function Robot(x, y, z, size) {
     this.joints = {};
 
     // Main trunk
-    this.joints.pelvis    = new THREE.Bone();
-    this.joints.lowerBack = new THREE.Bone();
-    this.joints.midBack   = new THREE.Bone();
-    this.joints.upperBack = new THREE.Bone();
-    this.joints.neck      = new THREE.Bone();
-    this.joints.head      = new THREE.Bone();
-    this.joints.pelvis    .add(this.joints.lowerBack);
-    this.joints.lowerBack .add(this.joints.midBack);
-    this.joints.midBack   .add(this.joints.upperBack);
-    this.joints.upperBack .add(this.joints.neck);
-    this.joints.neck      .add(this.joints.head);
+    this.joints.pelvis      = new THREE.Bone();
+    this.joints.lowerBack   = new THREE.Bone();
+    this.joints.midBack     = new THREE.Bone();
+    this.joints.upperBack   = new THREE.Bone();
+    this.joints.neck        = new THREE.Bone();
+    this.joints.head        = new THREE.Bone();
+    this.joints.pelvis      .add(this.joints.lowerBack);
+    this.joints.lowerBack   .add(this.joints.midBack);
+    this.joints.midBack     .add(this.joints.upperBack);
+    this.joints.upperBack   .add(this.joints.neck);
+    this.joints.neck        .add(this.joints.head);
 
     // Left arm
-    this.joints.lCollar   = new THREE.Bone();
-    this.joints.lShoulder = new THREE.Bone();
-    this.joints.lElbow    = new THREE.Bone();
-    this.joints.lWrist    = new THREE.Bone();
-    this.joints.lHand     = new THREE.Bone();
-    this.joints.upperBack .add(this.joints.lCollar);
-    this.joints.lCollar   .add(this.joints.lShoulder);
-    this.joints.lShoulder .add(this.joints.lElbow);
-    this.joints.lElbow    .add(this.joints.lWrist);
-    this.joints.lWrist    .add(this.joints.lHand);
+    this.joints.lCollar     = new THREE.Bone();
+    this.joints.lShoulder   = new THREE.Bone();
+    this.joints.lBicep      = new THREE.Bone();
+    this.joints.lElbow      = new THREE.Bone();
+    this.joints.lForearm    = new THREE.Bone();
+    this.joints.lWrist      = new THREE.Bone();
+    this.joints.lHand       = new THREE.Bone();
+    this.joints.upperBack   .add(this.joints.lCollar);
+    this.joints.lCollar     .add(this.joints.lShoulder);
+    this.joints.lShoulder   .add(this.joints.lBicep);
+    this.joints.lBicep      .add(this.joints.lElbow);
+    this.joints.lElbow      .add(this.joints.lForearm);
+    this.joints.lForearm    .add(this.joints.lWrist);
+    this.joints.lWrist      .add(this.joints.lHand);
 
     // Right arm
-    this.joints.rCollar   = new THREE.Bone();
-    this.joints.rShoulder = new THREE.Bone();
-    this.joints.rElbow    = new THREE.Bone();
-    this.joints.rWrist    = new THREE.Bone();
-    this.joints.rHand     = new THREE.Bone();
-    this.joints.upperBack .add(this.joints.rCollar);
-    this.joints.rCollar   .add(this.joints.rShoulder);
-    this.joints.rShoulder .add(this.joints.rElbow);
-    this.joints.rElbow    .add(this.joints.rWrist);
-    this.joints.rWrist    .add(this.joints.rHand);
+    this.joints.rCollar     = new THREE.Bone();
+    this.joints.rShoulder   = new THREE.Bone();
+    this.joints.rBicep      = new THREE.Bone();
+    this.joints.rElbow      = new THREE.Bone();
+    this.joints.rForearm    = new THREE.Bone();
+    this.joints.rWrist      = new THREE.Bone();
+    this.joints.rHand       = new THREE.Bone();
+    this.joints.upperBack   .add(this.joints.rCollar);
+    this.joints.rCollar     .add(this.joints.rShoulder);
+    this.joints.rShoulder   .add(this.joints.rBicep);
+    this.joints.rBicep      .add(this.joints.rElbow);
+    this.joints.rElbow      .add(this.joints.rForearm);
+    this.joints.rForearm    .add(this.joints.rWrist);
+    this.joints.rWrist      .add(this.joints.rHand);
 
     // Left leg
-    this.joints.lHip      = new THREE.Bone();
-    this.joints.lKnee     = new THREE.Bone();
-    this.joints.lAnkle    = new THREE.Bone();
-    this.joints.lfoot     = new THREE.Bone();
-    this.joints.pelvis    .add(this.joints.lHip);
-    this.joints.lHip      .add(this.joints.lKnee);
-    this.joints.lKnee     .add(this.joints.lAnkle);
-    this.joints.lAnkle    .add(this.joints.lfoot);
+    this.joints.lHip        = new THREE.Bone();
+    this.joints.lHipRotator = new THREE.Bone();
+    this.joints.lKnee       = new THREE.Bone();
+    this.joints.lAnkle      = new THREE.Bone();
+    this.joints.lfoot       = new THREE.Bone();
+    this.joints.pelvis      .add(this.joints.lHip);
+    this.joints.lHip        .add(this.joints.lHipRotator);
+    this.joints.lHipRotator .add(this.joints.lKnee);
+    this.joints.lKnee       .add(this.joints.lAnkle);
+    this.joints.lAnkle      .add(this.joints.lfoot);
 
     // Right leg
-    this.joints.rHip      = new THREE.Bone();
-    this.joints.rKnee     = new THREE.Bone();
-    this.joints.rAnkle    = new THREE.Bone();
-    this.joints.rfoot     = new THREE.Bone();
-    this.joints.pelvis    .add(this.joints.rHip);
-    this.joints.rHip      .add(this.joints.rKnee);
-    this.joints.rKnee     .add(this.joints.rAnkle);
-    this.joints.rAnkle    .add(this.joints.rfoot);
+    this.joints.rHip        = new THREE.Bone();
+    this.joints.rHipRotator = new THREE.Bone();
+    this.joints.rKnee       = new THREE.Bone();
+    this.joints.rAnkle      = new THREE.Bone();
+    this.joints.rfoot       = new THREE.Bone();
+    this.joints.pelvis      .add(this.joints.rHip);
+    this.joints.rHip        .add(this.joints.rHipRotator);
+    this.joints.rHipRotator .add(this.joints.rKnee);
+    this.joints.rKnee       .add(this.joints.rAnkle);
+    this.joints.rAnkle      .add(this.joints.rfoot);
 
     // Set up initial skeletal position
-    this.joints.pelvis   .position.set( x                 ,  y/2               ,  z                 );
-    // Main trunk goes straight up
+    // Main trunk goes straight up from pelvis
+    this.joints.pelvis   .position.set( x                 ,  y+size/2          ,  z                 );
     this.joints.lowerBack.position.set( this.headSize*0.00,  this.headSize*0.75,  this.headSize*0.00);
     this.joints.midBack  .position.set( this.headSize*0.00,  this.headSize*0.75,  this.headSize*0.00);
     this.joints.upperBack.position.set( this.headSize*0.00,  this.headSize*1.00,  this.headSize*0.00);
     this.joints.neck     .position.set( this.headSize*0.00,  this.headSize*0.50,  this.headSize*0.00);
     this.joints.head     .position.set( this.headSize*0.00,  this.headSize*0.25,  this.headSize*0.00);
-    // Skeleton frame looks really weird with a long head, so setting head to smaller than headSize.
+    // Skeleton frame looks really weird with a long head, so head is set to smaller than 'headSize'.
 
     // Arms go mostly out, with vertical variation.
     this.joints.lCollar  .position.set( this.headSize*0.20,  this.headSize*0.35,  this.headSize*0.00);
@@ -94,169 +106,329 @@ function Robot(x, y, z, size) {
     this.joints.rAnkle   .position.set( this.headSize*0.00, -this.headSize*1.50, -this.headSize*0.10);
     this.joints.rfoot    .position.set( this.headSize*0.00, -this.headSize*0.00,  this.headSize*0.75);
 
-    // Set some joint ranges of motion. Degrees converted to radians.
-    this.joints.lHip.minX       = -120 * (Math.PI/180.0);
-    this.joints.lHip.maxX       =   30 * (Math.PI/180.0);
-    this.joints.lHip.minY       =  -40 * (Math.PI/180.0);
-    this.joints.lHip.maxY       =   40 * (Math.PI/180.0);
-    this.joints.lHip.minZ       =  -10 * (Math.PI/180.0);
-    this.joints.lHip.maxZ       =   40 * (Math.PI/180.0);
-    this.joints.rHip.minX       = -120 * (Math.PI/180.0);
-    this.joints.rHip.maxX       =   30 * (Math.PI/180.0);
-    this.joints.rHip.minY       =  -40 * (Math.PI/180.0);
-    this.joints.rHip.maxY       =   40 * (Math.PI/180.0);
-    this.joints.rHip.minZ       =  -40 * (Math.PI/180.0);
-    this.joints.rHip.maxZ       =   10 * (Math.PI/180.0);
+    // Set some joint ranges of motion, in degrees
+    this.joints.lElbow.minFlex          =  -10;
+    this.joints.lElbow.maxFlex          =  140;
+    this.joints.lForearm.minSpin        =  -80;
+    this.joints.lForearm.maxSpin        =   80;
+    this.joints.lWrist.minFlex          =  -60;
+    this.joints.lWrist.maxFlex          =   60;
+    this.joints.lHand.minFlex           =  -20;
+    this.joints.lHand.maxFlex           =   30;
+    this.joints.lShoulder.minRaise      = -120;
+    this.joints.lShoulder.maxRaise      =   90;
+    this.joints.lShoulder.minSwing      =  -40;
+    this.joints.lShoulder.maxSwing      =  130;
+    this.joints.lBicep.minRotate        =  -90;
+    this.joints.lBicep.maxRotate        =   90;
+    this.joints.lHip.minFlex            =  -30;
+    this.joints.lHip.maxFlex            =  120;
+    this.joints.lHip.minAbduct          =    0;
+    this.joints.lHip.maxAbduct          =   60;
+    this.joints.lHipRotator.minRotate   =  -40;
+    this.joints.lHipRotator.maxRotate   =   40;
+    this.joints.lKnee.minFlex           =   -5;
+    this.joints.lKnee.maxFlex           =  150;
+    this.joints.lAnkle.minFlex          =  -20;
+    this.joints.lAnkle.maxFlex          =   50;
+    this.joints.lowerBack.minFlex       =  -25;
+    this.joints.lowerBack.maxFlex       =   25;
+    this.joints.midBack.minFlex         =  -10;
+    this.joints.midBack.maxFlex         =   10;
+    this.joints.upperBack.minRotate     =  -45;
+    this.joints.upperBack.maxRotate     =   45;
 
-    this.joints.lKnee.minX      =    0 * (Math.PI/180.0);
-    this.joints.lKnee.maxX      =  150 * (Math.PI/180.0);
-    this.joints.lKnee.minY      =    0 * (Math.PI/180.0);
-    this.joints.lKnee.maxY      =    0 * (Math.PI/180.0);
-    this.joints.lKnee.minZ      =    0 * (Math.PI/180.0);
-    this.joints.lKnee.maxZ      =    0 * (Math.PI/180.0);
-    this.joints.rKnee.minX      =    0 * (Math.PI/180.0);
-    this.joints.rKnee.maxX      =  150 * (Math.PI/180.0);
-    this.joints.rKnee.minY      =    0 * (Math.PI/180.0);
-    this.joints.rKnee.maxY      =    0 * (Math.PI/180.0);
-    this.joints.rKnee.minZ      =    0 * (Math.PI/180.0);
-    this.joints.rKnee.maxZ      =    0 * (Math.PI/180.0);
+    // Some prototypes for body movements
+    Robot.prototype.moveLeg = function(side, amountAbduct, amountFlex, t) {
+        if (!(side === 'left' || side === 'right')) return;
+        let joint = side === 'left' ? this.joints.lHip : this.joints.rHip;
+        let angleAbduct = amountAbduct < this.joints.lHip.minAbduct ? this.joints.lHip.minAbduct :
+                          amountAbduct > this.joints.lHip.maxAbduct ? this.joints.lHip.maxAbduct : amountAbduct;
+        let angleFlex   = amountFlex   < this.joints.lHip.minFlex   ? this.joints.lHip.minFlex   :
+                          amountFlex   > this.joints.lHip.maxFlex   ? this.joints.lHip.maxFlex   : amountFlex;
+        angleAbduct = side === 'left' ?  angleAbduct : -angleAbduct;
+        angleFlex   = -angleFlex;
+        slerpXZ(joint, angleFlex, angleAbduct, t);
+    }
 
-    this.joints.lfoot.minX      =  -20 * (Math.PI/180.0);
-    this.joints.lfoot.maxX      =   50 * (Math.PI/180.0);
-    this.joints.lfoot.minY      =    0 * (Math.PI/180.0);
-    this.joints.lfoot.maxY      =    0 * (Math.PI/180.0);
-    this.joints.lfoot.minZ      =    0 * (Math.PI/180.0);
-    this.joints.lfoot.maxZ      =    0 * (Math.PI/180.0);
-    this.joints.rfoot.minX      =  -20 * (Math.PI/180.0);
-    this.joints.rfoot.maxX      =   50 * (Math.PI/180.0);
-    this.joints.rfoot.minY      =    0 * (Math.PI/180.0);
-    this.joints.rfoot.maxY      =    0 * (Math.PI/180.0);
-    this.joints.rfoot.minZ      =    0 * (Math.PI/180.0);
-    this.joints.rfoot.maxZ      =    0 * (Math.PI/180.0);
+    Robot.prototype.rotateHip = function(side, amount, t) {
+        if (!(side === 'left' || side === 'right')) return;
+        let joint = side === 'left' ? this.joints.lHipRotator : this.joints.rHipRotator;
+        let angle = amount < this.joints.lHipRotator.minRotate ? this.joints.lHipRotator.minRotate :
+                    amount > this.joints.lHipRotator.maxRotate ? this.joints.lHipRotator.maxRotate : amount;
+        angle = side === 'left' ? angle : -angle;
+        slerpY(joint, angle, t);
+    }
 
-    this.joints.lowerBack.minX  =  -20 * (Math.PI/180.0);
-    this.joints.lowerBack.maxX  =   50 * (Math.PI/180.0);
-    this.joints.lowerBack.minY  =    0 * (Math.PI/180.0);
-    this.joints.lowerBack.maxY  =    0 * (Math.PI/180.0);
-    this.joints.lowerBack.minZ  =  -35 * (Math.PI/180.0);
-    this.joints.lowerBack.maxZ  =   35 * (Math.PI/180.0);
+    Robot.prototype.flexAnkle = function(side, amount, t) {
+        if (!(side === 'left' || side === 'right')) return;
+        let joint = side === 'left' ? this.joints.lAnkle : this.joints.rAnkle;
+        let angle = amount < this.joints.lAnkle.minFlex ? this.joints.lAnkle.minFlex :
+            amount > this.joints.lAnkle.maxFlex ? this.joints.lAnkle.maxFlex : amount;
+        angle = side === 'left' ? -angle : angle;
+        slerpX(joint, angle, t);
+    }
 
-    this.joints.lShoulder.minX  = -180 * (Math.PI/180.0);
-    this.joints.lShoulder.maxX  =   50 * (Math.PI/180.0);
-    this.joints.lShoulder.minY  = -120 * (Math.PI/180.0);
-    this.joints.lShoulder.maxY  =   30 * (Math.PI/180.0);
-    this.joints.lShoulder.minZ  = -130 * (Math.PI/180.0);
-    this.joints.lShoulder.maxZ  =   90 * (Math.PI/180.0);
-    this.joints.rShoulder.minX  = -180 * (Math.PI/180.0);
-    this.joints.rShoulder.maxX  =   50 * (Math.PI/180.0);
-    this.joints.rShoulder.minY  =  -30 * (Math.PI/180.0);
-    this.joints.rShoulder.maxY  =  120 * (Math.PI/180.0);
-    this.joints.rShoulder.minZ  =  -90 * (Math.PI/180.0);
-    this.joints.rShoulder.maxZ  =  130 * (Math.PI/180.0);
+    Robot.prototype.flexKnee = function(side, amount, t) {
+        if (!(side === 'left' || side === 'right')) return;
+        let joint = side === 'left' ? this.joints.lKnee : this.joints.rKnee;
+        let angle = amount < this.joints.lKnee.minFlex ? this.joints.lKnee.minFlex :
+            amount > this.joints.lKnee.maxFlex ? this.joints.lKnee.maxFlex : amount;
+        angle = side === 'left' ? -angle : angle;
+        slerpX(joint, angle, t);
+    }
 
-    this.joints.lElbow.minX     =  -80 * (Math.PI/180.0);
-    this.joints.lElbow.maxX     =   80 * (Math.PI/180.0);
-    this.joints.lElbow.minY     = -140 * (Math.PI/180.0);
-    this.joints.lElbow.maxY     =   10 * (Math.PI/180.0);
-    this.joints.lElbow.minZ     =    0 * (Math.PI/180.0);
-    this.joints.lElbow.maxZ     =    0 * (Math.PI/180.0);
-    this.joints.rElbow.minX     =  -80 * (Math.PI/180.0);
-    this.joints.rElbow.maxX     =   80 * (Math.PI/180.0);
-    this.joints.rElbow.minY     =  -10 * (Math.PI/180.0);
-    this.joints.rElbow.maxY     =  140 * (Math.PI/180.0);
-    this.joints.rElbow.minZ     =    0 * (Math.PI/180.0);
-    this.joints.rElbow.maxZ     =    0 * (Math.PI/180.0);
+    Robot.prototype.flexElbow = function(side, amount, t) {
+        if (!(side === 'left' || side === 'right')) return;
+        let joint = side === 'left' ? this.joints.lElbow : this.joints.rElbow;
+        let angle = amount < this.joints.lElbow.minFlex ? this.joints.lElbow.minFlex :
+                    amount > this.joints.lElbow.maxFlex ? this.joints.lElbow.maxFlex : amount;
+        angle = side === 'left' ? -angle : angle;
+        slerpY(joint, angle, t);
+    }
 
-    this.joints.lWrist.minX     =    0 * (Math.PI/180.0);
-    this.joints.lWrist.maxX     =    0 * (Math.PI/180.0);
-    this.joints.lWrist.minY     =  -20 * (Math.PI/180.0);
-    this.joints.lWrist.maxY     =   30 * (Math.PI/180.0);
-    this.joints.lWrist.minZ     =  -60 * (Math.PI/180.0);
-    this.joints.lWrist.maxZ     =   60 * (Math.PI/180.0);
-    this.joints.rWrist.minX     =    0 * (Math.PI/180.0);
-    this.joints.rWrist.maxX     =    0 * (Math.PI/180.0);
-    this.joints.rWrist.minY     =  -30 * (Math.PI/180.0);
-    this.joints.rWrist.maxY     =   20 * (Math.PI/180.0);
-    this.joints.rWrist.minZ     =  -60 * (Math.PI/180.0);
-    this.joints.rWrist.maxZ     =   60 * (Math.PI/180.0);
+    Robot.prototype.spinForearm = function(side, amount, t) {
+        if (!(side === 'left' || side === 'right')) return;
+        let joint = side === 'left' ? this.joints.lForearm : this.joints.rForearm;
+        let angle = amount < this.joints.lForearm.minSpin ? this.joints.lForearm.minSpin :
+                    amount > this.joints.lForearm.maxSpin ? this.joints.lForearm.maxSpin : amount;
+        slerpX(joint, angle, t);
+    }
 
-    // Now set the starting rotations. Going for an arms crossed pose.
-    const T = Math.PI;
-    // Shoulders forward and down a bit.
-    this.joints.lShoulder.quaternion.copy(new THREE.Quaternion(
-        Math.sin((-0.0*T)/2),
-        Math.sin((-0.4*T)/2),
-        Math.sin((-0.4*T)/2),
-        Math.cos((-0.4*T)/2)).normalize());
-    this.joints.rShoulder.quaternion.copy(new THREE.Quaternion(
-        Math.sin((-0.0*T)/2),
-        Math.sin(( 0.4*T)/2),
-        Math.sin(( 0.3*T)/2),
-        Math.cos(( 0.4*T)/2)).normalize());
+    Robot.prototype.moveShoulder = function(side, amountSwing, amountRaise, t) {
+        if (!(side === 'left' || side === 'right')) return;
+        let joint = side === 'left' ? this.joints.lShoulder : this.joints.rShoulder;
+        let angleSwing = amountSwing < this.joints.lShoulder.minSwing ? this.joints.lShoulder.minSwing :
+                         amountSwing > this.joints.lShoulder.maxSwing ? this.joints.lShoulder.maxSwing : amountSwing;
+        let angleRaise = amountRaise < this.joints.lShoulder.minRaise ? this.joints.lShoulder.minRaise :
+                         amountRaise > this.joints.lShoulder.maxRaise ? this.joints.lShoulder.maxRaise : amountRaise;
+        angleSwing = side === 'left' ? -angleSwing : angleSwing;
+        angleRaise = side === 'left' ? angleRaise : -angleRaise;
+        slerpYZ(joint, angleSwing, angleRaise, t);
+    }
 
-    // Elbows bent and slightly rotated
-    this.joints.lElbow.quaternion.copy(new THREE.Quaternion(
-        Math.sin(( 0.3*T)/2),
-        Math.sin((-0.7*T)/2),
-        0,
-        Math.cos((-0.6*T)/2)).normalize());
-    this.joints.rElbow.quaternion.copy(new THREE.Quaternion(
-        Math.sin(( 0.2*T)/2),
-        Math.sin(( 0.7*T)/2),
-        0,
-        Math.cos(( 0.6*T)/2)).normalize());
+    Robot.prototype.rotateShoulder = function(side, amount, t) {
+        if (!(side === 'left' || side === 'right')) return;
+        let joint = side === 'left' ? this.joints.lBicep : this.joints.rBicep;
+        let angle = amount < this.joints.lBicep.minRotate ? this.joints.lBicep.minRotate :
+                    amount > this.joints.lBicep.maxRotate ? this.joints.lBicep.maxRotate : amount;
+        // angle = side === 'left' ? angle : -angle;
+        slerpX(joint, angle, t);
+    }
 
-    // Left wrist angles up a bit, right wrist angles down.
-    this.joints.lWrist.quaternion.copy(new THREE.Quaternion(
-        0,
-        0,
-        Math.sin(( 0.1*T)/2),
-        Math.cos(( 0.1*T)/2)).normalize());
-    this.joints.rWrist.quaternion.copy(new THREE.Quaternion(
-        0,
-        Math.sin(( 0.1*T)/2),
-        Math.sin(( 0.3*T)/2),
-        Math.cos(( 0.3*T)/2)).normalize());
+    Robot.prototype.flexWrist = function(side, amount, t) {
+        if (!(side === 'left' || side === 'right')) return;
+        let joint = side === 'left' ? this.joints.lWrist : this.joints.rWrist;
+        let angle = amount < this.joints.lWrist.minFlex ? this.joints.lWrist.minFlex :
+            amount > this.joints.lWrist.maxFlex ? this.joints.lWrist.maxFlex : amount;
+        angle = side === 'left' ?  angle : -angle;
+        slerpZ(joint, angle, t);
+    }
 
-    // Give the back a slight arch
-    this.joints.lowerBack.quaternion.copy(new THREE.Quaternion(Math.sin((-0.02*T)/2), 0, 0,  Math.cos((-0.02*T)/2)));
-    this.joints.midBack.quaternion.copy(new THREE.Quaternion(Math.sin(( 0.02*T)/2), 0, 0, Math.cos(( 0.02*T)/2)));
+    Robot.prototype.tiltHand = function(side, amount, t) {
+        if (!(side === 'left' || side === 'right')) return;
+        let joint = side === 'left' ? this.joints.lWrist : this.joints.rWrist;
+        let angle = amount < this.joints.lHand.minFlex ? this.joints.lHand.minFlex :
+                    amount > this.joints.lHand.maxFlex ? this.joints.lHand.maxFlex : amount;
+        angle = side === 'left' ?  angle : -angle;
+        slerpY(joint, angle, t);
+    }
 
-    // Save all quaternions into starting positions
+    Robot.prototype.tiltBody = function(direction, amount, t) {
+        let joint = this.joints.pelvis;
+        if (direction === 'z') {
+            slerpZ(joint, amount, t);
+        }
+    }
+
+    Robot.prototype.rotateBack = function(amount, t) {
+        let joint = this.joints.upperBack;
+        let angle = amount < joint.minRotate ? joint.minRotate :
+                    amount > joint.maxRotate ? joint.maxRotate : amount;
+        slerpY(joint, angle, t);
+    }
+
+    Robot.prototype.tiltBack = function(amount, t) {
+        let lowBack = this.joints.lowerBack;
+        let midBack = this.joints.midBack;
+        let splitLow = amount * 5.0/7.0;
+        let splitMid = amount * 2.0/7.0;
+        let angleLow = splitLow < lowBack.minFlex ? lowBack.minFlex :
+                       splitLow > lowBack.maxFlex ? lowBack.maxFlex : splitLow;
+        let angleMid = splitMid < midBack.minFlex ? midBack.minFlex :
+                       splitMid > midBack.maxFlex ? midBack.maxFlex : splitMid;
+        slerpZ(lowBack, angleLow, t);
+        slerpZ(midBack, angleMid, t);
+    }
+
+    // Setting T to the conversion from degrees to radians
+    const T = Math.PI/180.0;
+
+    function slerpX(joint, angle, t) {
+        joint.quaternion.slerp(new THREE.Quaternion(
+            Math.sin((angle * T) / 2),
+            joint.quaternion.y,
+            joint.quaternion.z,
+            Math.cos((angle * T) / 2)
+        ).normalize(), t);
+    }
+
+    function slerpY(joint, angle, t) {
+        joint.quaternion.slerp(new THREE.Quaternion(
+            joint.quaternion.x,
+            Math.sin((angle * T) / 2),
+            joint.quaternion.z,
+            Math.cos((angle * T) / 2)
+        ).normalize(), t);
+    }
+
+    function slerpZ(joint, angle, t) {
+        joint.quaternion.slerp(new THREE.Quaternion(
+            joint.quaternion.x,
+            joint.quaternion.y,
+            Math.sin((angle * T) / 2),
+            Math.cos((angle * T) / 2)
+        ).normalize(), t);
+    }
+
+    function slerpYZ(joint, angleY, angleZ, t) {
+        joint.quaternion.slerp(new THREE.Quaternion(
+            joint.quaternion.x,
+            Math.sin((angleY * T) / 2),
+            Math.sin((angleZ * T) / 2),
+            Math.cos((((angleY+angleZ)/2) * T) / 2)
+        ).normalize(), t);
+    }
+
+    function slerpXZ(joint, angleX, angleZ, t) {
+        joint.quaternion.slerp(new THREE.Quaternion(
+            Math.sin((angleX * T) / 2),
+            joint.quaternion.y,
+            Math.sin((angleZ * T) / 2),
+            Math.cos((((angleX+angleZ)/2) * T) / 2)
+        ).normalize(), t);
+    }
+
+    // Set a starting position for the robot. Right hand on hip. Left hand near chin
+    this.moveShoulder('left', 0, -90, 1);
+    this.moveShoulder('right', 0, -90, 1);
+    this.flexElbow('left', 20, 1);
+    this.flexElbow('right', 20, 1);
+    this.spinForearm('left',  60, 1);
+    this.spinForearm('right', 60, 1);
+    this.flexWrist('left',  20, 1);
+    this.flexWrist('right',  10, 1);
+
+
+    // Save all quaternions as starting positions
     for (let joint in this.joints) {
         this.joints[joint].startingPosition = this.joints[joint].quaternion.clone();
+    }
+
+    Robot.prototype.setRaiseLeftArmPose = function(t) {
+        this.moveShoulder('left', 0, 90, t);
+        this.rotateShoulder('left', -90, t);
+        this.flexElbow('left', 20, t);
+        this.spinForearm('left',  0, t);
+        this.flexWrist('left', 0, t);
+    }
+
+    Robot.prototype.setLowerLeftArmPose = function(t) {
+        this.moveShoulder('left', 0, -90, t);
+        this.rotateShoulder('left', 0, t);
+        this.flexElbow('left', 20, t);
+        this.spinForearm('left',  0, t);
+        this.flexWrist('left', 0, t);
+    }
+
+    Robot.prototype.setKickPose = function(t) {
+        this.rotateHip('left', 40, t);
+        this.rotateHip('right', 40, t);
+        this.tiltBody('z', -60, t);
+        this.tiltBack(35, t);
+        this.rotateBack(-35, t);
+        this.moveLeg('left', 60,0, t);
+        this.moveLeg('right', 60,0, t);
+        this.moveShoulder('left', 60, -40, t);
+        this.moveShoulder('right', -30, -90, t);
+        this.rotateShoulder('left', 10, t);
+        this.rotateShoulder('right', -20, t);
+        this.flexElbow('left', 130, t);
+        this.flexElbow('right', 110, t);
+        this.spinForearm('left',  60, t);
+        this.spinForearm('right', 60, t);
+        this.flexWrist('left', 20, t);
+        this.flexWrist('right', 0, t);
+    }
+
+    Robot.prototype.setWavePose = function(t) {
+        let minElbow = 30;
+        let maxElbow = 60;
+        let maxHand =  20;
+        let minHand = -10;
+        let elbowFlex = Math.sin(this.waveTimer)*(maxElbow-minElbow) + minElbow;
+        let handTilt = -Math.sin(this.waveTimer)*(maxHand-minHand) + minHand;
+        this.moveShoulder('right', 0, 50, t);
+        this.rotateShoulder('right', -90, t);
+        this.spinForearm('right', -40, t);
+        this.flexElbow('right', elbowFlex, t);
+        this.tiltHand('right',  handTilt, t);
+        this.flexWrist('right', 0, t);
+        this.waveTimer = (this.waveTimer + t) % 360;
+    }
+
+    Robot.prototype.setArmsCrossPose = function(t) {
+        this.moveShoulder('left', 90, -50, t);
+        this.moveShoulder('right', 90, -50, t);
+        this.rotateShoulder('left', 40, t);
+        this.rotateShoulder('right', 20, t);
+        this.flexElbow('left', 100, t);
+        this.flexElbow('right', 110, t);
+        this.spinForearm('left',  20, t);
+        this.spinForearm('right', 20, t);
+        this.flexWrist('left',  50, t);
+        this.flexWrist('right', -50, t);
+    }
+
+    Robot.prototype.setResetPose = function(t) {
+        for (let joint in this.joints) {
+            this.joints[joint].quaternion.slerp(new THREE.Quaternion(0, 0, 0, 1), t);
+        }
+    }
+
+    Robot.prototype.setStartingPose = function(t) {
+        for (let joint in this.joints) {
+            this.joints[joint].quaternion.slerp(this.joints[joint].startingPosition, t);
+        }
     }
 
     Robot.prototype.show = function (scene) {
         const rGroup = new THREE.Group();
         rGroup.add(this.joints.pelvis);
         const helper = new THREE.SkeletonHelper(rGroup);
-        helper.material.linewidth = 3; // make the skeleton thick (doesn't work on my machine)
+        helper.material.linewidth = 1; // make the skeleton thick (doesn't work on my machine)
         scene.add(rGroup);
         scene.add(helper);
     }
 
-    Robot.prototype.raise_left_arm = function() {
-        this.movement = 'raise_left_arm';
-    }
-
-    Robot.prototype.lower_left_arm = function() {
-        this.movement = 'lower_left_arm';
-    }
-
-    Robot.prototype.kick = function() {
-        this.movement = 'kick';
+    Robot.prototype.raise_left_arm  = function() { this.movement = 'raise_left_arm'; }
+    Robot.prototype.lower_left_arm  = function() { this.movement = 'lower_left_arm'; }
+    Robot.prototype.kick            = function() { this.movement = 'kick';           }
+    Robot.prototype.resetPose       = function() { this.movement = 'resetPose';      }
+    Robot.prototype.startingPose    = function() { this.movement = 'startingPose';   }
+    Robot.prototype.crossArms       = function() { this.movement = 'crossArms';      }
+    Robot.prototype.wave            = function() {
+        this.waveTimer = 0;
+        this.movement = 'wave';
     }
 
     Robot.prototype.onAnimate = function() {
-        if (this.movement === 'raise_left_arm') {
-            // todo
-        } else if (this.movement === 'lower_left_arm') {
-            // todo
-        } else if (this.movement === 'kick') {
-            // todo
-        }
+        if (this.movement === 'raise_left_arm')         this.setRaiseLeftArmPose(0.05);
+        else if (this.movement === 'lower_left_arm')    this.setLowerLeftArmPose(0.05);
+        else if (this.movement === 'kick')              this.setKickPose(0.05);
+        else if (this.movement === 'startingPose')      this.setStartingPose(0.05);
+        else if (this.movement === 'resetPose')         this.setResetPose(0.1);
+        else if (this.movement === 'wave')              this.setWavePose(0.1);
+        else if (this.movement === 'crossArms')         this.setArmsCrossPose(0.1);
     }
-
-
 }

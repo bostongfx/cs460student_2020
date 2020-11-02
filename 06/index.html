@@ -65,13 +65,20 @@
 
           // ROBOT GOES HERE!
           const N = 5;                      // An odd integer. Things line up better with an odd center.
+          const C = 5;                      // Compactness - used to bunch the robots more tightly together.
           const offset = Math.floor(N/2);   // Offset from +- center
-          const robots = [];
+          robots = [];
+          if (N === 0) robots.push(new Robot(0, 0, 0, 80));
           for (let i = 0; i < N; i++) {
               for (let j = 0; j < N; j++) {
                   for (let k = 0; k < N; k++) {
-                      // Params: x, y, z, height
-                      robots.push(new Robot(-offset+i, -offset+j, -offset+k, 80));
+                      // Some slight variations to make the skeleton look more solid.
+                      // When each index equals offset, that means the robot will be the center. Don't vary that one.
+                      let iMod = i === offset && j === offset && k === offset ? 0 : Math.sin(i);
+                      let jMod = i === offset && j === offset && k === offset ? 0 : Math.sin(j);
+                      let kMod = i === offset && j === offset && k === offset ? 0 : Math.sin(k);
+
+                      robots.push(new Robot((-offset+i+jMod)/C, (-offset+j+kMod)/C, (-offset+k+iMod)/C, 80));
                   }
               }
           }
@@ -86,9 +93,13 @@
           const T = Math.PI;
           controller = {
               'anaglyph': false,
-              'raise_left_arm': robot.raise_left_arm(),
-              'lower_left_arm': robot.lower_left_arm(),
-              'kick': robot.kick(),
+              'raise_left_arm': function() { robots.forEach(r => r.raise_left_arm()) },
+              'lower_left_arm': function() { robots.forEach(r => r.lower_left_arm()) },
+              'kick':           function() { robots.forEach(r => r.kick()) },
+              'resetPose':      function() { robots.forEach(r => r.resetPose()) },
+              'startingPose':   function() { robots.forEach(r => r.startingPose()) },
+              'wave':           function() { robots.forEach(r => r.wave()) },
+              'crossArms':      function() { robots.forEach(r => r.crossArms()) },
           };
           effect = new THREE.AnaglyphEffect( renderer );
 
@@ -97,148 +108,24 @@
           rendering.add( controller, 'anaglyph' );
           rendering.open();
 
-          // const floorMove = gui.addFolder("floorMove");
-          // controller.floorX = function() {
-          //     floor.rotateX(Math.PI/2);
-          // }
-          // floorMove.add(controller, 'floorX');
-
           const moving = gui.addFolder( "Movement" );
-          moving.add( robot.joints.pelvis.position, "x", -1000, 1000 );
-          moving.add( robot.joints.pelvis.position, "y", -1000, 1000 );
-          moving.add( robot.joints.pelvis.position, "z", -1000, 1000 );
-          // moving.add( controller, 'raise_left_arm' );
-          // moving.add( controller, 'lower_left_arm' );
-          // moving.add( controller, 'kick' );
+          moving.add( controller, 'resetPose' );
+          moving.add( controller, 'startingPose' );
+          moving.add( controller, 'raise_left_arm' );
+          moving.add( controller, 'lower_left_arm' );
+          moving.add( controller, 'kick' );
+          moving.add( controller, 'wave' );
+          moving.add( controller, 'crossArms' );
           moving.open();
 
-          const bot = gui.addFolder("Robot");
-
-          for (let j in robot.joints) {
-              let labelX = '' + j + 'X';
-              let labelY = '' + j + 'Y';
-              let labelZ = '' + j + 'Z';
-              controller[labelX] = 0.00
-              controller[labelY] = 0.00
-              controller[labelZ] = 0.00
-              bot.add(controller, labelX, -1, 1, 0.01).onChange(function(val) {
-                  robot.joints[j].quaternion.slerp(new THREE.Quaternion(
-                      Math.sin((val*T)/2),robot.joints[j].quaternion.y,robot.joints[j].quaternion.z,Math.cos((val*T)/2)).normalize(), 1);
-                  controller[labelY] = robot.joints[j].quaternion.y;
-                  controller[labelZ] = robot.joints[j].quaternion.z;
-                  gui.__folders.Robot.__controllers.forEach(val => val.updateDisplay());
-
-              });
-              bot.add(controller, labelY, -1, 1, 0.01).onChange(function(val) {
-                  robot.joints[j].quaternion.slerp(new THREE.Quaternion(
-                      robot.joints[j].quaternion.x,Math.sin((val*T)/2),robot.joints[j].quaternion.z,Math.cos((val*T)/2)).normalize(), 1);
-                  controller[labelX] = robot.joints[j].quaternion.x;
-                  controller[labelZ] = robot.joints[j].quaternion.z;
-                  gui.__folders.Robot.__controllers.forEach(val => val.updateDisplay());
-              });
-              bot.add(controller, labelZ, -1, 1, 0.01).onChange(function(val) {
-                  robot.joints[j].quaternion.slerp(new THREE.Quaternion(
-                      robot.joints[j].quaternion.x,robot.joints[j].quaternion.y,Math.sin((val*T)/2),Math.cos((val*T)/2)).normalize(), 1);
-                  controller[labelX] = robot.joints[j].quaternion.x;
-                  controller[labelY] = robot.joints[j].quaternion.y;
-                  gui.__folders.Robot.__controllers.forEach((value, index, array) => value.updateDisplay());
-              });
-          }
-          controller.rotateArm = function() {
-              robot.joints.lShoulder.quaternion.slerp(new THREE.Quaternion(
-                  Math.sin((-0.5*T)/2),
-                  robot.joints.lShoulder.quaternion.y,
-                  Math.sin((-0.5*T)/2),
-                  Math.cos((-0.5*T)/2)).normalize(), 1);
-              controller.lShoulderX = robot.joints.lShoulder.quaternion.x;
-              controller.lShoulderY = robot.joints.lShoulder.quaternion.y;
-              controller.lShoulderZ = robot.joints.lShoulder.quaternion.z;
-              gui.__folders.Robot.__controllers.forEach(val => val.updateDisplay());
-          }
-          moving.add(controller, 'rotateArm');
-          // controller.head = 0.00;
-          // botUpper.add(controller, 'head', -2, 2).onChange(function(val) {
-          //     robot.head.quaternion.slerp(new THREE.Quaternion(0,0,Math.sin((val*T)/2),Math.cos((val*T)/2)), 1);
-          // });
-          // controller.neck = 0.00;
-          // botUpper.add(controller, 'neck', -2, 2).onChange(function(val) {
-          //     robot.neck.quaternion.slerp(new THREE.Quaternion(0,0,Math.sin((val*T)/2),Math.cos((val*T)/2)), 1);
-          // });
-          // controller.arm_joint = 1.70;
-          // botUpper.add(controller, 'arm_joint', -2, 2).onChange(function(val) {
-          //     robot.left_arm_joint.quaternion.slerp( new THREE.Quaternion(0,0,Math.sin((val*T)/2), Math.cos((val*T)/2)), 1);
-          //     robot.right_arm_joint.quaternion.slerp(new THREE.Quaternion(0,0,Math.sin((val*T)/2),-Math.cos((val*T)/2)), 1);
-          // });
-          // controller.collar = -0.90;
-          // botUpper.add(controller, 'collar', -2, 2).onChange(function(val) {
-          //     robot.left_collar.quaternion.slerp( new THREE.Quaternion(0,0,Math.sin((val*T)/2), Math.cos((val*T)/2)), 1);
-          //     robot.right_collar.quaternion.slerp(new THREE.Quaternion(0,0,Math.sin((val*T)/2),-Math.cos((val*T)/2)), 1);
-          // });
-          // controller.shoulder = -0.60;
-          // botUpper.add(controller, 'shoulder', -2, 2).onChange(function(val) {
-          //     robot.left_shoulder.quaternion.slerp( new THREE.Quaternion(0,0,Math.sin((val*T)/2), Math.cos((val*T)/2)), 1);
-          //     robot.right_shoulder.quaternion.slerp(new THREE.Quaternion(0,0,Math.sin((val*T)/2),-Math.cos((val*T)/2)), 1);
-          // });
-          // controller.upper_arm = -0.20;
-          // botUpper.add(controller, 'upper_arm', -2, 2).onChange(function(val) {
-          //     robot.left_upper_arm.quaternion.slerp( new THREE.Quaternion(0,0,Math.sin((val*T)/2), Math.cos((val*T)/2)), 1);
-          //     robot.right_upper_arm.quaternion.slerp(new THREE.Quaternion(0,0,Math.sin((val*T)/2),-Math.cos((val*T)/2)), 1);
-          // });
-          // controller.lower_arm = -0.20;
-          // botUpper.add(controller, 'lower_arm', -2, 2, 0.01).onChange(function(val) {
-          //     robot.left_lower_arm.quaternion.slerp( new THREE.Quaternion(0,0,Math.sin((val*T)/2), Math.cos((val*T)/2)), 1);
-          //     robot.right_lower_arm.quaternion.slerp(new THREE.Quaternion(0,0,Math.sin((val*T)/2),-Math.cos((val*T)/2)), 1);
-          // });
-          // controller.hand = 0.0;
-          // botUpper.add(controller, 'hand', -2, 2).onChange(function(val) {
-          //     robot.left_hand.quaternion.slerp( new THREE.Quaternion(0,0,Math.sin((val*T)/2), Math.cos((val*T)/2)), 1);
-          //     robot.right_hand.quaternion.slerp(new THREE.Quaternion(0,0,Math.sin((val*T)/2),-Math.cos((val*T)/2)), 1);
-          // });
-          //
-          // const botLower = gui.addFolder("Robot_Lower");
-          //
-          // controller.torso = 0.00;
-          // botLower.add(controller, 'torso', -2, 2, 0.01).onChange(function(val) {
-          //     robot.torso.quaternion.slerp(new THREE.Quaternion(0,0,Math.sin((val*T)/2),Math.cos((val*T)/2)), 1);
-          // });
-          // controller.hip_joint = 0.80;
-          // botLower.add(controller, 'hip_joint', -2, 2, 0.01).onChange(function(val) {
-          //     robot.left_hip_joint.quaternion.slerp( new THREE.Quaternion(0,0,Math.sin((val*T)/2), Math.cos((val*T)/2)), 1);
-          //     robot.right_hip_joint.quaternion.slerp(new THREE.Quaternion(0,0,Math.sin((val*T)/2),-Math.cos((val*T)/2)), 1);
-          // });
-          // controller.hip = -0.70;
-          // botLower.add(controller, 'hip', -2, 2, 0.01).onChange(function(val) {
-          //     robot.left_hip.quaternion.slerp( new THREE.Quaternion(0,0,Math.sin((val*T)/2), Math.cos((val*T)/2)), 1);
-          //     robot.right_hip.quaternion.slerp(new THREE.Quaternion(0,0,Math.sin((val*T)/2),-Math.cos((val*T)/2)), 1);
-          // });
-          // controller.upper_leg = -0.10;
-          // botLower.add(controller, 'upper_leg', -2, 2, 0.01).onChange(function(val) {
-          //     robot.left_upper_leg.quaternion.slerp( new THREE.Quaternion(0,0,Math.sin((val*T)/2), Math.cos((val*T)/2)), 1);
-          //     robot.right_upper_leg.quaternion.slerp(new THREE.Quaternion(0,0,Math.sin((val*T)/2),-Math.cos((val*T)/2)), 1);
-          // });
-          // controller.lower_leg = 0.00;
-          // botLower.add(controller, 'lower_leg', -2, 2, 0.01).onChange(function(val) {
-          //     robot.left_lower_leg.quaternion.slerp( new THREE.Quaternion(0,0,Math.sin((val*T)/2), Math.cos((val*T)/2)), 1);
-          //     robot.right_lower_leg.quaternion.slerp(new THREE.Quaternion(0,0,Math.sin((val*T)/2),-Math.cos((val*T)/2)), 1);
-          // });
-          // controller.foot = 0.00;
-          // botLower.add(controller, 'foot', -2, 2, 0.01).onChange(function(val) {
-          //     robot.left_foot.quaternion.slerp( new THREE.Quaternion(0,0,Math.sin((val*T)/2), Math.cos((val*T)/2)), 1);
-          //     robot.right_foot.quaternion.slerp(new THREE.Quaternion(0,0,Math.sin((val*T)/2),-Math.cos((val*T)/2)), 1);
-          // });
-          // botLower.open();
-
-          animate();
-
-
+          animate(robots);
       };
 
       function animate() {
-
           requestAnimationFrame(animate);
-
-          // TODO
-
+          for (const i in robots) {
+              robots[i].onAnimate();
+          }
           controls.update();
           if (controller.anaglyph) {
               effect.render(scene, camera);
