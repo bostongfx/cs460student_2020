@@ -1,0 +1,224 @@
+<html>
+    <head>
+        <meta content="text/html;charset=utf-8" http-equiv="Content-Type">
+        <meta content="utf-8" http-equiv="encoding">
+
+        // Part-01: Creating two viewports next to each other.
+        <style>
+              html, body {
+                    background-color: #000;
+                    margin: 0;
+                    padding: 0;
+                    height: 100%;
+                    overflow: hidden !important;
+              }
+
+              #r1 {
+                    width: 50%;
+                    height: 100%;
+                    float: left;
+              }
+
+              #r2 {
+                    width: 50%;
+                    height: 100%;
+                    float: left;
+              }
+        </style>
+
+        // Part-02: Setup the XTK scene.
+        <script type="text/javascript" src="https://get.goXTK.com/xtk_edge.js"></script>
+        <script type="text/javascript" src="https://get.goXTK.com/xtk_xdat.gui.js"></script>
+        <script src="https://threejs.org/build/three.min.js" type="text/javascript"></script>
+        <script src="https://threejs.org/examples/js/controls/TrackballControls.js" type="text/javascript"></script>
+
+
+        <script type="text/javascript">
+
+              var r, c;
+
+              // Create the window.onload function to set up the X.renderer3D.
+              window.onload = function() {
+
+                    r = new X.renderer3D();
+                    r.container = 'r1'; // Only use the r1 div container for XTK
+                    // If also use the r2 div container for XTK, 3D scene of r1 will disappear.
+                    r.init();
+
+                    c = new X.cube();
+
+                    r.add(c);
+                    r.render();
+
+                    // Part-03: Setup the Three.js scene.
+                    var r2 = document.getElementById('r2'); // get the div container!!!
+                    // ...
+                    scene = new THREE.Scene();
+
+
+                    ratio = window.innerWidth / window.innerHeight;
+                    var ratio = r2.clientWidth / r2.clientHeight;
+
+                    fov = 75;
+                    ratio = r2.clientWidth / r2.clientHeight;
+                    zNear = 1;
+                    zFar = 10000;
+                    console.log(ratio);
+                    camera = new THREE.PerspectiveCamera(fov, ratio, zNear, zFar);
+                    camera.position.set( 0, 0, 100);
+
+                    renderer = new THREE.WebGLRenderer({antialias:true});
+                    renderer.setSize( r2.clientWidth, r2.clientHeight ); // again use the container
+                    r2.appendChild( renderer.domElement ); // and append the domElement to the container
+
+                    ambientLight = new THREE.AmbientLight( get_random_color() );
+                    scene.add( ambientLight );
+
+                    light = new THREE.DirectionalLight( get_random_color(), 5.0 );
+                    light.position.set( 10, 100, 10 );
+                    scene.add( light );
+
+                    // This is a sub-cube for test if the Three.js scene working.
+                    // The color of main-cube is random, maybe Unrepresentable color numbers may be randomly generated.
+                    // At this time, you can determine whether the Three.js scene is working properly according to the
+                    // existence of this sub-cube:
+
+                    // geometry = new THREE.BoxBufferGeometry( 5, 5, 5);
+                    // material = new THREE.MeshStandardMaterial({ color: 0xffffff });
+                    // cube = new THREE.Mesh( geometry, material);
+                    // scene.add(cube);
+
+                    // Part-04: Connect XTK to dat.GUI to control cube properties.
+                    var gui = new dat.GUI();
+                    var cubeGui = gui.addFolder('Cube');
+                    cubeGui.add(c, 'visible');
+                    cubeGui.add(c, 'opacity', 0, 1);
+                    cubeGui.addColor(c, 'color');
+
+
+
+                    // Part-05: Introduce the helper object fordat.GUI.
+                    // and
+                    // Part-07: Extend the helper object for dat.GUIand rotate both cubes.
+                    controller = {
+
+                        'threejs_color': get_random_color(),
+
+                        'rotateX': function() {
+                            c.transform.rotateX(20);
+                            cube.rotateX(20);
+                        },
+
+                        'rotateY': function() {
+                            c.transform.rotateY(20);
+                            cube.rotateY(20);
+                        },
+
+                        'rotateZ': function() {
+                            c.transform.rotateZ(20);
+                            cube.rotateZ(20);
+                        },
+
+                        // Part-08: Add a second cube.
+                        'add new': function() {
+
+                            var c = new X.cube();
+
+                            // x1 = Math.ceil(Math.random() * 99) + 1;
+                            // y1 = Math.ceil(Math.random() * 99) + 1;
+                            // z1 = Math.ceil(Math.random() * 99) + 1;
+
+                            c.center = [50, 50, 50];
+                            r.add(c);
+                            r.render;
+
+                            geometry = new THREE.BoxBufferGeometry(25, 25, 25);
+                            material = new THREE.MeshStandardMaterial({ color: get_random_color() });
+                            var cube = new THREE.Mesh(geometry, material);
+
+                            // Although it was a casual attempt, some interesting things happened.
+                            // Randomly define the generation position of the new cube in r1 and r2.
+                            // The generation position of r2 is obviously more concentrated on the left front of the
+                            // cube than r1. The phenomenon provided me with inspiration for answering the 9th question.
+
+                            // x2 = Math.ceil(Math.random() * 99) + 1;
+                            // y2 = Math.ceil(Math.random() * 99) + 1;
+                            // z2 = Math.ceil(Math.random() * 99) + 1;
+
+                            cube.position.set(50, 50, 50);
+                            scene.add(cube);
+
+                        }
+
+                    }
+
+
+
+                    // Add a cube to r2.
+                    geometry = new THREE.BoxBufferGeometry(25, 25, 25);
+                    // In order to find the initial cube, draw its wireframe.
+                    material = new THREE.MeshBasicMaterial({ color: get_random_color(), wireframe: true });
+                    cube = new THREE.Mesh(geometry, material);
+                    scene.add(cube);
+
+                    var controls = new THREE.TrackballControls( camera, r2 );
+
+                    animate();
+
+
+
+
+                    // Part-06: Connect Three.js to dat.GUI to control cube properties.
+                    geometry = new THREE.BoxBufferGeometry(25, 25, 25);
+                    material = new THREE.MeshStandardMaterial({ color: get_random_color() });
+                    cube = new THREE.Mesh( geometry, material);
+                    scene.add(cube);
+
+                    var controls = new THREE.TrackballControls( camera, r2 );
+
+                    var threejsUI = gui.addFolder('Three.js Cube');
+                    threejsUI.add(cube, 'visible');
+                    threejsUI.add(cube.material, 'opacity', 0, 1).onChange( function() {
+                        cube.material.transparent = true;
+                    });
+                    threejsUI.addColor(controller, 'threejs_color').onChange( function() {
+                        cube.material.color.set( controller.threejs_color );
+                    });
+                    threejsUI.open();
+
+                    var both = gui.addFolder('Both Cubes');
+                    both.add(controller, 'rotateX');
+                    both.add(controller, 'rotateY');
+                    both.add(controller, 'rotateZ');
+                    both.add(controller, 'add new');
+                    both.open();
+
+                    function animate() {
+
+                        requestAnimationFrame( animate );
+
+                        controls.update();
+                        renderer.render( scene, camera );
+                    };
+              };
+
+              function get_random_color() {
+                  var letters = '0123456789ABCDEF'.split('');
+                  var color = '#';
+                  for (var i = 0; i < 6; i++ ) {
+                      color += letters[Math.round(Math.random() * 15)];
+                  }
+                  return color;
+              };
+
+        </script>
+
+
+    </head>
+
+        <body>
+            <div id='r1'></div>
+            <div id='r2'></div>
+        </body>
+
+</html>
