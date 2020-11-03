@@ -1,10 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="0ee042cc-fce5-4e3f-a2e6-f4abb5dcc1f4" name="Default Changelist" comment="">
-      <change beforePath="$PROJECT_DIR$/03/index.html" beforeDir="false" afterPath="$PROJECT_DIR$/03/index.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/06/index.html" beforeDir="false" afterPath="$PROJECT_DIR$/06/index.html" afterDir="false" />
-    </list>
+    <list default="true" id="0ee042cc-fce5-4e3f-a2e6-f4abb5dcc1f4" name="Default Changelist" comment="" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -23,6 +20,7 @@
     <property name="WebServerToolWindowFactoryState" value="false" />
     <property name="dart.analysis.tool.window.visible" value="false" />
     <property name="last_opened_file_path" value="$PROJECT_DIR$" />
+    <property name="nodejs_package_manager_path" value="npm" />
     <property name="vue.rearranger.settings.migration" value="true" />
   </component>
   <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
@@ -34,7 +32,7 @@
       <option name="presentableId" value="Default" />
       <updated>1604279827146</updated>
       <workItem from="1604279828374" duration="5377000" />
-      <workItem from="1604306862639" duration="10037000" />
+      <workItem from="1604306862639" duration="10252000" />
     </task>
     <servers />
   </component>
