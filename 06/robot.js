@@ -1,3 +1,5 @@
+// Inspired from Daniel's class verison
+
 Robot = function(x, y, z) {
 
   this.head = new THREE.Bone();
