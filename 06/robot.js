@@ -153,7 +153,7 @@ Robot.prototype.onAnimate = function() {
         if (this.right_upper_leg.quaternion.w < 0.85) {
             
             // signal that the kick is done and the leg should do backward slerps.
-            this.movement = 'kick done';
+            this.movement = 'kick_done';
 
         } else {
             
@@ -166,7 +166,7 @@ Robot.prototype.onAnimate = function() {
                                                 0.1 );
         }
     
-    } else if (this.movement == 'kick done') {
+    } else if (this.movement == 'kick_done') {
         
         // reset leg back to identity
         this.right_upper_leg.quaternion.slerp( new THREE.Quaternion(0, 0, 0, 1), 0.1 );
