@@ -89,7 +89,7 @@ Robot.prototype.show = function(scene) {
 
     //use the skeleton helper to visualize the skeleton
     this.helper = new THREE.SkeletonHelper(this.group);
-    this.helper.material.linewidth = 3; // not working in my windowOS
+    this.helper.material.linewidth = 3; // not working in my windowOS.
     scene.add( this.helper );
 
     //no movement by default
