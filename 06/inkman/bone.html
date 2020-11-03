@@ -1,0 +1,124 @@
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <style>
+      html, body { 
+        background-color:#000;
+        margin: 0;
+        padding: 0;
+        height: 100%;
+        overflow: hidden !important;  
+
+        background-image: url(sky.jpg);
+        background-repeat: no-repeat;
+        background-size: 100% 100%;
+      }
+    </style>
+
+    <script src="https://threejs.org/build/three.min.js" type="text/javascript"></script>
+    <script src="https://threejs.org/examples/js/controls/TrackballControls.js" type="text/javascript"></script>
+    <script src="https://threejs.org/examples/js/effects/AnaglyphEffect.js" type="text/javascript"></script>
+
+    <script>
+
+      var scene, camera, renderer, ambientLight, light, controls;
+      var floor;
+
+      window.onload = function() {
+
+        scene = new THREE.Scene();
+
+        var fov = 60;
+        var ratio = window.innerWidth / window.innerHeight;
+        var zNear = 1;
+        var zFar = 10000;
+        camera = new THREE.PerspectiveCamera(fov, ratio, zNear, zFar);
+        camera.position.set( 0, 0, 500);
+
+        renderer = new THREE.WebGLRenderer({ alpha: true });
+        renderer.setSize( window.innerWidth, window.innerHeight );
+        document.body.appendChild( renderer.domElement );
+        
+        ambientLight = new THREE.AmbientLight();
+        scene.add( ambientLight );
+
+        light = new THREE.DirectionalLight( 0xffffff, 5.0 );
+        light.position.set( 10, 100, 10 );
+        scene.add( light );
+
+
+        var floorTexture = new THREE.TextureLoader().load( 'marble.jpg' );
+        var floorGeometry = new THREE.PlaneBufferGeometry( 1000, 1000 );
+        var floorMaterial = new THREE.MeshBasicMaterial( {
+          map: floorTexture,
+          side: THREE.DoubleSide
+        } );
+        floor = new THREE.Mesh( floorGeometry, floorMaterial );
+        floor.position.y = -100;
+        floor.rotateX(-30);
+        scene.add( floor );
+
+        controls = new THREE.TrackballControls( camera, renderer.domElement );
+
+
+        
+        head = new THREE.Bone();
+        head.position.x = 0;
+        head.position.y = 0;
+        head.position.z = 0;
+
+        neck = new THREE.Bone();
+        neck.position.y = -10;
+        head.add(neck);
+
+        torso = new THREE.Bone();
+        torso.position.y = -30;
+        neck.add(torso);
+
+        // // create group and point to the robot head
+        
+        left_upper_arm = new Three.Bone();
+        left_upper_arm.position.y = -5;
+        left_upper_arm.position.x = 5;
+        neck.add(left_upper_arm);
+
+
+        left_Lower_arm = new Three.Bone();
+        left_Lower_arm.position.y = -5;
+        left_Lower_arm.position.x = 5;
+        left_upper_arm.add(left_Lower_arm);
+
+        left_hand = new THREE.Bone();
+        
+
+        group = new THREE.Group();
+        group.add(head);
+        scene.add(group);
+
+        // // use the skeleton helper to visualize the skeleton
+        helper = new THREE.SkeletonHelper( group );
+        helper.material.linewidth = 3;
+        
+        scene.add(helper);
+
+        
+
+
+        animate();
+
+
+      };
+
+      function animate() {
+
+        requestAnimationFrame( animate );
+
+        controls.update();
+        renderer.render( scene, camera );
+
+      };
+
+    </script>
+  </head>
+  <body></body>
+</html>
