@@ -28,7 +28,6 @@
       let controller, effect, gui;
 
       window.onload = function () {
-
           scene = new THREE.Scene();
 
           const fov = 60;
@@ -49,7 +48,6 @@
           light.position.set(10, 100, 10);
           scene.add(light);
 
-
           const floorTexture = new THREE.TextureLoader().load('board.jpg');
           const floorGeometry = new THREE.PlaneBufferGeometry(1000, 1000);
           const floorMaterial = new THREE.MeshBasicMaterial({
@@ -64,7 +62,8 @@
           controls = new THREE.OrbitControls(camera, renderer.domElement);
 
           // ROBOT GOES HERE!
-          const N = 5;                      // An odd integer. Things line up better with an odd center.
+          // To mitigate the line thickness issue, I create an NxNxN array of robots
+          const N = 1;                      // An odd integer. Things line up better with an odd center.
           const C = 5;                      // Compactness - used to bunch the robots more tightly together.
           const offset = Math.floor(N/2);   // Offset from +- center
           robots = [];
@@ -100,6 +99,7 @@
               'startingPose':   function() { robots.forEach(r => r.startingPose()) },
               'wave':           function() { robots.forEach(r => r.wave()) },
               'crossArms':      function() { robots.forEach(r => r.crossArms()) },
+              'dance':          function() { robots.forEach(r => r.dance()) },
           };
           effect = new THREE.AnaglyphEffect( renderer );
 
@@ -108,7 +108,25 @@
           rendering.add( controller, 'anaglyph' );
           rendering.open();
 
+          controller.x = 0;
+          controller.y = robot.joints.pelvis.position.y;
+          controller.z = 0
           const moving = gui.addFolder( "Movement" );
+          // The x, y, z gui buttons
+          moving.add( controller, 'x', -1000, 1000).onChange(function(x) { robots.forEach(r => {
+              let joint = r.joints.pelvis;
+              joint.position.set(r.xOffset+x, joint.position.y, joint.position.z);
+          })}).listen();
+          moving.add( controller, 'y', -1000, 1000).onChange(function(y) { robots.forEach(r => {
+              let joint = r.joints.pelvis;
+              joint.position.set(joint.position.x, r.yOffset+y, joint.position.z);
+          })}).listen();
+          moving.add( controller, 'z', -1000, 1000).onChange(function(z) { robots.forEach(r => {
+              let joint = r.joints.pelvis;
+              joint.position.set(joint.position.x, joint.position.y, r.zOffset+z);
+          })}).listen();
+
+          // And the poses
           moving.add( controller, 'resetPose' );
           moving.add( controller, 'startingPose' );
           moving.add( controller, 'raise_left_arm' );
@@ -116,7 +134,32 @@
           moving.add( controller, 'kick' );
           moving.add( controller, 'wave' );
           moving.add( controller, 'crossArms' );
+          moving.add( controller, 'dance' );
           moving.open();
+
+          window.onclick = function(e) {
+              if (!e.shiftKey) {
+                  e.preventDefault();
+                  return false;
+              }
+              let pixel_coords = new THREE.Vector2( e.clientX, e.clientY );
+              let vp_coords = new THREE.Vector2( ( e.clientX / window.innerWidth  ) * 2 - 1,
+                                                -( e.clientY / window.innerHeight ) * 2 + 1);
+
+              let raycaster = new THREE.Raycaster();
+              raycaster.setFromCamera(vp_coords, camera);
+              let intersects = raycaster.intersectObject(floor);
+              if (intersects.length > 0) {
+                  let point = intersects[0].point;
+                  robots.forEach(r => {
+                      let joint = r.joints.pelvis;
+                      joint.position.set(r.xOffset + point.x, r.yOffset + point.y + (r.size / 2), r.zOffset + point.z);
+                  });
+                  controller.x = robot.joints.pelvis.position.x;
+                  controller.y = robot.joints.pelvis.position.y;
+                  controller.z = robot.joints.pelvis.position.z;
+              }
+          }
 
           animate(robots);
       };
