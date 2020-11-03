@@ -9,7 +9,7 @@
         height: 100%;
         overflow: hidden !important;
 
-        background-image: url(sky.jpg);
+        background-image: url(snow.jpg);
         background-repeat: no-repeat;
         background-size: 100% 100%;
       }
@@ -58,7 +58,7 @@
         scene.add( light );
 
 
-        var floorTexture = new THREE.TextureLoader().load( 'board.jpg' );
+        var floorTexture = new THREE.TextureLoader().load( 'ground.jpg' );
         var floorGeometry = new THREE.PlaneBufferGeometry( 1000, 1000 );
         var floorMaterial = new THREE.MeshBasicMaterial( {
           map: floorTexture,
