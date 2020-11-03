@@ -100,11 +100,11 @@ Robot.prototype.show = function(scene) {
 
 
 Robot.prototype.raise_left_arm = function() {
-    this.movement = 'raise left arm';
+    this.movement = 'raiseLeftArm';
   };
   
   Robot.prototype.lower_left_arm = function() {
-    this.movement = 'lower left arm';
+    this.movement = 'lowerLeftArm';
   };
   
   Robot.prototype.kick = function() {
@@ -113,7 +113,7 @@ Robot.prototype.raise_left_arm = function() {
 
 Robot.prototype.onAnimate = function() {
 
-  if ( this.movement == 'raise_left_arm' ) {
+  if ( this.movement == 'raiseLeftArm' ) {
 
     T = Math.PI // 180 degrees
     x = 1 
