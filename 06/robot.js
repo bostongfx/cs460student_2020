@@ -116,9 +116,30 @@ Robot.prototype.kick = function() {
 	
 };
 
+Robot.prototype.dance = function() { //Credit to Alvin
+	var tree = this
+	setInterval(function() {
+        var num = Math.floor(Math.random() * 3);
+        if (num == 0) {
+			
+            tree.raiseLeftArm();
+			
+        } else if (num == 1) {
+			
+            tree.lowerLeftArm();
+			
+        } else if (num == 2) {
+			
+            tree.kick();
+			
+        }
+    }, 45);
+};
+	
+
 Robot.prototype.onAnimate = function() {
  
-  if (this.movement == 'raise_left_arm') {
+  if (this.movement == 'raise_left_arm') { //animate raising the left arm
  
     var T = -Math.PI;
     this.left_upper_arm.quaternion.slerp( new THREE.Quaternion(
@@ -129,7 +150,7 @@ Robot.prototype.onAnimate = function() {
                                         0.1 );
  
   
-  } else if (this.movement == 'lower_left_arm') {
+  } else if (this.movement == 'lower_left_arm') { //animate lowering the left arm
 	var T = -Math.PI;
     this.left_upper_arm.quaternion.slerp( new THREE.Quaternion(
 									     x = 0,   			   // x
@@ -138,7 +159,7 @@ Robot.prototype.onAnimate = function() {
                                          w = Math.cos(T/2)),  // w
                                         0.1 );
 										
-  } else if (this.movement == 'kick') {
+  } else if (this.movement == 'kick') { //animate kicking
  
     // check if slerp reached almost the end
     if (this.right_upper_leg.quaternion.w < 0.72) {
