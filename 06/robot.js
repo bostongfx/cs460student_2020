@@ -107,7 +107,7 @@ Robot.prototype.show = function(scene) {
   rGroup.add( this.head );
 
   var helper = new THREE.SkeletonHelper( rGroup );
-  helper.material.linewidth = 3; // make the skeleton thick
+  helper.material.linewidth = 13; // make the skeleton thick
 
   scene.add(rGroup);
   scene.add(helper);
