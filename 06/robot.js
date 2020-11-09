@@ -104,6 +104,10 @@ Robot.prototype.kick = function() {
   this.movement = 'kick';
 };
 
+Robot.prototype.dance = function() {
+  this.movement = 'dance';
+};
+
 Robot.prototype.onAnimate = function() {
 
   if ( this.movement == 'raise_left_arm' ) {
@@ -158,6 +162,37 @@ Robot.prototype.onAnimate = function() {
  
     // reset leg back to identity
     this.right_upper_leg.quaternion.slerp( new THREE.Quaternion(0,0,0,1), 0.1 );
+
+  } else if ( this.movement == 'dance' ) {
+
+    if (this.right_upper_leg.quaternion.w < 0.72) {
+ 
+      // signal that the kick is done and the leg should move back
+      this.movement = 'kick done';
+ 
+    }
+
+    else {
+
+      T = -Math.PI // 180 degrees
+      x = 1 
+      y = 0
+      z = 0
+
+      this.right_upper_leg.quaternion.slerp( new THREE.Quaternion( 
+        Math.sin(T/2)*x, 
+        Math.sin(T/2)*y, 
+        Math.sin(T/2)*z, 
+        Math.cos(T/2) ), 0.1 );
+
+      this.left_upper_arm.quaternion.slerp( new THREE.Quaternion( 
+        Math.sin(T/2)*x, 
+        Math.sin(T/2)*y, 
+        Math.sin(T/2)*z, 
+        Math.cos(T/2) ), 0.1 );
+
+      
+    }
 
   }
 
