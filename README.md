@@ -10,3 +10,5 @@ CS460 Computer Graphics at UMass Boston.
 <a href="https://ayahea.github.io/cs460student/05/">Assignment 05</a>
 
 <a href="https://ayahea.github.io/cs460student/06/">Assignment 06</a>
+
+<a href="https://ayahea.github.io/cs460student/07/">Assignment 07</a>
