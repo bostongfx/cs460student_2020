@@ -229,7 +229,7 @@ Robot.prototype.onAnimate = function() {
         
       } else if(this.movement == 'reset') {
         var ensure = 0;
-        while (ensure < 20) {
+        while (ensure < 50) {
             this.left_upper_leg.quaternion.slerp( new THREE.Quaternion(0,0,0,1), 0.1 );
             this.right_upper_leg.quaternion.slerp( new THREE.Quaternion(0,0,0,1), 0.1 );
             this.left_upper_arm.quaternion.slerp( new THREE.Quaternion(0,0,0,1), 0.1 );
