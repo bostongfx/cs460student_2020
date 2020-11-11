@@ -127,6 +127,12 @@
                 value.dance();
                 remembered_movements = "dance";
               });
+              // audio content.
+              const audioElement = document.getElementById('audio');
+              audioElement.play();
+
+              //mute video audio.
+              video.muted = true;
           }
         }
 
@@ -238,9 +244,6 @@
       <script>
         var startButton = document.getElementById( 'startButton' );
         startButton.addEventListener( 'click', function () {
-          // audio content
-          const audioElement = document.getElementById('audio');
-          audioElement.play();
 
           // animate here, after click startButton
           animate();
@@ -253,11 +256,6 @@
           var overlay = document.getElementById( 'overlay' );
           overlay.remove();
 
-          // initial movment is dance
-          remembered_movements = "dance";
-          robot_array.forEach(function(value, index, array) {
-                value.dance();
-          });
         }, false );
 
       </script>
