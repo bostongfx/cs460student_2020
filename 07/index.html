@@ -1,0 +1,197 @@
+<html>
+<head>
+  <meta charset="UTF-8"/>
+  <style>
+      html, body {
+          background-color: #000;
+          margin: 0;
+          padding: 0;
+          height: 100%;
+          overflow: hidden !important;
+
+          background-image: url(sky.jpg);
+          background-repeat: no-repeat;
+          background-size: 100% 100%;
+      }
+  </style>
+
+  <script src="https://threejs.org/build/three.min.js" type="text/javascript"></script>
+  <script src="https://threejs.org/examples/js/controls/OrbitControls.js" type="text/javascript"></script>
+  <script src="https://threejs.org/examples/js/effects/AnaglyphEffect.js" type="text/javascript"></script>
+  <script src="./robot.js" type="text/javascript"></script>
+  <script src="./helper.js" type="text/javascript"></script>
+  <script src="https://threejs.org/examples/js/libs/dat.gui.min.js" type="text/javascript"></script>
+  <video id="video" hidden>
+    <source src="./video/avbLasersTrim.mp4" type="video/mp4">
+    Your browser does not support the video tag.
+  </video>
+  <script>
+
+      let scene, camera, renderer, ambientLight, light, controls;
+      let floor;
+      let controller, effect, gui;
+
+      window.onload = function () {
+          scene = new THREE.Scene();
+
+          const fov = 60;
+          const ratio = window.innerWidth / window.innerHeight;
+          const zNear = 1;
+          const zFar = 10000;
+          camera = new THREE.PerspectiveCamera(fov, ratio, zNear, zFar);
+          camera.position.set(0, 100,  100);
+
+          renderer = new THREE.WebGLRenderer({alpha: true});
+          renderer.setSize(window.innerWidth, window.innerHeight);
+          document.body.appendChild(renderer.domElement);
+
+          ambientLight = new THREE.AmbientLight();
+          scene.add(ambientLight);
+
+          light = new THREE.DirectionalLight(0xffffff, 1.0);
+          light.position.set(10, 100, 10);
+          scene.add(light);
+
+          const floorTexture = new THREE.TextureLoader().load('board.jpg');
+          const floorGeometry = new THREE.PlaneBufferGeometry(1000, 1000);
+          const floorMaterial = new THREE.MeshBasicMaterial({
+              map: floorTexture,
+              side: THREE.DoubleSide
+          });
+          floor = new THREE.Mesh(floorGeometry, floorMaterial);
+          floor.position.y = 0;
+          floor.rotateX(Math.PI/2);
+          scene.add(floor);
+
+          controls = new THREE.OrbitControls(camera, renderer.domElement);
+
+
+          video = document.getElementById( 'video' );
+
+
+          texture = new THREE.VideoTexture(video);
+          texture.offset.y += -.5
+          texture.repeat.set(1, 2);
+          texture.wrapS = texture.wrapT = THREE.EquirectangularReflectionMapping;
+
+          // now we add the cube
+          let geometry = new THREE.BoxBufferGeometry( 2000, 2000, 2000);
+          let material = new THREE.MeshStandardMaterial({ color: 0xffffff, side: THREE.DoubleSide, map:texture });
+          videoCube = new THREE.Mesh( geometry, material);
+          scene.add(videoCube);
+          // cube.position.set(0,500,-1000)
+
+          // ROBOT GOES HERE!
+          robots = [];
+          robot = new Robot(0, 0, 0, 80);
+          robots.push(robot);
+          robot.show(scene);
+          controls.target.set(0,40,0);
+          controls.update();
+
+          controller = {
+              'anaglyph': false,
+              'raise_left_arm': function() { robots.forEach(r => r.raise_left_arm()) },
+              'lower_left_arm': function() { robots.forEach(r => r.lower_left_arm()) },
+              'kick':           function() { robots.forEach(r => r.kick()) },
+              'resetPose':      function() { robots.forEach(r => r.resetPose()) },
+              'startingPose':   function() { robots.forEach(r => r.startingPose()) },
+              'wave':           function() { robots.forEach(r => r.wave()) },
+              'crossArms':      function() { robots.forEach(r => r.crossArms()) },
+              'dance':          function() { robots.forEach(r => r.dance()) },
+              'playVideo':      function() {
+                  video.play();
+                  floor.visible = false;
+                  videoCube.visible = true;
+                  // floor.position.y = -2000;
+                  },
+              'pauseVideo':      function() {
+                  video.pause();
+                  floor.visible = true;
+                  videoCube.visible = false;
+                  // floor.position.y = 0;
+              },
+          };
+          effect = new THREE.AnaglyphEffect( renderer );
+
+          gui = new dat.GUI();
+          const rendering = gui.addFolder("Rendering");
+          rendering.add( controller, 'anaglyph' );
+          rendering.add( controller, 'playVideo' );
+          rendering.add( controller, 'pauseVideo' );
+          rendering.open();
+
+          controller.x = 0;
+          controller.y = robot.root.position.y;
+          controller.z = 0
+          const moving = gui.addFolder( "Movement" );
+          // The x, y, z gui buttons
+          moving.add( controller, 'x', -1000, 1000).onChange(function(x) { robots.forEach(r => {
+              let joint = r.root;
+              joint.position.set(r.xOffset+x, joint.position.y, joint.position.z);
+          })}).listen();
+          moving.add( controller, 'y', -1000, 1000).onChange(function(y) { robots.forEach(r => {
+              let joint = r.root;
+              joint.position.set(joint.position.x, r.yOffset+y, joint.position.z);
+          })}).listen();
+          moving.add( controller, 'z', -1000, 1000).onChange(function(z) { robots.forEach(r => {
+              let joint = r.root;
+              joint.position.set(joint.position.x, joint.position.y, r.zOffset+z);
+          })}).listen();
+
+          // And the poses
+          moving.add( controller, 'resetPose' );
+          moving.add( controller, 'startingPose' );
+          moving.add( controller, 'raise_left_arm' );
+          moving.add( controller, 'lower_left_arm' );
+          moving.add( controller, 'kick' );
+          moving.add( controller, 'wave' );
+          moving.add( controller, 'crossArms' );
+          moving.add( controller, 'dance' );
+          moving.open();
+
+          window.onclick = function(e) {
+              if (!e.shiftKey) {
+                  e.preventDefault();
+                  return false;
+              }
+              let pixel_coords = new THREE.Vector2( e.clientX, e.clientY );
+              let vp_coords = new THREE.Vector2( ( e.clientX / window.innerWidth  ) * 2 - 1,
+                                                -( e.clientY / window.innerHeight ) * 2 + 1);
+
+              let raycaster = new THREE.Raycaster();
+              raycaster.setFromCamera(vp_coords, camera);
+              let intersects = raycaster.intersectObject(floor);
+              if (intersects.length > 0) {
+                  console.log("making a new bot")
+                  let point = intersects[0].point;
+                  let r = new Robot(0, 0, 0, 80);
+                  let joint = r.root;
+                  joint.position.set(r.xOffset + point.x, r.yOffset + point.y + (r.size / 2), r.zOffset + point.z);
+                  robots.push(r);
+                  r.show(scene);
+              }
+          }
+
+          animate(robots);
+      };
+
+      function animate() {
+          requestAnimationFrame(animate);
+          for (const i in robots) {
+              robots[i].onAnimate();
+          }
+          controls.update();
+          if (controller.anaglyph) {
+              effect.render(scene, camera);
+              renderer.setClearAlpha(1);
+          } else {
+              renderer.setClearAlpha(0);
+              renderer.render(scene, camera);
+          }
+      }
+
+  </script>
+</head>
+<body></body>
+</html>

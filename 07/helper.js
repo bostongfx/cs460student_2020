@@ -10,7 +10,7 @@ HELPER = {};
  */
 HELPER.cylinderSkeletonMesh = function(howmany, howwide, color) {
   
-  var segmentheight = 10; // just a temporary value but it needs to match for geometry and bones
+  var segmentheight = 1; // just a temporary value but it needs to match for geometry and bones
   var height = segmentheight * howmany;
 
   //
@@ -70,7 +70,7 @@ HELPER.cylinderSkeletonMesh = function(howmany, howwide, color) {
   for (var i=0; i< howmany; i++) {
 
     var currentbone = new THREE.Bone();
-    currentbone.position.y = segmentheight;
+    // currentbone.position.y = segmentheight;
 
     parentbone.add(currentbone);
     bones.push(currentbone); // add the bone
