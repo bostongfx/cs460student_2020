@@ -62,16 +62,13 @@
         floor.rotateX(-30);
         scene.add( floor );
 
-        /*var djTexture = new THREE.TextureLoader().load( 'night.jpg' );
-        var djGeometry = new THREE.PlaneBufferGeometry( 1000, 1000 );
-        var djMaterial = new THREE.MeshBasicMaterial( {
-          map: djTexture,
-          side: THREE.DoubleSide
-        } );
-        dj = new THREE.Mesh( djGeometry, djMaterial );
-        dj.position.y = 400;
-      //  dj.rotateX(0);
-        scene.add( dj );*/
+        video = document.getElementById('video');
+        var texture = new THREE.VideoTexture( video );
+        var bGeometry = new THREE.PlaneBufferGeometry( 500, 250 );
+        var bMaterial = new THREE.MeshBasicMaterial( {map: texture} );
+        backPlay = new THREE.Mesh( bGeometry, bMaterial );
+        backPlay.position.y = 100;
+        scene.add( backPlay );
 
         controls = new THREE.TrackballControls( camera, renderer.domElement );
 
@@ -116,6 +113,9 @@
             var music = document.getElementById('music');
             music.autoplay = true;
             music.load();
+
+            video.autoplay = true;
+            video.play();
 
             for(var robot in robots) {
             robots[robot].dance();
@@ -211,6 +211,11 @@
   <audio id='music'>
   <source src="music.mp3">
   </audio>
+  </div>
+  <div>
+  <video id='video' width="1" height="1" controls="controls">
+  <source src="video.mp4" type="video/mp4">
+  </video>
   </div>
   </body>
 </html>
