@@ -112,14 +112,13 @@
 			const audioLoader = new THREE.AudioLoader();
 			audioLoader.load( 'smash.mp3', function( buffer ) {
 			sound.setBuffer( buffer );
-			sound.setLoop( true );
 			sound.setVolume( 0.5 );
 			sound.play();
 			});
             for (var r in robots) {
               robots[r].dance();
           }
-		
+		  document.body.style.backgroundImage = "url('steve.gif')"; //credit to Alvin
 		}
 		}
 		
