@@ -1,83 +1,76 @@
 HELPER = {};
 
-/**
- * This method returns [geometry, material, bones] to create a skeleton mesh
- * based on a cylinder.
+/*/
+ * This method returns [geometry, material, bones] to create a skeleton mesh based on a cylinder.
  *
- * @param howmany: Number of bones.
- * @param howwide: Radius of the cylinder.
- * @param color: Color of the cylinder.
- */
-HELPER.cylinderSkeletonMesh = function(howmany, howwide, color) {
-  
-  var segmentheight = 10; // just a temporary value but it needs to match for geometry and bones
-  var height = segmentheight * howmany;
+ * @param howMany: number of bones
+ * @param howWide: radius of the cylinder
+ * @param color: color of the cylinder
+ *
+/*/
+HELPER.cylinderSkeletonMesh = function(howMany, howWide, color) {
+	// just a temporary value but it needs to match for geometry and bones
+	var segmentHeight = 10;
+	var height = segmentHeight * howMany;
 
-  //
-  // inspired by https://threejs.org/docs/scenes/bones-browser.html
-  //
+	// inspired by https://threejs.org/docs/scenes/bones-browser.html
 
-  // step1: geometry
-  var geometry = new THREE.CylinderBufferGeometry(
-    howwide, // radiusTop
-    howwide, // radiusBottom
-    height, // height
-    8, // radiusSegments
-    howmany * 3, // heightSegments
-    true // openEnded
-  );
+	// step 1: geometry
+	var geometry = new THREE.CylinderBufferGeometry(
+		howWide,		// radiusTop
+		howWide,		// radiusBottom
+		height,			// height
+		8,				// radiusSegments
+		howMany * 3,	// heightSegments
+		true			// openEnded
+	);
 
-  var position = geometry.attributes.position;
+	var position = geometry.attributes.position;
 
-  var vertex = new THREE.Vector3();
+	var vertex = new THREE.Vector3();
 
-  var skinIndices = [];
-  var skinWeights = [];
+	var skinIndices = [];
+	var skinWeights = [];
 
-  for ( var i = 0; i < position.count; i ++ ) {
+	for (var i = 0; i < position.count; i++) {
+		vertex.fromBufferAttribute(position, i);
 
-    vertex.fromBufferAttribute( position, i );
+		var y = (vertex.y + height / 2);
 
-    var y = ( vertex.y + height / 2 );
+		var skinIndex = Math.floor(y / segmentHeight);
+		var skinWeight = (y % segmentHeight) / segmentHeight;
 
-    var skinIndex = Math.floor( y / segmentheight );
-    var skinWeight = ( y % segmentheight ) / segmentheight;
+		skinIndices.push(skinIndex, skinIndex + 1, 0, 0);
+		skinWeights.push(1 - skinWeight, skinWeight, 0, 0);
+	}
 
-    skinIndices.push( skinIndex, skinIndex + 1, 0, 0 );
-    skinWeights.push( 1 - skinWeight, skinWeight, 0, 0 );
+	geometry.setAttribute('skinIndex', new THREE.Uint16BufferAttribute(skinIndices, 4));
+	geometry.setAttribute('skinWeight', new THREE.Float32BufferAttribute(skinWeights, 4));
 
-  }
+	// step 2: setup material
+	var material = new THREE.MeshStandardMaterial({
+		skinning: true, // IMPORTANT!
+		color: color,
+		side: THREE.DoubleSide,
+		flatShading: true
+	});
 
-  geometry.setAttribute( 'skinIndex', new THREE.Uint16BufferAttribute( skinIndices, 4 ) );
-  geometry.setAttribute( 'skinWeight', new THREE.Float32BufferAttribute( skinWeights, 4 ) );
+	// step 3: setup bones
+	var bones = [];
 
-  // step 2: setup material
-  var material = new THREE.MeshStandardMaterial( {
-    skinning: true, // IMPORTANT!
-    color: color,
-    side: THREE.DoubleSide,
-    flatShading: true
-  } );
+	// we always need a dummy parent bone as the anchor point
+	var parentBone = new THREE.Bone();
+	// parentBone.position.y = -height / 2; // weeeeird
+	bones.push(parentBone);
 
-  // step 3: setup bones
-  var bones = [];
+	for (var i = 0; i < howMany; i++) {
+		var currentBone = new THREE.Bone();
+		currentBone.position.y = segmentHeight;
 
-  // we always need a dummy parent bone as the anchor point
-  var parentbone = new THREE.Bone();
-  // parentbone.position.y = -height / 2; // weeeeird
-  bones.push(parentbone);
+		parentBone.add(currentBone);
+		bones.push(currentBone);
+		parentBone = currentBone;
+	}
 
-  for (var i=0; i< howmany; i++) {
-
-    var currentbone = new THREE.Bone();
-    currentbone.position.y = segmentheight;
-
-    parentbone.add(currentbone);
-    bones.push(currentbone); // add the bone
-    parentbone = currentbone;
-    
-  }
-
-  return [geometry, material, bones];
-
+	return [geometry, material, bones];
 };
