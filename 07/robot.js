@@ -1,3 +1,4 @@
+// using professor's hw6 code 
 Robot = function(x, y, z) {
   
   //create neck,torso

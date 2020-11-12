@@ -68,15 +68,15 @@
         scene.add( floor );
 
         robots = [];
-        r1 = new Robot(0, -30, 0);
+        r1 = new Robot(0, -29, 0);
         r1.show(scene);
         robots.push(r1);
         
-        r2 = new Robot(200, -30, 0);
+        r2 = new Robot(200, -29, 0);
         r2.show(scene);
         robots.push(r2);
 
-        r3 = new Robot(-200, -30, 0);
+        r3 = new Robot(-200, -29, 0);
         r3.show(scene);
         robots.push(r3);
         
@@ -164,10 +164,11 @@
           intersects = raycaster.intersectObject(floor);
 
           if (intersects.length > 0) {
-
-              r.root.position.set(intersects[0].point.x, 
-                                  intersects[0].point.y + 60,
-                                  intersects[0].point.z)
+              new_robot = new Robot(intersects[0].point.x, 
+                                    intersects[0].point.y + 71,
+                                    intersects[0].point.z);
+              new_robot.show(scene);
+              robots.push(new_robot);                    
 
           }
 
