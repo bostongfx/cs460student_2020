@@ -1,0 +1,200 @@
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <style>
+      html, body { 
+        background-color:#000;
+        margin: 0;
+        padding: 0;
+        height: 100%;
+        overflow: hidden !important;  
+
+        background-image: url(sky.jpg);
+        background-repeat: no-repeat;
+        background-size: 100% 100%;
+      }
+    </style>
+
+    <script src="https://threejs.org/build/three.min.js" type="text/javascript"></script>
+    <script src="https://threejs.org/examples/js/controls/TrackballControls.js" type="text/javascript"></script>
+    <script src="https://threejs.org/examples/js/effects/AnaglyphEffect.js" type="text/javascript"></script>
+
+    <script src="https://threejs.org/examples/js/libs/dat.gui.min.js" type="text/javascript"></script>
+
+    <script src="robot.js" type="text/javascript"></script>
+    <script src="helper.js" type="text/javascript"></script>
+
+    <script>
+
+      var scene, camera, renderer, effect, ambientLight, light, controls;
+      var floor;
+
+
+      window.onload = function() {
+
+
+        scene = new THREE.Scene();
+
+        var fov = 60;
+        var ratio = window.innerWidth / window.innerHeight;
+        var zNear = 1;
+        var zFar = 10000;
+        camera = new THREE.PerspectiveCamera(fov, ratio, zNear, zFar);
+        camera.position.set( 0, 0, 500);
+
+        renderer = new THREE.WebGLRenderer({ alpha: true });
+        renderer.setSize( window.innerWidth, window.innerHeight );
+        document.body.appendChild( renderer.domElement );
+        
+        effect = new THREE.AnaglyphEffect( renderer );
+        effect.setSize( window.innerWidth, window.innerHeight );
+
+        ambientLight = new THREE.AmbientLight();
+        scene.add( ambientLight );
+
+        light = new THREE.DirectionalLight( 0xffffff, 5.0 );
+        light.position.set( 10, 100, 10 );
+        scene.add( light );
+
+
+        var floorTexture = new THREE.TextureLoader().load( 'board.jpg' );
+        var floorGeometry = new THREE.PlaneBufferGeometry( 1000, 1000 );
+        var floorMaterial = new THREE.MeshBasicMaterial( {
+          map: floorTexture,
+          side: THREE.DoubleSide
+        } );
+        floor = new THREE.Mesh( floorGeometry, floorMaterial );
+        floor.position.y = -100;
+        floor.rotateX(-30);
+        scene.add( floor );
+
+        // video get from:
+        // https://www.youtube.com/watch?v=RJy1tG8-VTo&list=RDCMUCOrhQ1SoyttKGh-L9wHDKPA&index=3
+        // background video texture
+        // video canvas reference from:
+        // https://developer.mozilla.org/en-US/docs/Web/API/Canvas_API/Manipulating_video_using_canvas
+        video = document.getElementById( 'video' );
+        backTexture = new THREE.VideoTexture( video );
+        var backGeometry = new THREE.PlaneBufferGeometry( 1000, 500 );
+        var backMaterial = new THREE.MeshBasicMaterial( {
+          map: backTexture,
+        } );
+        back = new THREE.Mesh( backGeometry, backMaterial );
+        back.position.y = 20;
+        back.position.z = -490;
+        back.rotateX(0);
+        scene.add( back );
+
+
+        // robots array
+        robots = [];
+        r = new Robot(0, -29, 0);
+        r.show(scene);
+        robots.push(r);
+    
+
+        controller = {
+          anaglyph: false,
+          "raise left arm": function() {
+            for (i = 0; i < robots.length; i++){
+              robots[i].raise_left_arm();
+            }
+          },
+          "lower left arm": function() {
+            for (i = 0; i < robots.length; i++){
+              robots[i].lower_left_arm();
+            }
+          },
+          "kick": function() {
+            for (i = 0; i < robots.length; i++){
+              robots[i].kick();
+            }
+          },
+          "dance": function() {
+            for (i = 0; i < robots.length; i++){
+              robots[i].dance();
+            }
+            video.play();
+          }
+          
+        };
+
+        var gui = new dat.GUI();
+        var rendering = gui.addFolder( "Rendering" );
+        rendering.add( controller, 'anaglyph' );
+        rendering.open();
+
+        var moving = gui.addFolder( "Movement" );
+        moving.add( r.root.position, "x", -1000, 1000 );
+        moving.add( r.root.position, "y", -1000, 1000 );
+        moving.add( r.root.position, "z", -1000, 1000 );
+
+        moving.add( controller, "raise left arm");
+        moving.add( controller, "lower left arm");
+        moving.add( controller, "kick");
+        moving.add( controller, "dance");
+        moving.open();
+
+
+
+        controls = new THREE.TrackballControls( camera, renderer.domElement );
+
+          //Bonus 1
+        renderer.domElement.onclick = function(e){
+          if (!e.shiftKey) {
+            e.preventDefault();
+            return false;
+          }
+          pixel_coords = new THREE.Vector2(e.clientX, e.clientY); // screen space
+
+          vp_coords = new THREE.Vector2( 
+            ( pixel_coords.x / window.innerWidth ) * 2 - 1, // X
+            - ( pixel_coords.y / window.innerHeight ) * 2 + 1 ); // Y
+          vp_coords_3d_near = new THREE.Vector3(vp_coords.x,
+                                        vp_coords.y,
+                                          0); // for zNear
+          raycaster = new THREE.Raycaster();
+          raycaster.setFromCamera(vp_coords_3d_near, camera);
+          intersects = raycaster.intersectObject( floor );
+
+          r = new Robot(intersects[0].point.x,
+                    intersects[0].point.y + 75,
+                    intersects[0].point.z,);
+          r.show(scene);
+          robots.push(r);
+          // update GUI
+          gui.updateDisplay();
+
+        }
+
+        animate();
+
+
+      };
+
+      function animate() {
+        
+        requestAnimationFrame( animate );
+        for (i = 0; i < robots.length; i++){
+          robots[i].onAnimate();
+        }
+        controls.update();
+
+        if (controller.anaglyph) {
+            renderer.setClearAlpha(1);
+            effect.render( scene, camera );
+        } else {
+            renderer.setClearAlpha(0);
+            renderer.render( scene, camera );
+        }
+        
+
+      };
+
+    </script>
+  </head>
+  <body>
+    <video id="video" loop style="display:none" src="video.mp4">
+    </video>
+  </body>
+</html>
