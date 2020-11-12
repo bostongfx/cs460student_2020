@@ -177,7 +177,8 @@
         loader.loadWithAnimation(modelFile, vmdFiles, function (mmd) {
 
             mesh = mmd.mesh;
-            mesh.scale.set(1000,1000,1000);
+            mesh.scale.set(10,10,10);
+            mesh.scale.multiplyScalar(10);
             mesh.position.set(0,0,500);
             scene.add(mesh);
 
@@ -187,10 +188,17 @@
             });
 
             ikHelper = helper.objects.get(mesh).ikSolver.createHelper();
+            ikHelper.scale.set(10,10,10);
+            ikHelper.scale.multiplyScalar(10);
+
+
             ikHelper.visible = false;
             scene.add(ikHelper);
 
             physicsHelper = helper.objects.get(mesh).physics.createHelper();
+            physicsHelper.scale.multiplyScalar(10);
+            physicsHelper.scale.set(10,10,10);
+
             physicsHelper.visible = false;
             scene.add(physicsHelper);
 

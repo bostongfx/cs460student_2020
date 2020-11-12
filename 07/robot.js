@@ -18,20 +18,20 @@ Robot = function(x, y, z) {
 
 
 //face
-//   this.face = new THREE.Bone();
-//   var face_material = new THREE.MeshStandardMaterial( {
-//     skinning: true, // IMPORTANT!
-//     side: THREE.DoubleSide,
-//     flatShading: true,
-//     map: new THREE.TextureLoader().load( 'face.png' )
-//   } );
-//
-//   this.face_mesh = new THREE.SkinnedMesh( new THREE.SphereBufferGeometry(  8, 8, 8 ), face_material );
-//   var skeleton = new THREE.Skeleton( bones );
-//   mesh.add( this.face );
-//   mesh.bind( skeleton );
-//
-//   this.root.add(this.face);
+  this.face = new THREE.Bone();
+  var face_material = new THREE.MeshStandardMaterial( {
+    skinning: true, // IMPORTANT!
+    side: THREE.DoubleSide,
+    flatShading: true,
+    map: new THREE.TextureLoader().load( 'face.png' )
+  } );
+
+  this.face_mesh = new THREE.SkinnedMesh( new THREE.SphereBufferGeometry(  20, 80, 100 ), face_material );
+  var skeleton = new THREE.Skeleton( bones );
+  this.face_mesh.add( this.face );
+  this.face_mesh.bind( skeleton );
+
+  this.root.add(this.face);
 
   //arms
   //left
@@ -144,6 +144,7 @@ Robot.prototype.show = function(scene) {
   scene.add(this.rightarm_mesh);
   scene.add(this.leftleg_mesh);
   scene.add(this.rightleg_mesh);
+  scene.add(this.face_mesh);
 
 };
 
