@@ -64,7 +64,7 @@
 
 		video = document.getElementById('video');
 		var texture = new THREE.VideoTexture( video );
-		var djGeometry = new THREE.PlaneBufferGeometry( 100, 100 );
+		var djGeometry = new THREE.PlaneBufferGeometry( 600, 200 );
 		var djMaterial = new THREE.MeshBasicMaterial( {
 		map: texture} );
 		dj = new THREE.Mesh( djGeometry, djMaterial );
