@@ -1,0 +1,319 @@
+<html>
+<head>
+    <meta charset="UTF-8"/>
+    <style>
+        html, body {
+            background-color: #000;
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            overflow: hidden !important;
+
+            background-image: url(sky.jpg);
+            background-repeat: no-repeat;
+            background-size: 100% 100%;
+        }
+    </style>
+
+    <script src="https://threejs.org/build/three.min.js" type="text/javascript"></script>
+    <script src="https://threejs.org/examples/js/controls/TrackballControls.js" type="text/javascript"></script>
+    <script src="https://threejs.org/examples/js/effects/AnaglyphEffect.js" type="text/javascript"></script>
+    <script src="https://threejs.org/examples/js/libs/dat.gui.min.js" type="text/javascript"></script>
+    <script src="helper.js" type="text/javascript"></script>
+
+    <script src="robot.js" type="text/javascript"></script>
+    <style>
+        #overlay {
+            position: absolute;
+            z-index: 2;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(0, 0, 0, 0.7);
+        }
+
+        #overlay button {
+            background: #ffffff;
+            border: 0;
+            color: #000000;
+            padding: 16px 20px;
+            text-transform: uppercase;
+            cursor: pointer;
+        }
+    </style>
+
+</head>
+<body>
+<div id="overlay">
+    <button id="startButton">Play</button>
+</div>
+<video id="video" style="display:none">
+    <source src="yasuo.mp4" type='video/mp4; "'>
+</video>
+<script type="module">
+
+    import {FBXLoader} from 'https://threejs.org/examples/jsm/loaders/FBXLoader.js';
+    // import { MD2Character } from 'https://threejs.org/examples/jsm/misc/MD2Character.js';
+
+
+    var scene, camera, renderer, effect, ambientLight, light, controls, helper, mesh;
+    var floor, robots = [], controller, mixers = [];
+
+    var startButton = document.getElementById('startButton');
+    startButton.addEventListener('click', start);
+
+    function start() {
+        init();
+        animate();
+    }
+
+    const clock = new THREE.Clock();
+
+    function init() {
+        const overlay = document.getElementById('overlay');
+        overlay.remove();
+
+
+        scene = new THREE.Scene();
+
+        var fov = 60;
+        var ratio = window.innerWidth / window.innerHeight;
+        var zNear = 1;
+        var zFar = 10000;
+        camera = new THREE.PerspectiveCamera(fov, ratio, zNear, zFar);
+        camera.position.set(0, 0, 500);
+
+
+        var listener = new THREE.AudioListener();
+        camera.add(listener);
+        var audioFile = 'yasuo.mp3';
+        var sound = new THREE.Audio(listener);
+
+        const dirLight = new THREE.DirectionalLight(0xffffff);
+        dirLight.position.set(0, 200, 100);
+        dirLight.castShadow = true;
+        dirLight.shadow.camera.top = 180;
+        dirLight.shadow.camera.bottom = -100;
+        dirLight.shadow.camera.left = -120;
+        dirLight.shadow.camera.right = 120;
+        scene.add(dirLight);
+
+
+        // load a sound and set it as the Audio object's buffer
+        var audioLoader = new THREE.AudioLoader();
+        audioLoader.load(audioFile, function (buffer) {
+            sound.setBuffer(buffer);
+            sound.setLoop(true);
+            sound.setVolume(0.5);
+            sound.play();
+        });
+
+
+        let video = document.getElementById('video');
+        video.play();
+
+        var v_texture = new THREE.VideoTexture(video);
+        var v_g = new THREE.PlaneBufferGeometry(4120, 2080);
+        var v_m = new THREE.MeshBasicMaterial({
+            map: v_texture
+        });
+        let kda = new THREE.Mesh(v_g, v_m);
+        kda.position.set(0, 200, -3000);
+        scene.add(kda);
+
+
+        renderer = new THREE.WebGLRenderer({alpha: true});
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        document.body.appendChild(renderer.domElement);
+
+        effect = new THREE.AnaglyphEffect(renderer);
+        effect.setSize(window.innerWidth, window.innerHeight);
+
+        ambientLight = new THREE.AmbientLight();
+        scene.add(ambientLight);
+
+        light = new THREE.DirectionalLight(0xffffff, 5.0);
+        light.position.set(10, 100, 10);
+        scene.add(light);
+
+
+        var floorTexture = new THREE.TextureLoader().load('board.jpg');
+        var floorGeometry = new THREE.PlaneBufferGeometry(1000, 1000);
+        var floorMaterial = new THREE.MeshBasicMaterial({
+            map: floorTexture,
+            side: THREE.DoubleSide
+        });
+        floor = new THREE.Mesh(floorGeometry, floorMaterial);
+        floor.position.y = -150;
+        // floor.position.z = -20;
+
+        floor.rotateX(-30);
+        scene.add(floor);
+
+
+        var r = new Robot(0, -55, 0);
+        robots.push(r);
+        r.show(scene);
+
+        sambaDance(0,-40,0);
+
+
+
+
+        controller = {
+            anaglyph: false,
+            "raise_left_arm": function () {
+                robots.forEach(r => r.raise_left_arm());
+            },
+            "lower_left_arm": function () {
+                robots.forEach(r => r.lower_left_arm());
+            },
+            "kick": function () {
+                robots.forEach(r => r.kick());
+
+            },
+            "dance": function () {
+                robots.forEach(r => r.dance());
+
+            }
+        }
+
+
+        var gui = new dat.GUI();
+        var rendering = gui.addFolder("Rendering");
+        rendering.add(controller, 'anaglyph');
+        rendering.open();
+        var moving = gui.addFolder("Movement");
+        moving.add(r.head.position, "x", -1000, 1000).listen();
+        moving.add(r.head.position, "y", -1000, 1000).listen();
+        moving.add(r.head.position, "z", -1000, 1000).listen();
+        moving.add(controller, "raise_left_arm");
+        moving.add(controller, "lower_left_arm");
+        moving.add(controller, "kick");
+        moving.add(controller, "dance");
+        moving.open();
+
+
+        controls = new THREE.TrackballControls(camera, renderer.domElement);
+
+
+        animate();
+
+
+    };
+
+    window.onclick = function (e) {
+
+        if (!e.shiftKey) {
+
+            e.preventDefault();
+            return false;
+        }
+
+        var pixel_coords = new THREE.Vector2(e.clientX, e.clientY);
+
+        var vp_coords = new THREE.Vector2((pixel_coords.x / window.innerWidth) * 2 - 1,
+            -(pixel_coords.y / window.innerHeight) * 2 + 1);
+
+        var vp_coords_near = new THREE.Vector3(vp_coords.x, vp_coords.y, 0);
+
+        var raycaster = new THREE.Raycaster();
+        raycaster.setFromCamera(vp_coords_near, camera);
+        var intersects = raycaster.intersectObject(floor);
+
+        if (intersects.length > 0) {
+
+            let rand = Math.floor(Math.random() * 3);;
+
+            if (rand!=1){
+                var r = new Robot(intersects[0].point.x,
+                    intersects[0].point.y + 60,
+                    intersects[0].point.z);
+                // r.head.position.set(intersects[0].point.x,
+                //                     intersects[0].point.y + 60,
+                //                     intersects[0].point.z)
+                r.show(scene);
+                robots.push(r);
+            }else{
+                var r =  sambaDance(intersects[0].point.x,
+                                    intersects[0].point.y + 60,
+                                    intersects[0].point.z);
+                r.show(scene);
+            }
+
+
+
+
+        }
+
+    };
+
+
+    function sambaDance(x,y,z){
+        const loader = new FBXLoader();
+
+
+            loader.load('https://threejs.org/examples/models/fbx/Samba Dancing.fbx', function (object) {
+
+                object.position.set(x,y,z);
+                object.scale.multiplyScalar(0.5);
+                let mixer = new THREE.AnimationMixer(object);
+                const action = mixer.clipAction(object.animations[0]);
+                action.play();
+                mixers.push(mixer);
+                object.traverse(function (child) {
+
+                    if (child.isMesh) {
+                        child.castShadow = true;
+                        child.receiveShadow = true;
+
+                    }
+
+                });
+
+                scene.add(object);
+
+
+            });
+
+
+
+    }
+
+
+    function animate() {
+
+        requestAnimationFrame(animate);
+
+        robots.forEach(r => r.onAnimate());
+
+
+        controls.update();
+
+        if (controller.anaglyph) {
+            renderer.setClearAlpha(1);
+            effect.render(scene, camera);
+            const delta = clock.getDelta();
+            mixers.forEach(mixer =>{
+                if (mixer) mixer.update(delta);
+            })
+
+        } else {
+            renderer.setClearAlpha(0);
+            renderer.render(scene, camera);
+            const delta = clock.getDelta();
+            mixers.forEach(mixer =>{
+                if (mixer) mixer.update(delta);
+            })
+
+        }
+
+    };
+
+</script>
+</body>
+</html>
