@@ -1,0 +1,228 @@
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <style>
+      html, body { 
+        background-color:#000;
+        margin: 0;
+        padding: 0;
+        height: 100%;
+        overflow: hidden !important;  
+
+        background-image: url(sky.jpg);
+        background-repeat: no-repeat;
+        background-size: 100% 100%;
+      }
+    </style>
+
+    <script src="https://threejs.org/build/three.min.js" type="text/javascript"></script>
+    <script src="https://threejs.org/examples/js/controls/TrackballControls.js" type="text/javascript"></script>
+    <script src="https://threejs.org/examples/js/effects/AnaglyphEffect.js" type="text/javascript"></script>
+    <script src="https://threejs.org/examples/js/libs/dat.gui.min.js" type="text/javascript"></script>
+    <script src="robot.js"></script>
+      <script src="helper.js"></script>
+
+
+
+
+    <script>
+
+      var scene, camera, renderer, ambientLight, light, controls, effect;
+      var floor;
+       
+  
+    
+        var controller = {
+            'anaglyph': false,
+          //---------------Part-3----------------  
+            'raise_left_arm': function() {
+             for(i=0; i<robots.length; i++){    
+             
+             robots[i].raiseLeftArm();
+         }
+      
+          },
+          'lower_left_arm': function() {
+            for(i=0; i<robots.length; i++){
+             
+             robots[i].lowerLeftArm();
+            }
+          },
+          
+            'kick': function() {
+            for(i=0; i<robots.length; i++){
+             
+             robots[i].kickLeg();
+            }
+          },
+          'dance': function() {
+            for(i=0; i<robots.length; i++){
+             
+             robots[i].dance();
+            }
+              
+//Code from online three.js doc    
+//--------------Bonus-Part-2-------------
+const listener = new THREE.AudioListener();
+camera.add( listener );
+
+// create a global audio source
+const sound = new THREE.Audio( listener );
+
+// load a sound and set it as the Audio object's buffer
+const audioLoader = new THREE.AudioLoader();
+audioLoader.load( 'music.mp3', function( buffer ) {
+	sound.setBuffer( buffer );
+	sound.setLoop( true );
+	sound.setVolume( 0.5 );
+	sound.play();
+});
+          }
+        };
+        
+        
+        
+      window.onload = function() {
+          
+       
+
+        scene = new THREE.Scene();
+
+        var fov = 60;
+        var ratio = window.innerWidth / window.innerHeight;
+        var zNear = 1;
+        var zFar = 10000;
+        camera = new THREE.PerspectiveCamera(fov, ratio, zNear, zFar);
+        camera.position.set( 0, 0, 500);
+
+        renderer = new THREE.WebGLRenderer({ alpha: true });
+        renderer.setSize( window.innerWidth, window.innerHeight );
+        document.body.appendChild( renderer.domElement );
+        
+        ambientLight = new THREE.AmbientLight();
+        scene.add( ambientLight );
+
+        light = new THREE.DirectionalLight( 0xffffff, 5.0 );
+        light.position.set( 10, 100, 10 );
+        scene.add( light );
+
+
+        var floorTexture = new THREE.TextureLoader().load( 'board.jpg' );
+        var floorGeometry = new THREE.PlaneBufferGeometry( 1000, 1000 );
+        var floorMaterial = new THREE.MeshBasicMaterial( {
+          map: floorTexture,
+          side: THREE.DoubleSide
+        } );
+        floor = new THREE.Mesh( floorGeometry, floorMaterial );
+        floor.position.y = -105;
+        floor.rotateX(-30);
+        scene.add( floor );
+
+        controls = new THREE.TrackballControls( camera, renderer.domElement );
+        
+              robots=[];
+         
+        r = new Robot(50,0,0);
+         
+        r.show(scene);
+          robots.push(r);
+          
+         
+        effect = new THREE.AnaglyphEffect(renderer);
+          effect.setSize(window.innerWidth, window.innerHeight);
+        
+         
+        renderer.domElement.onclick = function(e) { //From assignment 3
+
+          if (!e.shiftKey) {
+            e.preventDefault();
+            return false;
+          }
+            
+            
+          console.log('yes! you clicked!');
+
+          pixel_coords = new THREE.Vector2( e.clientX, e.clientY );
+
+          console.log('Pixel coordinates', pixel_coords);
+
+          vp_coords = new THREE.Vector2( ( pixel_coords.x / window.innerWidth ) * 2 - 1,
+                                        -( pixel_coords.y / window.innerHeight ) * 2 + 1);
+
+          console.log('Viewport coordinates', vp_coords);
+
+          vp_coords_near = new THREE.Vector3( vp_coords.x, vp_coords.y, 0);
+
+          raycaster = new THREE.Raycaster();
+          raycaster.setFromCamera(vp_coords_near, camera);
+          intersects = raycaster.intersectObject(floor);
+         inter = intersects[0];
+            //-----------Part-2-------------
+            r=new Robot(
+            inter.point.x,
+            inter.point.y+100,
+            inter.point.z
+            );
+            
+            robots.push(r);
+            r.show(scene);
+        }
+        
+       
+        var gui = new dat.GUI();
+        var rendering = gui.addFolder( "rendering" );
+        rendering.add( controller, 'anaglyph' );
+        rendering.open();
+          
+        var moving = gui.addFolder( "Movement" );
+       // moving.add( r.head.position, "x", -1000, 1000 ).listen() ;
+       // moving.add( r.head.position, "y", -1000, 1000 ).listen() ;
+      //  moving.add( r.head.position, "z", -1000, 1000 ).listen() ;
+          moving.add( r.head.position, "x", -1000, 1000 );
+           moving.add( r.head.position, "y", -1000, 1000 );
+           moving.add( r.head.position, "z", -1000, 1000 );
+        moving.add( controller, 'raise_left_arm');
+        moving.add( controller, 'lower_left_arm');
+           moving.add( controller, 'kick');
+        moving.add( controller, 'dance' );
+        moving.open();
+          
+         
+               
+          animate();
+
+
+      };
+
+      function animate() {
+
+        requestAnimationFrame( animate );
+          
+          //------Part-3----------
+          
+         for(i=0; i<robots.length; i++){
+             
+             robots[i].onAnimate();
+         }
+      
+        controls.update();
+        
+        if (controller.anaglyph) 
+        {
+            renderer.setClearAlpha(1);
+            effect.render(scene, camera );
+            
+        } 
+        else 
+        {
+            renderer.setClearAlpha(0);
+            renderer.render( scene, camera );
+        }
+
+
+      };
+
+    </script>
+  </head>
+  <body></body>
+</html>
