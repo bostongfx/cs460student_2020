@@ -1,0 +1,231 @@
+<html>
+    <head>
+        <meta charset="UTF-8" />
+        <style>
+            html, body {
+                background-color:#000;
+                margin: 0;
+                padding: 0;
+                height: 100%;
+                overflow: hidden !important; 
+                background-image: url(sky.jpg);
+                background-repeat: no-repeat;
+                background-size: 100% 100%;
+            }
+        </style>
+
+        <script src="https://threejs.org/build/three.min.js" type="text/javascript"></script>
+        <script src="https://threejs.org/examples/js/controls/TrackballControls.js" type="text/javascript"></script>
+        <script src="https://threejs.org/examples/js/effects/AnaglyphEffect.js" type="text/javascript"></script>
+
+        <script src="https://threejs.org/examples/js/libs/dat.gui.min.js" type="text/javascript"></script>
+
+        <script src="robot.js" type="text/javascript"></script>
+        <script src="helper.js" type="text/javascript"></script>
+
+        <script>
+        
+            var scene, camera, renderer, effect, ambientLight, light, controls, floor;
+            all_robots = [];
+
+            window.onload = function() {
+
+                scene = new THREE.Scene();
+
+                var fov = 60;
+                var ratio = window.innerWidth / window.innerHeight;
+                var zNear = 1;
+                var zFar = 10000;
+                camera = new THREE.PerspectiveCamera(fov, ratio, zNear, zFar);
+                camera.position.set( 150, 275, 900);
+
+                renderer = new THREE.WebGLRenderer({ alpha: true });
+                renderer.setSize( window.innerWidth, window.innerHeight );
+                document.body.appendChild( renderer.domElement );
+                
+                // set up anaglyph rendering
+                effect = new THREE.AnaglyphEffect( renderer );
+                effect.setSize( window.innerWidth, window.innerHeight );
+
+                // Scene Lightning
+                ambientLight = new THREE.AmbientLight();
+                scene.add( ambientLight );
+
+                light = new THREE.DirectionalLight( 0xffffff, 5.0 );
+                light.position.set( 10, 100, 10 );
+                scene.add( light );
+
+                // Scene floor.
+                var floorTexture = new THREE.TextureLoader().load( 'jerry.jpg' );
+                var floorGeometry = new THREE.PlaneBufferGeometry( 1000, 1000 );
+                var floorMaterial = new THREE.MeshBasicMaterial( {
+
+                    map: floorTexture,
+                    side: THREE.DoubleSide
+
+                } );
+
+                floor = new THREE.Mesh( floorGeometry, floorMaterial );
+                floor.position.y = -100;
+                floor.rotateX( Math.PI/2 );
+                scene.add( floor );
+
+                // create a robot with u, v, w coordination
+                robot1 = new Robot(0, -30, 0);
+                robot1.show( scene );
+                all_robots.push(robot1);
+
+                robot2 = new Robot(-200, -30, 0);
+                robot2.show(scene);
+                all_robots.push(robot2);
+                
+                robot3 = new Robot(200, -30, 0);
+                robot3.show(scene);
+                all_robots.push(robot3);
+
+                // Part 3: Add functionality that allows to animate
+                //         all placed robot
+                // configure menu and anaglyph rendering.
+                controller = {
+
+                    anaglyph: false,
+
+                    dance: function() {
+
+                        var music = document.getElementById( 'music' );
+                        music.autoplay = true;
+                        music.load();
+
+                        for (var i in all_robots) {
+
+                            i = all_robots[i];
+                            i.dance();
+
+                        }
+                    },
+
+                    kick: function() {
+
+                        for (var i in all_robots) { 
+
+                            i = all_robots[i];
+                            i.kick();
+
+                        }
+
+                    },
+                    
+                    lower_left_arm: function() {
+
+                        for (var i in all_robots) { 
+
+                            i = all_robots[i];
+                            i.lower_left_arm();
+
+                        }
+                            
+                    },
+                    
+                    raise_left_arm: function() {
+
+                        for (var i in all_robots) { 
+
+                            i = all_robots[i];
+                            i.raise_left_arm();
+
+                        }
+                    
+                    }
+
+                }
+
+                var gui = new dat.GUI();
+                
+                var rendering = gui.addFolder( "Rendering" );
+                rendering.add( controller, 'anaglyph' );
+                rendering.open();
+
+                var acting = gui.addFolder( "Animations" );
+                acting.add( controller, "dance" );
+                acting.add( controller, "kick" );
+                acting.add( controller, "raise_left_arm" );
+                acting.add( controller, "lower_left_arm" );
+
+                acting.open()
+
+                controls = new THREE.TrackballControls( camera, renderer.domElement );
+
+                animate();
+
+            };
+
+            window.onclick = function(e) {
+
+                if (!e.shiftKey) {
+
+                    e.preventDefault();
+                    return false;
+                }
+
+                pixel_coords = new THREE.Vector2( e.clientX, e.clientY );
+
+                vp_coords = new THREE.Vector2( ( pixel_coords.x / window.innerWidth ) * 2 - 1,
+                                                -( pixel_coords.y / window.innerHeight ) * 2 + 1);
+
+                vp_coords_near = new THREE.Vector3( vp_coords.x, vp_coords.y, 0);
+
+                raycaster = new THREE.Raycaster();
+                raycaster.setFromCamera(vp_coords_near, camera);
+                intersects = raycaster.intersectObject(floor);
+
+                // Part 2 - allow the placement multiple robots
+                // place a new robot.
+                if ( intersects.length > 0 ) { 
+
+                    new_robot = new Robot( intersects[0].point.x, 
+                                    intersects[0].point.y + 70, 
+                                    intersects[0].point.z );
+                    
+                    all_robots.push( new_robot );
+                    new_robot.show ( scene );
+
+                }
+
+            };
+
+            function animate() {
+
+                requestAnimationFrame( animate );
+
+                for ( var i in all_robots) {
+
+                    all_robots[i].onAnimate();
+
+                }
+
+                controls.update();
+
+                if (controller.anaglyph) {
+
+                    renderer.setClearAlpha(1);
+                    effect.render( scene, camera );
+
+                } else {
+
+                    renderer.setClearAlpha(0);
+                    renderer.render( scene, camera );
+
+                }
+
+            };
+
+        </script>
+    </head>
+    <body>
+        <div style="visibility:hidden">
+        <audio id='music'>
+            <source src="oldschool.m4a">
+        </audio>
+        </div>
+    </body>
+</html>
