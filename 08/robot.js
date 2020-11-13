@@ -1,5 +1,8 @@
 var T_up = -Math.PI;
 var T_kick = -Math.PI/2;
+var T_walk = -Math.PI/4;
+var personal_space = 20;
+var speed = 1;
 
 var quaternion_up = new THREE.Quaternion(
   Math.sin( T_up/2 ), // x
@@ -13,6 +16,20 @@ var quaternion_kick = new THREE.Quaternion(
   0, // y
   0, // z
   Math.cos( T_kick/2 ) // w
+);
+
+var quaternion_walk = new THREE.Quaternion(
+  Math.sin( T_walk/2 ), // x
+  0, // y
+  0, // z
+  Math.cos( T_walk/2 ) // w
+);
+
+var quaternion_walk2 = new THREE.Quaternion(
+  Math.sin( -T_walk/2 ), // x
+  0, // y
+  0, // z
+  Math.cos( -T_walk/2 ) // w
 );
 
 var quaternion_identity = new THREE.Quaternion(
@@ -33,8 +50,10 @@ randQua = function() {
 }
 
 var quaternions = [
-  randQua(), randQua(), randQua(), randQua(),
-  randQua(), randQua(), randQua(), randQua()
+  randQua(), randQua(), randQua(), 
+  randQua(), randQua(), randQua(), 
+  randQua(), randQua(), randQua(),
+  randQua(), randQua(), randQua()
 ];
 
 var howwide = 5;
@@ -42,7 +61,9 @@ var howwide = 5;
 // part 1
 class Robot{
   // part 2
-  constructor(x, y, z) {
+  constructor(x, y, z, floor) {
+
+    this.floor = floor;
 
     // create head, neck, and torse
     var fromhelper = HELPER.cylinderSkeletonMesh(3, howwide, 'blue')
@@ -177,6 +198,18 @@ class Robot{
     this.height = -(this.neck.position.y + this.torso.position.y + 
       this.left_upper_leg.position.y + this.left_lower_leg.position.y + 
       this.left_foot.position.y) + howwide;
+
+    this.bones = [ // for animation
+      this.left_upper_arm, this.left_lower_arm, this.left_hand,
+      this.right_upper_arm, this.right_lower_arm, this.right_hand,
+      this.left_upper_leg, this.left_lower_leg, this.left_foot,
+      this.right_upper_leg, this.right_lower_leg, this.right_foot
+    ];
+
+    this.raycaster_down = new THREE.Raycaster(); // for detecting floor edge
+    this.eye_point = new THREE.Bone();
+    this.eye_point.position.z = 10;
+    this.root.add(this.eye_point);
   }
 
   // part 8
@@ -194,20 +227,20 @@ class Robot{
   // part 11
   raise_left_arm() {
     this.movement = 'raise left arm';
-    console.log(this.movement); 
+    // console.log(this.movement); 
   }
 
   lower_left_arm() {
     this.movement = 'lower left arm';
-    console.log(this.movement);
+    // console.log(this.movement);
   }
 
   kick() {
     this.movement = 'kick';
-    console.log(this.movement);
+    // console.log(this.movement);
   }
 
-  onAnimate() {
+  onAnimate(allBots) {
     this.cube_mesh.position.set(
       this.root.position.x,
       this.root.position.y,
@@ -227,6 +260,44 @@ class Robot{
       if ( Math.abs(this.left_upper_leg.quaternion.x - quaternion_identity.x) < 0.01 ) {
         this.movement = 'none';
       }
+    } else if ( this.movement == 'dance') {
+      var interpolation = 0.1;
+      for (var i = 0; i < this.bones.length; i++) {
+        if ( Math.abs(this.bones[i].quaternion.x - quaternions[i].x) < 0.01
+             && Math.abs(this.bones[i].quaternion.y - quaternions[i].y) < 0.01
+             && Math.abs(this.bones[i].quaternion.z - quaternions[i].z) < 0.01 )
+          quaternions[i] = randQua();
+        else
+          this.bones[i].quaternion.slerp(quaternions[i], interpolation);
+      }
+    } else if ( this.movement == 'none' ) {
+      var interpolation = 0.1;
+      for (var i = 0; i < this.bones.length; i++) {
+        if ( Math.abs(this.bones[i].quaternion.x - quaternion_identity.x) < 0.01
+            && Math.abs(this.bones[i].quaternion.y - quaternion_identity.y) < 0.01
+            && Math.abs(this.bones[i].quaternion.z - quaternion_identity.z) < 0.01 )
+          ; // do nothing
+        else
+          this.bones[i].quaternion.slerp(quaternion_identity, interpolation);
+      }
+    } else if ( this.movement == 'walk') {
+      // part 2
+      this.left_upper_leg.quaternion.slerp(quaternion_walk, .1);
+      // part 4
+      this.right_upper_leg.quaternion.slerp(quaternion_walk2, .1);
+      // part 5
+      if ( Math.abs(this.left_upper_leg.quaternion.x - quaternion_walk.x) < 0.05 )
+        this.movement = 'walk2';
+      this.onStep(allBots);
+    } else if ( this.movement == 'walk2') {
+      // part 3
+      this.right_upper_leg.quaternion.slerp(quaternion_walk, .1);
+      // part 4
+      this.left_upper_leg.quaternion.slerp(quaternion_walk2, .1);
+      // part 5
+      if ( Math.abs(this.right_upper_leg.quaternion.x - quaternion_walk.x) < 0.05 )
+        this.movement = 'walk';
+      this.onStep(allBots);
     }
   }
 
@@ -237,63 +308,66 @@ class Robot{
 
   // bonus 2
   dance() {
-    var interpolation = 0.1;
-    if ( Math.abs(this.left_upper_arm.quaternion.x - quaternions[0].x) < 0.01
-         && Math.abs(this.left_upper_arm.quaternion.y - quaternions[0].y) < 0.01
-         && Math.abs(this.left_upper_arm.quaternion.z - quaternions[0].z) < 0.01 ) {
-      quaternions[0] = randQua();
-    } else {
-      this.left_upper_arm.quaternion.slerp(quaternions[0], interpolation);
+    this.movement = 'dance';
+    // console.log(this.movement);
+  }
+
+  dontMove() {
+    this.movement = 'none';
+    // console.log(this.movement);
+  }
+
+  // assignment 8
+
+  // part 1
+  walk() {
+    this.movement = 'walk';
+    // console.log(this.movement);
+  }
+
+  // part 6
+  onStep(allBots) { 
+    this.root.translateZ(speed)
+    // part 7
+    this.updateEye()
+    if (!this.onGround() || this.hitObstacle()) {
+      var radians = Math.random(Math.PI) + Math.PI/2; // b/w 90 ~ 270 degree
+      this.root.rotateY(radians);
     }
-    if ( Math.abs(this.left_lower_arm.quaternion.x - quaternions[1].x) < 0.01
-         && Math.abs(this.left_lower_arm.quaternion.y - quaternions[1].y) < 0.01
-         && Math.abs(this.left_lower_arm.quaternion.z - quaternions[1].z) < 0.01 ) {
-      quaternions[1] = randQua();
-    } else {
-      this.left_lower_arm.quaternion.slerp(quaternions[1], interpolation);
+    // part 8
+    for (var i = 0; i < allBots.length; i++) {
+      if (this != allBots[i]) {
+        var eye_glob_po = new THREE.Vector3();
+        this.eye_point.getWorldPosition(eye_glob_po);
+        if (eye_glob_po.distanceTo(allBots[i].root.position) < personal_space) {
+          var radians = Math.random(Math.PI) + Math.PI/2; // b/w 90 ~ 270 degree
+          this.root.rotateY(radians);
+        }
+      }
     }
-    if ( Math.abs(this.right_upper_arm.quaternion.x - quaternions[2].x) < 0.01
-         && Math.abs(this.right_upper_arm.quaternion.y - quaternions[2].y) < 0.01
-         && Math.abs(this.right_upper_arm.quaternion.z - quaternions[2].z) < 0.01 ) {
-      quaternions[2] = randQua();
-    } else {
-      this.right_upper_arm.quaternion.slerp(quaternions[2], interpolation);
-    }
-    if ( Math.abs(this.right_lower_arm.quaternion.x - quaternions[3].x) < 0.01
-         && Math.abs(this.right_lower_arm.quaternion.y - quaternions[3].y) < 0.01
-         && Math.abs(this.right_lower_arm.quaternion.z - quaternions[3].z) < 0.01 ) {
-      quaternions[3] = randQua();
-    } else {
-      this.right_lower_arm.quaternion.slerp(quaternions[3], interpolation);
-    }
-    if ( Math.abs(this.left_upper_leg.quaternion.x - quaternions[4].x) < 0.01
-         && Math.abs(this.left_upper_leg.quaternion.y - quaternions[4].y) < 0.01
-         && Math.abs(this.left_upper_leg.quaternion.z - quaternions[4].z) < 0.01 ) {
-      quaternions[4] = randQua();
-    } else {
-      this.left_upper_leg.quaternion.slerp(quaternions[4], interpolation);
-    }
-    if ( Math.abs(this.left_lower_leg.quaternion.x - quaternions[5].x) < 0.01
-         && Math.abs(this.left_lower_leg.quaternion.y - quaternions[5].y) < 0.01
-         && Math.abs(this.left_lower_leg.quaternion.z - quaternions[5].z) < 0.01 ) {
-      quaternions[5] = randQua();
-    } else {
-      this.left_lower_leg.quaternion.slerp(quaternions[5], interpolation);
-    }
-    if ( Math.abs(this.right_upper_leg.quaternion.x - quaternions[6].x) < 0.01
-         && Math.abs(this.right_upper_leg.quaternion.y - quaternions[6].y) < 0.01
-         && Math.abs(this.right_upper_leg.quaternion.z - quaternions[6].z) < 0.01 ) {
-      quaternions[6] = randQua();
-    } else {
-      this.right_upper_leg.quaternion.slerp(quaternions[6], interpolation);
-    }
-    if ( Math.abs(this.right_lower_leg.quaternion.x - quaternions[7].x) < 0.01
-         && Math.abs(this.right_lower_leg.quaternion.y - quaternions[7].y) < 0.01
-         && Math.abs(this.right_lower_leg.quaternion.z - quaternions[7].z) < 0.01 ) {
-      quaternions[7] = randQua();
-    } else {
-      this.right_lower_leg.quaternion.slerp(quaternions[7], interpolation);
-    }
+  }
+
+  // part 7
+  onGround() {
+    var intersects = this.raycaster_down.intersectObject( this.floor );
+    // scene.add(new THREE.ArrowHelper(
+    //   this.raycaster_down.ray.direction, 
+    //   this.raycaster_down.ray.origin, 300, 0xff0000) );
+    return intersects[0] != undefined;
+  }
+
+  hitObstacle() {
+    var eye_glob_po = new THREE.Vector3();
+    this.eye_point.getWorldPosition(eye_glob_po);
+    if (eye_glob_po.distanceTo(new THREE.Vector3(200, -60, 0)) < 100)
+      return true;
+    return false;
+  }
+
+  updateEye() {
+    var eye_glob_po = new THREE.Vector3();
+    this.eye_point.getWorldPosition(eye_glob_po);
+    this.raycaster_down.set(eye_glob_po, new THREE.Vector3(0,-1,0));
   }
 
 }
