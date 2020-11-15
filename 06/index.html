@@ -66,28 +66,47 @@
 
             // ROBOT GOES HERE!
 
-            r = new Robot(0, -55, 0);
-            r.show(scene);
+
+            robots = [];
+            for (var i=-100;i<=100; i+=10){
+                for (var j=-100; j<=100;j+=10){
+                    robots.push(new Robot(i,j,0));
+                }
+            }
+
+
+            // r = new Robot(0, -55, 0);
+            // r.show(scene);
+            robots.forEach(r=>r.show(scene));
             effect = new THREE.AnaglyphEffect(renderer);
             effect.setSize(window.innerWidth, window.innerHeight);
             controller = {
                 anaglyph: false,
                 "raise_left_arm": function () {
-                    r.raise_left_arm();
+                    robots.forEach(r=>r.raise_left_arm());
+                    // r.raise_left_arm();
                 },
                 "lower_left_arm": function () {
-                    r.lower_left_arm();
+                    robots.forEach(r=>r.lower_left_arm());
+                    // r.lower_left_arm();
                 },
                 "kick": function () {
-                    r.kick();
+                    robots.forEach(r=>r.kick());
+                    // r.kick();
                 },
                 "dance": function () {
-                    r.dance();
+                    robots.forEach(r=>r.dance());
+                    // r.dance();
                 },
                 "reset": function () {
-                    r.reset();
-                }
+                    robots.forEach(r=>r.reset());
+                    // r.reset();
+                },
             }
+
+
+
+
             gui = new dat.GUI();
             rendering = gui.addFolder('Rendering');
             rendering.add(controller, 'anaglyph');
