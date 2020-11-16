@@ -25,13 +25,14 @@
 
     <script>
 
-      var scene, camera, renderer, ambientLight, light, controls, pointLight1, pointLight2;
+      var scene, camera, renderer, ambientLight, light, controls;
       var floor, wfloor;
       var r;
       var controller;
       var video;
       var isWalking = true;
       var teapot;
+      var pointLight1, pointLight2, helper1, helper2;
 
       window.onload = function() {
 
@@ -58,9 +59,19 @@
         pointLight1 = new THREE.PointLight( 0xff0000, 2.0 );
         pointLight1.position.set(300, -20, 0)
         scene.add( pointLight1 );
+        helper1 = new THREE.PointLightHelper(pointLight1, 10)
+        scene.add( helper1 );
+
         pointLight2 = new THREE.PointLight( 0x0000ff, 2.0 );
         pointLight2.position.set(100, -50, 0)
         scene.add( pointLight2 );
+        helper2 = new THREE.PointLightHelper(pointLight2, 10)
+        scene.add( helper2 );
+
+        function updateLights() {
+          helper1.update();
+          helper2.update();
+        }
 
         video = document.getElementById( 'video' );
         vidTexture = new THREE.VideoTexture( video );
@@ -151,6 +162,42 @@
         moving.add( controller, "dance");
         moving.add( controller, "walk");
         moving.open();
+
+        // credit: https://threejsfundamentals.org/threejs/threejs-lights-point.html
+        class ColorGUIHelper {
+          constructor(object, prop) {
+            this.object = object;
+            this.prop = prop;
+          }
+          get value() {
+            return `#${this.object[this.prop].getHexString()}`;
+          }
+          set value(hexString) {
+            this.object[this.prop].set(hexString);
+          }
+        }
+        function makeXYZGUI(gui, vector3, name, onChangeFn) {
+          const folder = gui.addFolder(name);
+          folder.add(vector3, 'x', -1000, 1000).onChange(onChangeFn);
+          folder.add(vector3, 'y', 0, 1000).onChange(onChangeFn);
+          folder.add(vector3, 'z', -1000, 1000).onChange(onChangeFn);
+          folder.open();
+        }
+      
+
+        // point lights
+        var lights = gui.addFolder( "Lights" );
+        lights.addColor(new ColorGUIHelper(pointLight1, 'color'), 'value').name('color1');
+        lights.add(pointLight1, 'intensity', 0, 2, 0.01);
+        lights.add(pointLight1, 'distance', 0, 1000).onChange(updateLights);
+        makeXYZGUI(lights, pointLight1.position, 'position1');
+
+        lights.addColor(new ColorGUIHelper(pointLight2, 'color'), 'value').name('color2');
+        lights.add(pointLight2, 'intensity', 0, 2, 0.01);
+        lights.add(pointLight2, 'distance', 0, 1000).onChange(updateLights);
+        makeXYZGUI(lights, pointLight2.position, 'position2');
+        
+        lights.open();
 
         // bonus 1
         renderer.domElement.onclick = function(event) {
