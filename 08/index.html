@@ -59,7 +59,7 @@
         } );
         floor = new THREE.Mesh( floorGeometry, floorMaterial );
         floor.position.y = -100;
-        floor.rotateX(-30);
+        floor.rotateX(Math.PI/2);
         scene.add( floor );
 
         var pointlight1 = new THREE.PointLight( 0xff0000, 1, 100 );
@@ -71,17 +71,25 @@
 
         video = document.getElementById('video');
         var texture = new THREE.VideoTexture( video );
-        var bGeometry = new THREE.PlaneBufferGeometry( 500, 250 );
+        var bGeometry = new THREE.PlaneBufferGeometry( 1000, 750 );
         var bMaterial = new THREE.MeshBasicMaterial( {map: texture} );
         backPlay = new THREE.Mesh( bGeometry, bMaterial );
-        backPlay.position.y = 100;
+        backPlay.position.z = -500;
+        backPlay.position.y = 50;
         scene.add( backPlay );
+
+        var Sgeometry = new THREE.ConeGeometry( 50, 200, 500 );
+        var Smaterial = new THREE.MeshBasicMaterial( {map: floorTexture} );
+        var cone = new THREE.Mesh( Sgeometry, Smaterial );
+        cone.position.x = -200;
+        cone.position.z = 200; 
+        scene.add( cone );
 
         controls = new THREE.TrackballControls( camera, renderer.domElement );
 
         robots = [];
 
-        r = new Robot(0, -29, 0);
+        r = new Robot(0, -30, 0);
         r.show(scene);
         robots.push(r);
 
