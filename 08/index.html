@@ -79,12 +79,13 @@
         scene.add( backPlay );
 
         objTexture = new THREE.TextureLoader().load( 'object.jpg' );
-        var Sgeometry = new THREE.ConeGeometry( 50, 200, 500 );
+        var Sgeometry = new THREE.CylinderGeometry( 30, 50, 200, 200 );
         var Smaterial = new THREE.MeshBasicMaterial( {map: objTexture} );
-        var cone = new THREE.Mesh( Sgeometry, Smaterial );
-        cone.position.x = -200;
-        cone.position.z = 200; 
-        scene.add( cone );
+        var obje = new THREE.Mesh( Sgeometry, Smaterial );
+        obje.position.x = -200;
+        obje.position.z = 100; 
+        obje.rotateY(60);
+        scene.add( obje );
 
         controls = new THREE.TrackballControls( camera, renderer.domElement );
 
