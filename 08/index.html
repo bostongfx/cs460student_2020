@@ -22,7 +22,6 @@
     <script src="https://threejs.org/examples/js/libs/dat.gui.min.js" type="text/javascript"></script>
 
     <script src="robot.js" type="text/javascript"></script>
-
     <script src="helper.js" type="text/javascript"></script>
 
     <script>
@@ -68,39 +67,31 @@
         floor.rotateX(Math.PI/2);
         scene.add( floor );
 
-        all_robots = [];
-
         r = new Robot(0, -30, 0);
         r.show(scene);
 
-        all_robots.push(r);
 
+        robots = [r];    //aea7
 
         controller = {
           anaglyph: false,
           dance: function() {
+          for (var r in robots) {
 
-            // start the music
-            var music = document.getElementById('music');
-            music.autoplay = true;
-            music.load();
-            
-            var video = document.getElementById('video');
-            var texture = new THREE.VideoTexture( video );
-            floor.material.map = texture;
-            video.play();
-
-            for (var r in all_robots) {
-              r = all_robots[r];
-              r.dance();
-            
-            }
+            robots[r].dance();
+          }
+          },
+          kick: function() {
+            for (var r in robots) { robots[r].kick(); }
+          },
+          lower_left_arm: function() {
+            for (var r in robots) { robots[r].lower_left_arm(); }
+          },
+          raise_left_arm: function() {
+            for (var r in robots) { robots[r].raise_left_arm(); }
           },
           walk: function() {
-            for (var r in all_robots) {
-              r = all_robots[r];
-              r.walk();
-            }
+            for (var r in robots) { robots[r].walk(); }
           }
         }
 
@@ -113,11 +104,11 @@
         moving.add( r.root.position, "x", -1000, 1000 ).listen();
         moving.add( r.root.position, "y", -1000, 1000 ).listen();
         moving.add( r.root.position, "z", -1000, 1000 ).listen();
-        moving.add( r, "raise_left_arm" );
-        moving.add( r, "lower_left_arm" );
-        moving.add( r, "kick" );
-        moving.add( r, "dance" );
-        moving.add( r, "walk");
+        moving.add(controller, "dance");
+        moving.add( controller, "kick");
+        moving.add( controller, "raise_left_arm");
+        moving.add( controller, "lower_left_arm");
+        moving.add( controller, "walk" );
         moving.open();
 
 
@@ -150,18 +141,11 @@
           intersects = raycaster.intersectObject(floor);
 
           if (intersects.length > 0) {
-
-              // r.root.position.set(intersects[0].point.x, 
-              //                     intersects[0].point.y + 70,
-              //                     intersects[0].point.z)
-
-              r = new Robot(intersects[0].point.x, 
-                                  intersects[0].point.y + 70,
-                                  intersects[0].point.z);
-              r.show(scene);
-
-              all_robots.push(r);
-
+          r1 = new Robot(intersects[0].point.x, 
+                  intersects[0].point.y + 60, 
+                  intersects[0].point.z);
+          r1.show(scene);
+          robots.push(r1);
           }
 
       };
@@ -170,11 +154,11 @@
 
         requestAnimationFrame( animate );
 
-        for (r in all_robots) {
-          r = all_robots[r];
-          r.onAnimate();  
-        }
-        
+       var i;
+       for (var i = 0; i < robots.length; i++) {
+        robots[i].onAnimate();
+       }
+
         controls.update();
 
         if (controller.anaglyph) {
@@ -191,13 +175,5 @@
     </script>
   </head>
   <body>
-    <div style="visibility:hidden">
-    <!-- <audio id='music'>
-      <source src="techno.mp3">
-    </audio>
-    <video id="video" loop crossOrigin="anonymous" webkit-playsinline style="display:none">
-      <source src="discoball.mp4"  type='video/mp4'>
-    </video> -->
-    </div>
   </body>
 </html>
