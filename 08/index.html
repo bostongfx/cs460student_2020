@@ -62,12 +62,12 @@
         floor.rotateX(Math.PI/2);
         scene.add( floor );
 
-        var pointlight1 = new THREE.PointLight( 0xff0000, 1, 100 );
-        pointlight1.position.set( 100, 100, 100 );
-        scene.add( pointlight1 );
-        var pointlight2 = new THREE.PointLight( 0xff0000, 1, 100 );
-        pointlight2.position.set( -100, 100, 100 );
-        scene.add( pointlight2 );
+        var plight1 = new THREE.PointLight( 0xff0000, 1, 100 );
+        plight1.position.set( 100, 100, 100 );
+        scene.add( plight1 );
+        var plight2 = new THREE.PointLight( 0xff0000, 1, 100 );
+        plight2.position.set( -100, 100, 100 );
+        scene.add( plight2 );
 
         video = document.getElementById('video');
         var texture = new THREE.VideoTexture( video );
