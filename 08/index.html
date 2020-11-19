@@ -37,7 +37,7 @@
         var zNear = 1;
         var zFar = 10000;
         camera = new THREE.PerspectiveCamera(fov, ratio, zNear, zFar);
-        camera.position.set( 0, 0, 500);
+        camera.position.set( 0, 0, 600);
 
         renderer = new THREE.WebGLRenderer({ alpha: true });
         renderer.setSize( window.innerWidth, window.innerHeight );
@@ -78,8 +78,9 @@
         backPlay.position.y = 50;
         scene.add( backPlay );
 
+        objTexture = new THREE.TextureLoader().load( 'object.jpg' );
         var Sgeometry = new THREE.ConeGeometry( 50, 200, 500 );
-        var Smaterial = new THREE.MeshBasicMaterial( {map: floorTexture} );
+        var Smaterial = new THREE.MeshBasicMaterial( {map: objTexture} );
         var cone = new THREE.Mesh( Sgeometry, Smaterial );
         cone.position.x = -200;
         cone.position.z = 200; 
