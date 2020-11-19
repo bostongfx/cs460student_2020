@@ -71,14 +71,14 @@
 
         video = document.getElementById('video');
         var texture = new THREE.VideoTexture( video );
-        var bGeometry = new THREE.PlaneBufferGeometry( 1000, 750 );
+        var bGeometry = new THREE.PlaneBufferGeometry( 1000, 500 );
         var bMaterial = new THREE.MeshBasicMaterial( {map: texture} );
         backPlay = new THREE.Mesh( bGeometry, bMaterial );
         backPlay.position.z = -500;
-        backPlay.position.y = 50;
+        backPlay.position.y = 150;
         scene.add( backPlay );
 
-        objTexture = new THREE.TextureLoader().load( 'object.jpg' );
+        objTexture = new THREE.TextureLoader().load( 'nobject.jpg' );
         var Sgeometry = new THREE.CylinderGeometry( 30, 50, 200, 200 );
         var Smaterial = new THREE.MeshBasicMaterial( {map: objTexture} );
         var obje = new THREE.Mesh( Sgeometry, Smaterial );
