@@ -425,7 +425,7 @@ Robot.prototype.onAnimate = function() {
         }
     
         this.left_upperleg.quaternion.slerp( new THREE.Quaternion(0,0,0,1), 0.1 );
-        var T = -Math.PI/4;
+        var T = -Math.PI/3;
         this.right_upper_leg.quaternion.slerp( new THREE.Quaternion( Math.sin( T / 2 ), 0, 0, Math.cos( T / 2 ) ), 0.05 );
     
         this.onStep();
@@ -437,7 +437,7 @@ Robot.prototype.onAnimate = function() {
         }
     
         this.right_upper_leg.quaternion.slerp( new THREE.Quaternion(0,0,0,1), 0.1 );
-        var T = -Math.PI/4;
+        var T = -Math.PI/3;
         this.left_upperleg.quaternion.slerp( new THREE.Quaternion( Math.sin( T / 2 ), 0, 0, Math.cos( T / 2 ) ), 0.05 );
     
         this.onStep();
