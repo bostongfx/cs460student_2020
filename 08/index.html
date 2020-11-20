@@ -47,14 +47,26 @@
         
         effect = new THREE.AnaglyphEffect( renderer );
         effect.setSize( window.innerWidth, window.innerHeight );
-
+        
         ambientLight = new THREE.AmbientLight();
         scene.add( ambientLight );
-
+        
         light = new THREE.DirectionalLight( 0xffffff, 5.0 );
         light.position.set( 10, 100, 10 );
         scene.add( light );
+        
+        //bonus 1
+        // add red light
+        var lightSecond = new THREE.PointLight( 0xff0000, 1, 100 ); // (color, intensity, distance)
+        lightSecond.position.set( 20, 200, 20 );
+        scene.add( lightSecond );
 
+        
+        // add yellow light
+        var lightThird = new THREE.PointLight( 0xffff00, 1, 100 );
+        lightThird.position.set( 10, -100, 10 );
+        scene.add( lightThird );
+        
 
         var floorTexture = new THREE.TextureLoader().load( 'board.jpg' );
         var floorGeometry = new THREE.PlaneBufferGeometry( 1000, 1000 );
@@ -64,7 +76,7 @@
         } );
         floor = new THREE.Mesh( floorGeometry, floorMaterial );
         floor.position.y = -100;
-        floor.rotateX(-30);
+        floor.rotateX(Math.PI /2);
         scene.add( floor );
 
         robots = [];
@@ -117,6 +129,11 @@
             for(var r in robots){
               robots[r].dance();
             }
+          },
+          walk: function(){
+            for(var r in robots){
+              robots[r].walk();
+            }
           }
         }
 
@@ -132,6 +149,7 @@
         moving.add( controller, "lower_right_arm" );
         moving.add( controller, "kick" );
         moving.add( controller, "dance" );
+        moving.add( controller, "walk" );
         moving.open();
 
 
