@@ -213,13 +213,13 @@ Robot.prototype.walk = function() {
 Robot.prototype.onStep = function() {
     
     this.root.translateZ(10);
-    if(this.root.position.z >= 500 || this.root.position.z <= -500){
+    if(this.root.position.z > 500 || this.root.position.z < -500){
         this.root.rotateY(Math.PI);
     }
 
     for(var i in robots){
         if(!this.root.position.equals(robots[i].root.position)){
-            if(this.root.position.distanceTo(robots[i].root.position) < 20){
+            if(this.root.position.distanceTo(robots[i].root.position) < 30){
                 this.root.rotateY(Math.PI);
             }
         }
