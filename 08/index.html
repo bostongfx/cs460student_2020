@@ -155,6 +155,11 @@
             for (var o in robots) {
               robots[o].walk();
             }
+          },
+          "stand": function() {
+            for (var o in robots) {
+              robots[o].stand();
+            }
           }
         };
 
@@ -173,6 +178,7 @@
         moving.add( controller, "kick" );
         moving.add( controller, "dance" );
         moving.add( controller, "walk");
+        moving.add( controller, "stand");
         //pointlight gui
         var pointlight = gui.addFolder( "point light1");
         pointlight.addColor(new ColorGUIHelper(light1, 'color'), 'value').name('color');

@@ -177,7 +177,13 @@ Robot.prototype.walk = function() {
 
   this.movement = 'walk';
 
-}
+};
+
+Robot.prototype.stand = function() {
+
+  this.movement = 'stand';
+
+};
 
 Robot.prototype.onAnimate = function() {
 
@@ -295,6 +301,12 @@ Robot.prototype.onAnimate = function() {
       this.movement = 'walk';
     }
     this.onStep();
+  } else if (this.movement == 'stand') {
+    this.right_upperleg.quaternion.slerp(new THREE.Quaternion(0, 0, 0, 1), 0.1);
+    this.left_upperleg.quaternion.slerp(new THREE.Quaternion(0, 0, 0, 1), 0.1);
+    this.left_upperarm.quaternion.slerp(new THREE.Quaternion(0, 0, 0, 1), 0.1);
+    this.right_upperarm.quaternion.slerp(new THREE.Quaternion(0, 0, 0, 1), 0.1);
+    this.stop();
   }
 
 };
@@ -316,3 +328,7 @@ Robot.prototype.onStep = function() {
     }
   }
 };
+
+Robot.prototype.stop = function() {
+  this.root.translateZ(0);
+}
