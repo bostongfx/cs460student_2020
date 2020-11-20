@@ -8,3 +8,4 @@ CS460 Computer Graphics at UMass Boston.
 * [Double cubes](https://zhenrongliew.github.io/cs460student/05/)
 * [Dancing man](https://zhenrongliew.github.io/cs460student/06/)
 * [Dancing man crowd](https://zhenrongliew.github.io/cs460student/07/)
+* [Dancing walking crowd](https://zhenrongliew.github.io/cs460student/08/)
