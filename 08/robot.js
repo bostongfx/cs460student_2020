@@ -125,7 +125,7 @@ function Robot(x, y, z) {
     this.r[2].knee.position.set(-15, -10, -3);
     this.r[2].foot.position.set(-3, -5, -1);
     
-    this.movement = 'walk';
+    this.movement = '';
 }
 
 Robot.prototype.show = function show() {
@@ -144,6 +144,10 @@ Robot.prototype.rave = function raise_left_arm() {
     this.movement = 'bob';
 };
 
+
+Robot.prototype.walk = function raise_left_arm() {
+    this.movement = 'walk';
+};
 
 let kneeFore = new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(1, 0, 0), Math.PI / 8);
 let kneeBack = new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(1, 0, 0), -Math.PI / 8);
@@ -200,16 +204,28 @@ Robot.prototype.onAnimate = function onAnimate(time) {
 let flip = new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 1, 0), Math.PI);
 Robot.prototype.onStep = function() {
     // movement
-        // check for edge of floor
-        if (!this.outside && (
-            this.root.position.x < -500 || this.root.position.x > 500 || 
-            this.root.position.z < -500 || this.root.position.z > 500)) {
-                
-        this.root.quaternion.multiply(flip);
+    // check for edge of floor
+    if (this.root.position.x < -500 || this.root.position.x > 500 || 
+            this.root.position.z < -500 || this.root.position.z > 500) {
+        this.root.rotateY(Math.PI);
         // needed to ensure it doesnt glich outside the board
         this.outside = true;
     } else {
-        this.outside = false
+        var seen = false;
+        for (let robot of robots) {
+            if (robot == this) continue;
+            if (robot.root.position.distanceTo(this.root.position) < 50) {
+                if (!this.avoiding) {
+                    this.root.rotateY(Math.PI);
+                }
+                seen = true;
+                this.avoiding = true;
+                break;
+            }
+        }
+        if (!seen) {
+            this.avoiding = false;
+        }
     }
 
     var moveDir = new THREE.Vector3(0, 0, 1);

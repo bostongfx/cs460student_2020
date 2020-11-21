@@ -79,6 +79,11 @@
 
         controller = {
           anaglyph: false,
+          walk: function() {
+            for (var r of robots) {
+              r.walk()
+            }
+          }
         }
         gui = new dat.GUI();
         var rendering = gui.addFolder('Rendering');
@@ -86,6 +91,7 @@
         rendering.open();
 
         var moving = gui.addFolder('Movement');
+        moving.add(controller, 'walk');
 
         moving.open();
 
