@@ -221,7 +221,7 @@ Robot.prototype.onStep = function() {
             if (d < radius) {
                 if (d < closeRad) {
                     close.push(robot);
-                } else {
+                } else if (d > closeRad + 100) {
                     near.push(robot);
                 }
             }
@@ -242,17 +242,16 @@ Robot.prototype.onStep = function() {
             } else if (near.length > 0) {
                 // cohesion and alignment
                 var center = new THREE.Vector3();
-                var angle = new THREE.Vector3();
+                var facing = new THREE.Vector3();
                 for (let r of near) {
                     center.add(r.root.position);
-                    angle.add(
-                        new THREE.Euler()
-                        .setFromQuaternion(r.root.quaternion)
-                        .toVector3()
+                    facing.add(
+                        new THREE.Vector3(1, 0, 0)
+                        .applyQuaternion(r.root.quaternion)
                     )
                 }
                 center.multiplyScalar(1 / near.length);
-                angle.multiplyScalar(1 / near.length);
+                facing.normalize();
                 // set target position
                 var target = new THREE.Vector3()
                     .subVectors(center, this.root.position)
@@ -262,7 +261,7 @@ Robot.prototype.onStep = function() {
                 this.root.quaternion.slerp(targetRot, .05);
                 // alignment
                 targetRot = new THREE.Quaternion()
-                    .setFromEuler(new THREE.Euler().setFromVector3(angle));
+                    .setFromUnitVectors(new THREE.Vector3(1, 0, 0), facing);
                 this.root.quaternion.slerp(targetRot, .1)
             }
         }
