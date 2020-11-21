@@ -204,7 +204,8 @@ Robot.prototype.onStep = function() {
     // movement
     // check for edge of floor
     if (this.root.position.x < -500 || this.root.position.x > 500 || 
-            this.root.position.z < -500 || this.root.position.z > 500) {
+            this.root.position.z < -500 || this.root.position.z > 500 ||
+            this.root.position.distanceTo(blob.position) < 100) {
         this.root.rotateY(Math.PI);
         // needed to ensure it doesnt glich outside the board
         this.outside = true;
@@ -239,12 +240,19 @@ Robot.prototype.onStep = function() {
                     .setFromUnitVectors(new THREE.Vector3(1, 0, 0), target);
                 this.root.quaternion.slerp(targetRot, .1);
             } else if (near.length > 0) {
-                // cohesion
+                // cohesion and alignment
                 var center = new THREE.Vector3();
+                var angle = new THREE.Vector3();
                 for (let r of near) {
                     center.add(r.root.position);
+                    angle.add(
+                        new THREE.Euler()
+                        .setFromQuaternion(r.root.quaternion)
+                        .toVector3()
+                    )
                 }
                 center.multiplyScalar(1 / near.length);
+                angle.multiplyScalar(1 / near.length);
                 // set target position
                 var target = new THREE.Vector3()
                     .subVectors(center, this.root.position)
@@ -252,7 +260,10 @@ Robot.prototype.onStep = function() {
                 var targetRot = new THREE.Quaternion()
                     .setFromUnitVectors(new THREE.Vector3(1, 0, 0), target);
                 this.root.quaternion.slerp(targetRot, .05);
-                // alignment is too compilcated but the current setup is kinda neat
+                // alignment
+                targetRot = new THREE.Quaternion()
+                    .setFromEuler(new THREE.Euler().setFromVector3(angle));
+                this.root.quaternion.slerp(targetRot, .1)
             }
         }
         // var seen = false;
