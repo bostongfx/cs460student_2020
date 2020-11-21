@@ -1,0 +1,275 @@
+<html>
+<head>
+  <meta charset="UTF-8"/>
+  <style>
+      html, body {
+          background-color: #000;
+          margin: 0;
+          padding: 0;
+          height: 100%;
+          overflow: hidden !important;
+
+          /*background-image: url(sky.jpg);*/
+          /*background-repeat: no-repeat;*/
+          /*background-size: 100% 100%;*/
+      }
+  </style>
+
+  <script src="https://threejs.org/build/three.min.js" type="text/javascript"></script>
+  <script src="https://threejs.org/examples/js/controls/OrbitControls.js" type="text/javascript"></script>
+  <script src="https://threejs.org/examples/js/effects/AnaglyphEffect.js" type="text/javascript"></script>
+  <script src="./robot.js" type="text/javascript"></script>
+  <script src="./helper.js" type="text/javascript"></script>
+  <script src="https://threejs.org/examples/js/libs/dat.gui.min.js" type="text/javascript"></script>
+  <video id="video" hidden>
+    <source src="./video/avbLasersTrim.mp4" type="video/mp4">
+    Your browser does not support the video tag.
+  </video>
+  <script>
+
+      let scene, camera, renderer, ambientLight, light, controls;
+      let floor;
+      let controller, effect, gui;
+
+      window.onload = function () {
+          scene = new THREE.Scene();
+
+          const fov = 60;
+          const ratio = window.innerWidth / window.innerHeight;
+          const zNear = 1;
+          const zFar = 10000;
+          camera = new THREE.PerspectiveCamera(fov, ratio, zNear, zFar);
+          camera.position.set(0, 100,  100);
+
+          renderer = new THREE.WebGLRenderer({alpha: true});
+          renderer.setSize(window.innerWidth, window.innerHeight);
+          document.body.appendChild(renderer.domElement);
+
+          ambientLight = new THREE.AmbientLight(0x505050);
+          scene.add(ambientLight);
+
+          // light = new THREE.DirectionalLight(0xffffff, 1.0);
+          // light.position.set(10, 100, 10);
+          // scene.add(light);
+
+          const floorTexture = new THREE.TextureLoader().load('textures/steel.jpg');
+          const floorGeometry = new THREE.PlaneBufferGeometry(1000, 1000);
+          const floorMaterial = new THREE.MeshBasicMaterial({
+              map: floorTexture,
+              side: THREE.DoubleSide
+          });
+          floor = new THREE.Mesh(floorGeometry, floorMaterial);
+          floor.position.y = 0;
+          floor.rotateX(Math.PI/2);
+          scene.add(floor);
+
+          controls = new THREE.OrbitControls(camera, renderer.domElement);
+
+          video = document.getElementById( 'video' );
+          texture = new THREE.VideoTexture(video);
+          texture.offset.y += -.5
+          texture.repeat.set(1, 1);
+          texture.wrapS = texture.wrapT = THREE.MirroredRepeatWrapping;
+
+          let geometry = new THREE.BoxBufferGeometry( 2000, 2000, 2000);
+          let material = new THREE.MeshStandardMaterial({ color: 0xffffff, side: THREE.DoubleSide, map:texture });
+          videoCube = new THREE.Mesh( geometry, material);
+          scene.add(videoCube);
+          videoCube.visible = false;
+
+          // ROBOT GOES HERE!
+          robots = [];
+          robot = new Robot(0, 0, 0, 80);
+          robots.push(robot);
+          robot.show(scene);
+          controls.target.set(0,40,0);
+          controls.update();
+
+          controller = {
+              'anaglyph': false,
+              'raise_left_arm': function() { robots.forEach(r => r.raise_left_arm()) },
+              'lower_left_arm': function() { robots.forEach(r => r.lower_left_arm()) },
+              'kick':           function() { robots.forEach(r => r.kick()) },
+              'resetPose':      function() { robots.forEach(r => r.resetPose()) },
+              'startingPose':   function() { robots.forEach(r => r.startingPose()) },
+              'wave':           function() { robots.forEach(r => r.wave()) },
+              'crossArms':      function() { robots.forEach(r => r.crossArms()) },
+              'dance':          function() { robots.forEach(r => r.dance()) },
+              'walk':           function() { robots.forEach(r => r.walk()) },
+              'playVideo':      function() {
+                  video.play();
+                  floor.visible = false;
+                  videoCube.visible = true;
+                  },
+              'pauseVideo':      function() {
+                  video.pause();
+                  floor.visible = true;
+                  videoCube.visible = false;
+              },
+          };
+          effect = new THREE.AnaglyphEffect( renderer );
+
+          gui = new dat.GUI();
+          const rendering = gui.addFolder("Rendering");
+          rendering.add( controller, 'anaglyph' );
+          rendering.add( controller, 'playVideo' );
+          rendering.add( controller, 'pauseVideo' );
+          rendering.open();
+
+          controller.x = 0;
+          controller.y = robot.root.position.y;
+          controller.z = 0
+          const moving = gui.addFolder( "Movement" );
+          // The x, y, z gui buttons
+          moving.add( controller, 'x', -1000, 1000).onChange(function(x) { robots.forEach(r => {
+              let joint = r.root;
+              joint.position.set(r.xOffset+x, joint.position.y, joint.position.z);
+          })}).listen();
+          moving.add( controller, 'y', -1000, 1000).onChange(function(y) { robots.forEach(r => {
+              let joint = r.root;
+              joint.position.set(joint.position.x, r.yOffset+y, joint.position.z);
+          })}).listen();
+          moving.add( controller, 'z', -1000, 1000).onChange(function(z) { robots.forEach(r => {
+              let joint = r.root;
+              joint.position.set(joint.position.x, joint.position.y, r.zOffset+z);
+          })}).listen();
+
+          // And the poses / commands
+          moving.add( controller, 'resetPose' );
+          moving.add( controller, 'startingPose' );
+          moving.add( controller, 'raise_left_arm' );
+          moving.add( controller, 'lower_left_arm' );
+          moving.add( controller, 'kick' );
+          moving.add( controller, 'wave' );
+          moving.add( controller, 'crossArms' );
+          moving.add( controller, 'dance' );
+          moving.add( controller, 'walk' );
+          moving.open();
+
+          window.onclick = function(e) {
+              if (!e.shiftKey) {
+                  e.preventDefault();
+                  return false;
+              }
+              let pixel_coords = new THREE.Vector2( e.clientX, e.clientY );
+              let vp_coords = new THREE.Vector2( ( e.clientX / window.innerWidth  ) * 2 - 1,
+                                                -( e.clientY / window.innerHeight ) * 2 + 1);
+
+              let raycaster = new THREE.Raycaster();
+              raycaster.setFromCamera(vp_coords, camera);
+              let intersects = raycaster.intersectObject(floor);
+              if (intersects.length > 0) {
+                  let point = intersects[0].point;
+                  let r = new Robot(0, 0, 0, 80);
+                  let joint = r.root;
+                  joint.position.set(r.xOffset + point.x, r.yOffset + point.y + (r.size / 2), r.zOffset + point.z);
+                  robots.push(r);
+                  r.show(scene);
+              }
+          }
+
+          let starDomeTexture = new THREE.TextureLoader().load( 'textures/stars.jpg' );
+          let starDomeGeometry = new THREE.SphereBufferGeometry(5000, 32, 32);
+          let starDomeMaterial = new THREE.MeshMatcapMaterial( { map: starDomeTexture } );
+          starDomeMaterial.side = THREE.BackSide;
+          let starDomeMesh = new THREE.Mesh(starDomeGeometry, starDomeMaterial);
+          scene.add(starDomeMesh);
+
+          let pillarTexture  = new THREE.TextureLoader().load('textures/pillar.png');
+          let pillarGeometry = new THREE.BoxBufferGeometry( 20, 80, 20);
+          // Set the uv's
+          // Each side will be the same slice of the texture.
+          pillarGeometry.attributes.uv.setX(0 , 0.375);
+          pillarGeometry.attributes.uv.setX(1 , 0.625);
+          pillarGeometry.attributes.uv.setX(2 , 0.375);
+          pillarGeometry.attributes.uv.setX(3 , 0.625);
+
+          pillarGeometry.attributes.uv.setX(4 , 0.375);
+          pillarGeometry.attributes.uv.setX(5 , 0.625);
+          pillarGeometry.attributes.uv.setX(6 , 0.375);
+          pillarGeometry.attributes.uv.setX(7 , 0.625);
+
+          pillarGeometry.attributes.uv.setX(16, 0.375);
+          pillarGeometry.attributes.uv.setX(17, 0.625);
+          pillarGeometry.attributes.uv.setX(18, 0.375);
+          pillarGeometry.attributes.uv.setX(19, 0.625);
+
+          pillarGeometry.attributes.uv.setX(20, 0.375);
+          pillarGeometry.attributes.uv.setX(21, 0.625);
+          pillarGeometry.attributes.uv.setX(22, 0.375);
+          pillarGeometry.attributes.uv.setX(23, 0.625);
+
+          // Except the top. The top will be a smaller section.
+          pillarGeometry.attributes.uv.setX(8 , 0.375);
+          pillarGeometry.attributes.uv.setX(9 , 0.625);
+          pillarGeometry.attributes.uv.setX(10, 0.375);
+          pillarGeometry.attributes.uv.setX(11, 0.625);
+          pillarGeometry.attributes.uv.setY(8 , 0.666);
+          pillarGeometry.attributes.uv.setY(9 , 0.666);
+          pillarGeometry.attributes.uv.setY(10, 0.333);
+          pillarGeometry.attributes.uv.setY(11, 0.333);
+
+          pillarGeometry.attributes.uv.needsUpdate = true;
+
+          let pillarMaterial = new THREE.MeshStandardMaterial({ color: 0xffffff, side: THREE.DoubleSide, map:pillarTexture });
+          let pillar1 = new THREE.Mesh( pillarGeometry, pillarMaterial);
+          let pillar2 = new THREE.Mesh( pillarGeometry, pillarMaterial);
+          let pillar3 = new THREE.Mesh( pillarGeometry, pillarMaterial);
+          let pillar4 = new THREE.Mesh( pillarGeometry, pillarMaterial);
+          let dist = 250;
+          pillar1.position.set(dist, 40, dist);
+          pillar2.position.set(-dist, 40, dist);
+          pillar3.position.set(dist, 40, -dist);
+          pillar4.position.set(-dist, 40, -dist);
+          // pillar.position.set(40, 39, 0);
+          scene.add(pillar1);
+          scene.add(pillar2);
+          scene.add(pillar3);
+          scene.add(pillar4);
+          pillars = [pillar1, pillar2, pillar3, pillar4];
+
+          const light1 = new THREE.PointLight( 0xff0000, 1, 600);
+          const light2 = new THREE.PointLight( 0x00ff00, 1, 600);
+          const light3 = new THREE.PointLight( 0x0000ff, 1, 600);
+          const light4 = new THREE.PointLight( 0x00ffff, 1, 600);
+          light1.position.set(dist, 90, dist);
+          light2.position.set(-dist, 90, dist);
+          light3.position.set(dist, 90, -dist);
+          light4.position.set(-dist, 90, -dist);
+          scene.add(light1);
+          scene.add(light2);
+          scene.add(light3);
+          scene.add(light4);
+
+          const light1Helper = new THREE.PointLightHelper(light1, 10);
+          const light2Helper = new THREE.PointLightHelper(light2, 10);
+          const light3Helper = new THREE.PointLightHelper(light3, 10);
+          const light4Helper = new THREE.PointLightHelper(light4, 10);
+
+          scene.add(light1Helper);
+          scene.add(light2Helper);
+          scene.add(light3Helper);
+          scene.add(light4Helper);
+
+          animate();
+      };
+
+      function animate() {
+          requestAnimationFrame(animate);
+          for (let i in robots) {
+              robots[i].onAnimate(floor, robots, pillars);
+          }
+          controls.update();
+          if (controller.anaglyph) {
+              effect.render(scene, camera);
+              renderer.setClearAlpha(1);
+          } else {
+              renderer.setClearAlpha(0);
+              renderer.render(scene, camera);
+          }
+      }
+
+  </script>
+</head>
+<body></body>
+</html>
