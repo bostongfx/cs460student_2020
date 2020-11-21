@@ -371,37 +371,23 @@ Robot.prototype.onAnimate = function() {
     this.right_upperleg.quaternion.slerp( new THREE.Quaternion(0,0,0,1), 0.1 );
   
   } else  if (this.movement == 'walk') {
-
     var T = -Math.PI/4;
-
-    this.left_upperarm.quaternion.slerp( new THREE.Quaternion(Math.sin(-T/2),  // w
-                                                              0,               // x
-                                                              0,               // y
-                                                              Math.cos(-T/2)), // z
-
+    this.left_upperleg.quaternion.slerp( new THREE.Quaternion(Math.sin(T/2), 0, 0, Math.cos(T/2)),0.1 );
     this.right_upperleg.quaternion.slerp( new THREE.Quaternion(0, 0, 0, 1),0.1 );
-
     if(this.left_upperleg.quaternion.w < .93){
         this.movement = 'walk2';
         this.onStep();
     }
     
 } else  if (this.movement == 'walk2') {
-
-    var T = -Math.PI/4;
-
-    this.right_upperleg.quaternion.slerp( new THREE.Quaternion( Math.sin( T / 2 ),   // x
-                                                                  0,                   // y
-                                                                  0,                   // z
-                                                                  Math.cos( T / 2 ) ), // w
-                                            0.1 );
-
-    this.left_upperleg.quaternion.slerp( new THREE.Quaternion(0, 0, 0, 1),0.1 );
-
-    if(this.right_upperleg.quaternion.w < .93){
-        this.movement = 'walk';
-        this.onStep();
-    }
+  var T = -Math.PI/4;
+  this.right_upperleg.quaternion.slerp( new THREE.Quaternion(Math.sin(T/2), 0, 0, Math.cos(T/2)), 0.1 );
+  this.left_upperleg.quaternion.slerp( new THREE.Quaternion(0, 0, 0, 1),0.1 );
+  if(this.right_upperleg.quaternion.w < .93){
+      this.movement = 'walk';
+      this.onStep();
+  }
+ 
    
 } else if (this.movement == 'dance') {
 
