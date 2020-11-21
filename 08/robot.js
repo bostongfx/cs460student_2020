@@ -1,7 +1,5 @@
 function Robot(x, y, z) {
-    // var color = '#CE2D25';
-    // i made them green so the anaglyph effect works
-    var color = 'green';
+    var color = '#965819';
 
     var [geom, mat, bones] = HELPER.cylinderSkeletonMesh(3, 20, color);
     [this.root, this.head, this.neck, this.pelvis] = bones;
@@ -211,21 +209,67 @@ Robot.prototype.onStep = function() {
         // needed to ensure it doesnt glich outside the board
         this.outside = true;
     } else {
-        var seen = false;
-        for (let robot of robots) {
+        // boids-like algorithm
+        var radius = 300;
+        var near = [];
+        var closeRad = 100;
+        var close = [];
+        for (var robot of robots) {
             if (robot == this) continue;
-            if (robot.root.position.distanceTo(this.root.position) < 50) {
-                if (!this.avoiding) {
-                    this.root.rotateY(Math.PI);
+            var d = robot.root.position.distanceTo(this.root.position);
+            if (d < radius) {
+                if (d < closeRad) {
+                    close.push(robot);
+                } else {
+                    near.push(robot);
                 }
-                seen = true;
-                this.avoiding = true;
-                break;
+            }
+            if (close.length > 0) {
+                // separation
+                var center = new THREE.Vector3();
+                for (let r of close) {
+                    center.add(r.root.position);
+                }
+                center.multiplyScalar(1 / close.length);
+                // set target position
+                var target = new THREE.Vector3()
+                    .subVectors(this.root.position, center)
+                    .normalize();
+                var targetRot = new THREE.Quaternion()
+                    .setFromUnitVectors(new THREE.Vector3(1, 0, 0), target);
+                this.root.quaternion.slerp(targetRot, .1);
+            } else if (near.length > 0) {
+                // cohesion
+                var center = new THREE.Vector3();
+                for (let r of near) {
+                    center.add(r.root.position);
+                }
+                center.multiplyScalar(1 / near.length);
+                // set target position
+                var target = new THREE.Vector3()
+                    .subVectors(center, this.root.position)
+                    .normalize();
+                var targetRot = new THREE.Quaternion()
+                    .setFromUnitVectors(new THREE.Vector3(1, 0, 0), target);
+                this.root.quaternion.slerp(targetRot, .05);
+                // alignment is too compilcated but the current setup is kinda neat
             }
         }
-        if (!seen) {
-            this.avoiding = false;
-        }
+        // var seen = false;
+        // for (let robot of robots) {
+        //     if (robot == this) continue;
+        //     if (robot.root.position.distanceTo(this.root.position) < 50) {
+        //         if (!this.avoiding) {
+        //             this.root.rotateY(Math.PI);
+        //         }
+        //         seen = true;
+        //         this.avoiding = true;
+        //         break;
+        //     }
+        // }
+        // if (!seen) {
+        //     this.avoiding = false;
+        // }
     }
 
     var moveDir = new THREE.Vector3(0, 0, 1);
