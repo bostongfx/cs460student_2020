@@ -1,5 +1,7 @@
 function Robot(x, y, z) {
-    var color = '#CE2D25';
+    // var color = '#CE2D25';
+    // i made them green so the anaglyph effect works
+    var color = 'green';
 
     var [geom, mat, bones] = HELPER.cylinderSkeletonMesh(3, 20, color);
     [this.root, this.head, this.neck, this.pelvis] = bones;
@@ -123,7 +125,7 @@ function Robot(x, y, z) {
     this.r[2].knee.position.set(-15, -10, -3);
     this.r[2].foot.position.set(-3, -5, -1);
     
-    this.movement = '';
+    this.movement = 'walk';
 }
 
 Robot.prototype.show = function show() {
@@ -139,16 +141,23 @@ Robot.prototype.show = function show() {
 };
 
 Robot.prototype.rave = function raise_left_arm() {
-    this.movement = 'bob'
+    this.movement = 'bob';
 };
 
-var speed = 2 * Math.PI / 1000;
+
+let kneeFore = new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(1, 0, 0), Math.PI / 8);
+let kneeBack = new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(1, 0, 0), -Math.PI / 8);
+
+let footFore = new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(1, 0, 0), Math.PI / 16);
+let footBack = new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(1, 0, 0), -Math.PI / 16);
+
+// convert to seconds
+var speed = 1 / 1000;
 Robot.prototype.onAnimate = function onAnimate(time) {
-    var factor = time * speed + this.i + this.j;
-    var cos = Math.cos(factor);
-    // var sin = Math.sin(factor);
     if (this.movement == 'bob') {
-        this.root.position.y = -60 + 10 + 5 * cos;
+        var factor = time * speed * 2 / Math.pi;
+        var cos = Math.cos(factor);
+        this.root.position.y = 10 + 5 * cos;
 
         this.l_elbow.position.x = 10 - 10 * cos;
         this.l_hand.position.x = 5 - 12 * cos;
@@ -165,8 +174,49 @@ Robot.prototype.onAnimate = function onAnimate(time) {
             this.r[i].knee.position.y = -10 - 2 - 2 * cos;
             this.r[i].foot.position.y = -10 - 3 - 3 * cos;
         }
+    } else if (this.movement == 'walk') {
+        // animation (both walk1 and walk2 handled in one case)
+        var factor = time * speed * 2;
+        var t = factor % 1
+        if (factor % 2 < 1) { // phase 1
+            t = 1 - t;
+        }
+        THREE.Quaternion.slerp(footFore, footBack, this.l_elbow.quaternion, t);
+        THREE.Quaternion.slerp(footFore, footBack, this.r_elbow.quaternion, 1 - t);
+
+        for (let leg of [this.l[0], this.r[1], this.l[2]]) {
+            THREE.Quaternion.slerp(kneeFore, kneeBack, leg.knee.quaternion, t);
+            THREE.Quaternion.slerp(footFore, footBack, leg.foot.quaternion, 1 - t);
+        }
+        for (let leg of [this.r[0], this.l[1], this.r[2]]) {
+            THREE.Quaternion.slerp(kneeFore, kneeBack, leg.knee.quaternion, 1 - t);
+            THREE.Quaternion.slerp(footFore, footBack, leg.foot.quaternion, t);
+        }
+
+        this.onStep();
     }
 };
+
+let flip = new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 1, 0), Math.PI);
+Robot.prototype.onStep = function() {
+    // movement
+        // check for edge of floor
+        if (!this.outside && (
+            this.root.position.x < -500 || this.root.position.x > 500 || 
+            this.root.position.z < -500 || this.root.position.z > 500)) {
+                
+        this.root.quaternion.multiply(flip);
+        // needed to ensure it doesnt glich outside the board
+        this.outside = true;
+    } else {
+        this.outside = false
+    }
+
+    var moveDir = new THREE.Vector3(0, 0, 1);
+    moveDir.applyQuaternion(this.root.quaternion);
+
+    this.root.position.add(moveDir);
+}
 
 let identity = new THREE.Quaternion(0, 0, 0, 1);
 

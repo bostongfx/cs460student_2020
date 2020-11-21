@@ -66,46 +66,19 @@
           side: THREE.DoubleSide
         } );
         floor = new THREE.Mesh( floorGeometry, floorMaterial );
-        floor.position.y = -100;
+        floor.position.y = -41;
         floor.rotateX(Math.PI / 2);
         scene.add( floor );
 
-        var video = document.getElementById('rave');
-        video.currentTime = 22;
-
-        var backTexture = new THREE.VideoTexture(video);
-        var backGeometry = new THREE.PlaneBufferGeometry( 1500, 750 );
-        var backMaterial = new THREE.MeshBasicMaterial( {
-          map: backTexture,
-          side: THREE.DoubleSide
-        } );
-        var back = new THREE.Mesh( backGeometry, backMaterial );
-        back.position.z = -500;
-        back.position.y = 150;
-        scene.add( back );
-
         controls = new THREE.TrackballControls( camera, renderer.domElement );
 
-        robots = []
-        for (var i = 0; i < 5; i++) {
-          for (var j = 0; j < 5; j++) {
-            var robot = new Robot(i * 200 - 400, -60, j * 200 - 400);
-            robot.i = i;
-            robot.j = j;
-            robots.push(robot);
-            robot.show();
-          }
-        }
+        robots = [];
+        var robot = new Robot(0, 0, 0);
+        robots.push(robot);
+        robot.show();
 
         controller = {
           anaglyph: false,
-          rave: function() {
-            var sound = document.getElementById('rave');
-            sound.play();
-            for (var robot of robots) {
-              robot.rave();
-            }
-          }
         }
         gui = new dat.GUI();
         var rendering = gui.addFolder('Rendering');
@@ -113,7 +86,6 @@
         rendering.open();
 
         var moving = gui.addFolder('Movement');
-        moving.add(controller, 'rave');
 
         moving.open();
 
@@ -143,13 +115,34 @@
           renderer.render(scene, camera);
         }
 
+        // add robot by shift click
+        renderer.domElement.onclick = function (e) {
+          if (!e.shiftKey) {
+            return;
+          }
+          // cast ray onto floor
+          pixel_coords = new THREE.Vector2(e.clientX, e.clientY);
+          vp_coords = new THREE.Vector2(
+            (pixel_coords.x / window.innerWidth) * 2 - 1,
+            -(pixel_coords.y / window.innerHeight) * 2 + 1
+          );
+          vp_coords_near = new THREE.Vector3(vp_coords.x, vp_coords.y, 0);
+  
+          raycaster = new THREE.Raycaster();
+          raycaster.setFromCamera(vp_coords_near, camera);
+  
+          intersects = raycaster.intersectObject(floor);
+      
+          var robot = new Robot(intersects[0].point.x, 0, intersects[0].point.z);
+          robot.root.quaternion.setFromAxisAngle(new THREE.Vector3(0, 1, 0), Math.random() * 2 * Math.PI);
+          robots.push(robot);
+          robot.show();
+        };
       };
+
 
     </script>
   </head>
   <body>
-    <video loop id="rave">
-      <source src="crabrave.mp4" type="video/mp4">
-    </video>
   </body>
 </html>
