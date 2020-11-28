@@ -14,3 +14,5 @@ CS460 Computer Graphics at UMass Boston.
 <a href="https://ayahea.github.io/cs460student/07/">Assignment 07: Robots' Dance Party </a>
 
 <a href="https://ayahea.github.io/cs460student/08/">Assignment 08: Robot Crowd Simulation </a>
+
+<a href="https://ayahea.github.io/cs460student/09">Assignment 09: Objects, Materials, Lighting </a>
