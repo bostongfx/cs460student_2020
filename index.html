@@ -8,169 +8,155 @@
         padding: 0;
         height: 100%;
         overflow: hidden !important;  
-
-        background-image: url(sky.jpg);
-        background-repeat: no-repeat;
-        background-size: 100% 100%;
       }
     </style>
 
-    <script src="https://threejs.org/examples/js/libs/dat.gui.min.js" type="text/javascript"></script>
-    <script src="https://threejs.org/build/three.min.js" type="text/javascript"></script>
-    <script src="https://threejs.org/examples/js/controls/TrackballControls.js" type="text/javascript"></script>
-    <script src="https://threejs.org/examples/js/effects/AnaglyphEffect.js" type="text/javascript"></script>
-    <script src ="robot.js" type="text/javascript"></script>
-    <script src= "helper.js" type="text/javascript"></script>
+    <script type='module'>
 
-    <script>
+      import * as THREE from 'https://threejs.org/build/three.module.js';
+      import { GUI } from 'https://threejs.org/examples/jsm/libs/dat.gui.module.js';
+      import { TrackballControls } from 'https://threejs.org/examples/jsm/controls/TrackballControls.js';
+      import { PLYLoader } from 'https://threejs.org/examples/jsm/loaders/PLYLoader.js';
 
-      var scene, camera, renderer, ambientLight, light, controls;
-      var floor;
+      let scene, camera, renderer, effect, ambientLight, directionalLight, light, mesh, toonMaterial, phongMaterial, controls, controller;
 
       window.onload = function() {
 
+
         scene = new THREE.Scene();
 
-        var fov = 60;
-        var ratio = window.innerWidth / window.innerHeight;
-        var zNear = 1;
-        var zFar = 10000;
-        camera = new THREE.PerspectiveCamera(fov, ratio, zNear, zFar);
-        camera.position.set( 0, 0, 800);
+        camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 1, 10000);
+        camera.position.set( 0, 0, -500);
 
-        renderer = new THREE.WebGLRenderer({ alpha: true });
+        renderer = new THREE.WebGLRenderer({ });
         renderer.setSize( window.innerWidth, window.innerHeight );
         document.body.appendChild( renderer.domElement );
         
         ambientLight = new THREE.AmbientLight();
         scene.add( ambientLight );
 
-        light = new THREE.DirectionalLight( 0xffffff, 5.0 );
-        light.position.set( 10, 100, 10 );
-        scene.add( light );
+        directionalLight = new THREE.DirectionalLight( 0xffffff, 5.0 );
+        directionalLight.position.set( 10, 100, -100 );
+        scene.add( directionalLight );
 
 
-        var floorTexture = new THREE.TextureLoader().load( 'board.jpg' );
-        var floorGeometry = new THREE.PlaneBufferGeometry( 1000, 1000 );
-        var floorMaterial = new THREE.MeshBasicMaterial( {
-          map: floorTexture,
-          side: THREE.DoubleSide
+        // TODO Part 3 (add 2 pointlights)
+        const pLight1 = new THREE.PointLight(0xFFFFFF, 1);
+        pLight1.position.set(25, 0, 0);
+        scene.add(pLight1);
+
+        const pLight2 = new THREE.PointLight(0xFFFFFF, 1);
+        pLight2.position.set(25, 0, 200);
+        scene.add(pLight2);
+
+
+        var loader = new PLYLoader();
+        loader.load('armadillo.ply', function (geometry) {
+          geometry.translate(0, -50, -200);
+          geometry.scale(.5, .5, 1);
+          geometry.computeVertexNormals();
+
+          toonMaterial = new THREE.MeshToonMaterial( {
+             color: 0x21ce70
+          } );
+
+          mesh = new THREE.Mesh( geometry, toonMaterial );
+          
+          scene.add( mesh );
+
         } );
-        floor = new THREE.Mesh( floorGeometry, floorMaterial );
-        floor.position.y = -100;
-        floor.rotateX(Math.PI/2);
-        scene.add( floor );
 
+        // TODO Part 1, load another mesh
+        // TODO Part 2, use a different material for this mesh
+        loader.load('armadillo.ply', function (geometry) {
 
+          geometry.computeVertexNormals();
+          
+          phongMaterial = new THREE.MeshPhongMaterial({
+            color: 0x372355
+          });
 
-        // ROBOTS GOES HERE!
-        r = [new Robot(0, -20, 0), new Robot(0, -20, 490)];
+          mesh = new THREE.Mesh( geometry, phongMaterial );
+          
+          scene.add( mesh );
+
+        } );
         
-        r[1].show(scene);
-        r[0].show(scene);
-        
+
+
+
         controller = {
-          anaglyph: false,
+          'color': 0xffffff // we can use this single color
+                            // container for all colors in the scene 
+                            // if we modify the onChange callback (see below)
 
-          'Raise left arm': function() {
-            r[0].raise_left_arm();
-          },
-
-          'Lower left arm': function() {
-            r[0].lower_left_arm();
-          },
-          'Walk' : function() {
-            r.forEach(element => element.walk());  
-          },
-          'Kick': function() {
-            r[0].kick();
-          },
-          'Dance': function() {
-            r.forEach(element => element.dance());
-          },
-          'Reset' : function() {
-            r.forEach(element => element.reset());
-          }
+          
+          // TODO Bonus Part 2
+        }
 
 
-        };
+        var gui = new GUI();
+        var ambientFolder = gui.addFolder('Ambient Light');
+        ambientFolder.addColor(controller, 'color').onChange( function(value) { ambientLight.color.setHex(value); });
+        ambientFolder.open();
+
+        var directionalFolder = gui.addFolder('Directional Light');
+        directionalFolder.addColor(controller, 'color').onChange( function(value) { directionalLight.color.setHex(value); });
+        directionalFolder.add(directionalLight.position, 'x', -100, 100);
+        directionalFolder.add(directionalLight.position, 'y', -100, 100);
+        directionalFolder.add(directionalLight.position, 'z', -100, 100);
+        directionalFolder.open();
         
-        // Anaglyph
-        effect = new THREE.AnaglyphEffect(renderer);
-        effect.setSize(window.innerWidth, window.innerHeight);
+        // TODO Part 4 (control the color and position of point lights)
+        // Point Light 1
+        var p1Folder = gui.addFolder("Point Light 1");
+        p1Folder.addColor(controller, 'color').onChange( function(value) { pLight1.color.setHex(value); });
+        p1Folder.add(pLight1.position, 'x', -100, 300);
+        p1Folder.add(pLight1.position, 'y', -100, 300);
+        p1Folder.add(pLight1.position, 'z', -100, 300);
+        p1Folder.add(pLight1, 'intensity', 0, 2, 0.01);
+        p1Folder.add(pLight1, 'distance', 0, 40)
+        // Point Light 2
+        var p2Folder = gui.addFolder("Point Light 2");
+        p2Folder.addColor(controller, 'color').onChange( function(value) { pLight2.color.setHex(value); });
+        p2Folder.add(pLight2.position, 'x', -100, 300);
+        p2Folder.add(pLight2.position, 'y', -100, 300);
+        p2Folder.add(pLight2.position, 'z', -100, 300);
+        p2Folder.add(pLight2, 'intensity', 0, 2, 0.01);
+        p2Folder.add(pLight2, 'distance', 0, 40)
+        // TODO Part 5 (control the color of both materials in the scene)
 
-        var gui = new dat.GUI();
-        var rendering = gui.addFolder( "Rendering" );
-        rendering.add( controller, 'anaglyph' );
-        rendering.open();
+        var arma1Folder = gui.addFolder("Front Armadillo");
+        arma1Folder.addColor(controller, 'color').onChange( function(value) { toonMaterial.color.setHex(value); });
 
-        var moving = gui.addFolder( "Movement" );
-        moving.add( r[0].root.position, "x", -1000, 1000 );
-        moving.add( r[0].root.position, "y", -1000, 1000 );
-        moving.add( r[0].root.position, "z", -1000, 1000 );
-        
-        moving.add(controller, 'Raise left arm');
-        moving.add(controller, 'Lower left arm');
-        moving.add(controller, 'Walk');
-        moving.add(controller, 'Kick');
-        moving.add(controller, 'Dance');
-        moving.add(controller, 'Reset');
-        moving.open();
+        var arma2Folder = gui.addFolder("Back Armadillo");
+        arma2Folder.addColor(controller, 'color').onChange( function(value) { phongMaterial.color.setHex(value); });
 
-        controls = new THREE.TrackballControls( camera, renderer.domElement );
+        gui.open();
+
+
+
+
+        controls = new TrackballControls( camera, renderer.domElement );
 
         animate();
 
-
       };
-      window.onclick = function(e) {
 
-          if (!e.shiftKey) {
-
-            e.preventDefault();
-            return false;
-          }
-
-          pixel_coords = new THREE.Vector2( e.clientX, e.clientY );
-
-          vp_coords = new THREE.Vector2( ( pixel_coords.x / window.innerWidth ) * 2 - 1,
-                                        -( pixel_coords.y / window.innerHeight ) * 2 + 1);
-
-          vp_coords_near = new THREE.Vector3( vp_coords.x, vp_coords.y, 0);
-
-          raycaster = new THREE.Raycaster();
-          raycaster.setFromCamera(vp_coords_near, camera);
-          intersects = raycaster.intersectObject(floor);
-
-          if (intersects.length > 0) {
-
-              robot = new Robot(intersects[0].point.x, intersects[0].point.y + 80, intersects[0].point.z);
-              r.push(robot);
-              r[r.length - 1].show(scene);
-
-          }
-
-      };
 
       function animate() {
-        
+
         requestAnimationFrame( animate );
-        r.forEach(element => element.onAnimate());
+
         controls.update();
-        if (controller.anaglyph == true) {
-            renderer.setClearAlpha(1);
-            effect.render(scene, camera);
-        }
-        else {
-            renderer.setClearAlpha(0);
-            renderer.render( scene, camera ); 
-        }
-        
+
+        renderer.render( scene, camera );
         
 
       };
 
     </script>
   </head>
-  <body></body>
+  <body>
+  </body>
 </html>
