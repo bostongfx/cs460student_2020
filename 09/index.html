@@ -135,7 +135,7 @@
         var material1colorfolder = gui.addFolder('Toon Material Color');
         material1colorfolder.addColor(controller, 'color').onChange( function(value) { toonMaterial.color.setHex(value); });
         material1colorfolder.add(controller, 'toonmaterial', [ 'toon', 'standard', 'phong' ] ).onChange( function(value) {
-          var color = mesh.material.color.getHex();
+
           if (value == 'phong') {
             mesh.material = new THREE.MeshPhongMaterial( {
                color: 0x21ce70
@@ -157,7 +157,7 @@
         var material2colorfolder = gui.addFolder('Phong Material Color');
         material2colorfolder.addColor(controller, 'color').onChange( function(value) { phongMaterial.color.setHex(value); });
         material2colorfolder.add(controller, 'phongmaterial', [ 'toon', 'standard', 'phong' ] ).onChange( function(value) {
-          var color = mesh1.material.color.getHex();
+
           if (value == 'phong') {
             mesh1.material = new THREE.MeshPhongMaterial( {
                color: 0x21ce70
@@ -177,7 +177,7 @@
         material2colorfolder.open();
 
 
-      
+
         gui.open();
 
 
