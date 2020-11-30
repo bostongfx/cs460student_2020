@@ -1,120 +1,239 @@
 <html>
-  <head>
-    <meta charset="UTF-8" />
-    <style>
-      html, body { 
-        background-color:#000;
-        margin: 0;
-        padding: 0;
-        height: 100%;
-        overflow: hidden !important;  
+<head>
+  <meta charset="UTF-8"/>
+  <style>
+      html, body {
+          background-color: #000;
+          margin: 0;
+          padding: 0;
+          height: 100%;
+          overflow: hidden !important;
       }
-    </style>
+  </style>
 
-    <script type='module'>
+  <script type='module'>
+      import * as THREE           from 'https://threejs.org/build/three.module.js';
+      import {GUI}                from 'https://threejs.org/examples/jsm/libs/dat.gui.module.js';
+      import {OrbitControls}      from 'https://threejs.org/examples/jsm/controls/OrbitControls.js';
+      import {PLYLoader}          from 'https://threejs.org/examples/jsm/loaders/PLYLoader.js';
+      import {GLTFLoader}         from 'https://threejs.org/examples/jsm/loaders/GLTFLoader.js';
 
-      import * as THREE from 'https://threejs.org/build/three.module.js';
-      import { GUI } from 'https://threejs.org/examples/jsm/libs/dat.gui.module.js';
-      import { TrackballControls } from 'https://threejs.org/examples/jsm/controls/TrackballControls.js';
-      import { PLYLoader } from 'https://threejs.org/examples/jsm/loaders/PLYLoader.js';
+      let scene, camera, renderer, ambientLight, controls, gui;
+      let pLight1, pLight2;
+      let armadillos = [];
+      let armadillosLoaded = false;
+      let lightCounter = 1;
 
-      let scene, camera, renderer, effect, ambientLight, directionalLight, light, mesh, toonMaterial, controls, controller;
-
-      window.onload = function() {
-
-
-        scene = new THREE.Scene();
-
-        camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 1, 10000);
-        camera.position.set( 0, 0, -500);
-
-        renderer = new THREE.WebGLRenderer({ });
-        renderer.setSize( window.innerWidth, window.innerHeight );
-        document.body.appendChild( renderer.domElement );
-        
-        ambientLight = new THREE.AmbientLight();
-        scene.add( ambientLight );
-
-        directionalLight = new THREE.DirectionalLight( 0xffffff, 5.0 );
-        directionalLight.position.set( 10, 100, -100 );
-        scene.add( directionalLight );
-
-
-        // TODO Part 3 (add 2 pointlights)
-
-
-
-        var loader = new PLYLoader();
-        loader.load('armadillo.ply', function (geometry) {
-
-          geometry.computeVertexNormals();
-
-          toonMaterial = new THREE.MeshToonMaterial( {
-             color: 0x21ce70
-          } );
-
-          mesh = new THREE.Mesh( geometry, toonMaterial );
-          
-          scene.add( mesh );
-
-        } );
-
-        // TODO Part 1, load another mesh
-        // TODO Part 2, use a different material for this mesh
-
-
-
-        controller = {
-          'color': 0xffffff // we can use this single color
-                            // container for all colors in the scene 
-                            // if we modify the onChange callback (see below)
-
+      let controller = {
+          'color': 0xffffff,
           // TODO Bonus Part 1
+          // Bonus part 1 is down in the makeArmadilloFolder function
+          'material': '',
+          'specular': 0x000000
           // TODO Bonus Part 2
-        }
+          // Bonus part 2 is down in/near the makeLightFolder function
+      }
+
+      let materials = {
+          toon:     function() {return new THREE.MeshToonMaterial()},
+          standard: function() {return new THREE.MeshStandardMaterial()},
+          phong:    function() {return new THREE.MeshPhongMaterial()},
+          lambert:  function() {return new THREE.MeshLambertMaterial()},
+          normal:   function() {return new THREE.MeshNormalMaterial()},
+          physical: function() {return new THREE.MeshPhysicalMaterial()}
+      }
+
+      let makeKnight = function() {
+          let scale = 30;
+          const gltfLoader = new GLTFLoader();
+          gltfLoader.setPath('./chunky_knight/');
+          gltfLoader.load('scene.gltf', function(gltf) {
+              gltf.scene.scale.set(scale, scale, scale);    // Make the knight about same size as armadillos
+              gltf.scene.rotateY(Math.PI);                  // Face the camera
+              gltf.scene.position.set(0, -50, 0);           // Make it level with armadillos
+              gltf.scene.traverse (function(child) {        // And fix the depth clipping issue
+                  if (child.material) child.material.depthWrite = true;
+              });
+              scene.add(gltf.scene);
+
+              let redAura   = new THREE.PointLight(0xff0000, 20, 50);
+              let greenAura = new THREE.PointLight(0x00ff00, 60, 50);
+              redAura  .position.set(0,120/scale,0);
+              greenAura.position.set(0, 50/scale,0);
+              gltf.scene.add(greenAura);
+              gltf.scene.add(redAura);
+          });
+      }
+
+      let makeArmadillo = function(x,y,z) {
+          const loader = new PLYLoader();
+          loader.load('armadillo.ply', function (geometry) {
+              geometry.computeVertexNormals();
+              let material = materials.toon(); // Start off as Toon, but is randomized when dat gui folder is created.
+              let mesh = new THREE.Mesh(geometry, material);
+              mesh.position.set(x, y, z);
+              scene.add(mesh);
+              armadillos.push(mesh);
+          });
+      }
+
+      let makeDirectionalLight = function() {
+          let directionalLight = new THREE.DirectionalLight(0xffffff, 1);
+          directionalLight.position.set(10, 100, -100);
+          let dLightHelper = new THREE.DirectionalLightHelper(directionalLight, 5);
+          scene.add(directionalLight);
+          scene.add(dLightHelper);
+          makeLightFolder(dLightHelper, 'Directional Light' + lightCounter++)
+      }
+
+      let makeLightFolder = function(lightHelper, name) {
+          let currFolder = gui.addFolder(name);
+          let currController = currFolder.addColor(controller, 'color').onChange(function (value) {
+              lightHelper.light.color.setHex(value);
+              lightHelper.color = value;
+              lightHelper.update();
+          });
+          currController.setValue(lightHelper.light.color.getHex());
+          currFolder.add(lightHelper.light, 'intensity', 0, 10, 0.01);
+          currFolder.add(lightHelper.light.position, 'x', -200, 200, 1);
+          currFolder.add(lightHelper.light.position, 'y', -200, 200, 1);
+          currFolder.add(lightHelper.light.position, 'z', -200, 200, 1);
+          // I wrote the remove function directly here so that each lightHelper object is bound
+          // to each GUI folder.
+          currFolder.add({'remove': function() {
+                  gui.removeFolder(currFolder);
+                  scene.remove(lightHelper.light);
+                  scene.remove(lightHelper);
+              }}, 'remove');
+          currFolder.open();
+      }
+
+      window.onload = function () {
+          scene = new THREE.Scene();
+          gui = new GUI();
+
+          camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 1, 10000);
+          camera.position.set(0, 0, -400);
+
+          renderer = new THREE.WebGLRenderer({antialias: true});
+          renderer.setSize(window.innerWidth, window.innerHeight);
+          document.body.appendChild(renderer.domElement);
+
+          ambientLight = new THREE.AmbientLight(0xffffff, 0.2);
+          scene.add(ambientLight);
+
+          // TODO Part 3 (add 2 pointlights)
+          pLight1 = new THREE.PointLight(Math.floor(Math.random()*0xffffff), 5, 150);
+          pLight2 = new THREE.PointLight(Math.floor(Math.random()*0xffffff), 5, 150);
+          pLight1.position.set(160, 160, 0);
+          pLight2.position.set(-160, 160, 0);
+          let pLight1Helper = new THREE.PointLightHelper(pLight1, 5);
+          let pLight2Helper = new THREE.PointLightHelper(pLight2, 5);
+          scene.add(pLight1);
+          scene.add(pLight2);
+          scene.add(pLight1Helper);
+          scene.add(pLight2Helper);
+
+          makeArmadillo(160,0,0);
+          // TODO Part 1, load another mesh
+          // TODO Part 2, use a different material for this mesh
+          makeArmadillo(-160,0,0);
+          makeKnight();
 
 
-        var gui = new GUI();
-        var ambientFolder = gui.addFolder('Ambient Light');
-        ambientFolder.addColor(controller, 'color').onChange( function(value) { ambientLight.color.setHex(value); });
-        ambientFolder.open();
+          // Ambient Light Controls
+          let ambientFolder = gui.addFolder('Ambient Light');
+          let ambientController = ambientFolder.addColor(controller, 'color').onChange(function (value) {
+              ambientLight.color.setHex(value);
+          });
+          ambientFolder.add(ambientLight, 'intensity', 0, 1, 0.01);
+          ambientController.setValue(ambientLight.color.getHex());
+          ambientFolder.open();
 
-        var directionalFolder = gui.addFolder('Directional Light');
-        directionalFolder.addColor(controller, 'color').onChange( function(value) { directionalLight.color.setHex(value); });
-        directionalFolder.add(directionalLight.position, 'x', -100, 100);
-        directionalFolder.add(directionalLight.position, 'y', -100, 100);
-        directionalFolder.add(directionalLight.position, 'z', -100, 100);
-        directionalFolder.open();
+          // Here's the button to add new directional lights.
+          gui.add({'AddDirectionalLight': function() {
+              makeDirectionalLight();
+              }}, 'AddDirectionalLight');
+          // Light Controls
+          makeDirectionalLight();
+          // TODO Part 4 (control the color and position of point lights)
+          makeLightFolder(pLight1Helper, 'Point Light1');
+          makeLightFolder(pLight2Helper, 'Point Light2');
 
-        // TODO Part 4 (control the color and position of point lights)
+          // TODO Part 5 (control the color of both materials in the scene)
+          // I moved this part into the animate() loop. Asynchronous loading was causing problems.
 
-        // TODO Part 5 (control the color of both materials in the scene)
-
-        gui.open();
-
-
-
-
-        controls = new TrackballControls( camera, renderer.domElement );
-
-        animate();
-
+          gui.open();
+          controls = new OrbitControls(camera, renderer.domElement);
+          animate();
       };
 
+      // This function is called each time an armadillo material is changed.
+      function editFolder(dillo) {
+          let colorController = undefined;
+          let specularController = undefined;
+          let shininessController = undefined;
+          for (let i = 0; i < dillo.folder.__controllers.length; i++) {
+              if (dillo.folder.__controllers[i].property === 'color') colorController = dillo.folder.__controllers[i];
+              if (dillo.folder.__controllers[i].property === 'specular') specularController = dillo.folder.__controllers[i];
+              if (dillo.folder.__controllers[i].property === 'shininess') shininessController = dillo.folder.__controllers[i];
+          }
+
+          // This if block checks for MeshNormalMaterial. Removes color option is Normal, adds if it not.
+          if (dillo.material.type !== 'MeshNormalMaterial') {
+              if (!colorController) {
+                  colorController = dillo.folder.addColor(controller, 'color').onChange(function (value) {
+                      dillo.material.color.setHex(value);
+                  });
+              }
+              colorController.setValue(Math.floor(Math.random() * 0xffffff));
+          } else if (colorController) dillo.folder.remove(colorController);
+
+          // This if block does the same, but for Phong and Specular/Shininess.
+          if (dillo.material.type === 'MeshPhongMaterial') {
+              if (!specularController) {
+                  specularController = dillo.folder.addColor(controller, 'specular').onChange(function (value) {
+                      dillo.material.specular.setHex(value);
+                  });
+              }
+              specularController.setValue(Math.floor(Math.random() * 0xffffff))
+              if (!shininessController) {
+                  dillo.folder.add(dillo.material, 'shininess', 0, 100, 1).onChange(function (value) {
+                      dillo.material.shininess = value;
+                  });
+              }
+          } else {
+              if (specularController) dillo.folder.remove(specularController);
+              if (shininessController) dillo.folder.remove(shininessController);
+          }
+      }
+
+      function makeArmadilloFolder(dillo, name) {
+          dillo.folder = gui.addFolder(name);
+          let mats = ['toon', 'standard', 'phong', 'lambert', 'normal', 'physical']
+          dillo.folder.add(controller, 'material', mats).onChange(function(value) {
+              dillo.material = materials[value]();
+              editFolder(dillo);
+          });
+          // Randomize the material
+          dillo.folder.__controllers[0].setValue(mats[Math.floor(Math.random() * mats.length)]);
+          dillo.folder.open();
+      }
 
       function animate() {
-
-        requestAnimationFrame( animate );
-
-        controls.update();
-
-        renderer.render( scene, camera );
-        
-
-      };
-
-    </script>
-  </head>
-  <body>
-  </body>
+          if (!armadillosLoaded && armadillos[0] && armadillos[1]) {
+              armadillosLoaded = true;
+              armadillos[0].rotateY(Math.PI/4);
+              armadillos[1].rotateY(-Math.PI/4);
+              makeArmadilloFolder(armadillos[0], 'Armadillo1');
+              makeArmadilloFolder(armadillos[1], 'Armadillo2');
+          }
+          requestAnimationFrame(animate);
+          controls.update();
+          renderer.render(scene, camera);
+      }
+  </script>
+</head>
+<body>
+</body>
 </html>
