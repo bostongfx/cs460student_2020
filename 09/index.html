@@ -18,7 +18,7 @@
       import { TrackballControls } from 'https://threejs.org/examples/jsm/controls/TrackballControls.js';
       import { PLYLoader } from 'https://threejs.org/examples/jsm/loaders/PLYLoader.js';
 
-      let scene, camera, renderer, effect, ambientLight, directionalLight, light, mesh, toonMaterial, controls, controller, SMaterial;
+      let scene, camera, renderer, effect, ambientLight, directionalLight, light, mesh, mesh2, toonMaterial, controls, controller, SMaterial;
 
       window.onload = function() {
 
@@ -79,19 +79,21 @@
              color: 0x21ce70
           } );
 
-          mesh = new THREE.Mesh( geometry, SMaterial );
-          mesh.position.set(140,0,0);
-          scene.add( mesh );
+          mesh2 = new THREE.Mesh( geometry, SMaterial );
+          mesh2.position.set(140,0,0);
+          scene.add( mesh2 );
 
 
         } );
         
         controller = {
-          'color': 0xffffff // we can use this single color
+          'color': 0xffffff, // we can use this single color
                             // container for all colors in the scene 
                             // if we modify the onChange callback (see below)
 
           // TODO Bonus Part 1
+		  'material': 'toon',
+		  'material2': 'standard'
           // TODO Bonus Part 2
         }
 
@@ -123,11 +125,47 @@
         pointFolder.open();
 		
 
-        // TODO Part 5 (control the color of both materials in the scene)
-		var matcolor = gui.addFolder('mat color');
-		matcolor.addColor(controller, 'color').onChange(function (value) {toonMaterial.color.setHex(value); });
-        matcolor.addColor(controller, 'color').onChange(function (value) {SMaterial.color.setHex(value); });
-		matcolor.open();
+        // TODO Part 5 (control the color of both materials in the scene) and Bonus Part 1 (Thanks to Zhenrongliew)
+		var meshFolder = gui.addFolder( 'Toon' );
+		  meshFolder.addColor(controller, 'color').onChange( function(value) { mesh.material.color.set(value); });
+		  meshFolder.add(controller, 'material', [ 'toon', 'standard', 'phong' ] ).onChange( function(value) {
+          if (value == 'toon') {
+            mesh.material = new THREE.MeshToonMaterial( {
+               color: 0x21ce70
+            } );
+          }
+          if (value == 'standard') {
+            mesh.material = new THREE.MeshStandardMaterial( {
+              color: 0x21ce70
+            } );
+          }
+          if (value == 'phong') {
+            mesh.material = new THREE.MeshPhongMaterial( {
+               color: 0x21ce70
+            } );
+          }
+        } );
+		meshFolder.open();
+		var meshFolder2= gui.addFolder( 'Standard' );
+		meshFolder2.addColor(controller, 'color').onChange( function(value) { mesh2.material.color.set(value); });
+        meshFolder2.add(controller, 'material2', [ 'toon', 'standard', 'phong' ] ).onChange( function(value) {
+          if (value == 'toon') {
+            mesh2.material = new THREE.MeshToonMaterial( {
+               color: 0x21ce70
+            } );
+          }
+          if (value == 'standard') {
+            mesh2.material = new THREE.MeshStandardMaterial( {
+              color: 0x21ce70
+            } );
+          }
+          if (value == 'phong') {
+            mesh2.material = new THREE.MeshPhongMaterial( {
+               color: 0x21ce70
+            } );
+          }
+        } );
+		meshFolder2.open();
 		gui.open();
 
         controls = new TrackballControls( camera, renderer.domElement );
