@@ -44,12 +44,12 @@
 
                     // Part-03: Add two point light sources to the scene.
 
-                    pointlight = new THREE.PointLight(0xffff00, 1, 100); // yellow
-                    pointlight.position.set(0, 20, 0);
+                    pointlight = new THREE.PointLight(get_random_color(), 1, 100);
+                    pointlight.position.set(0, 10, 0);
                     scene.add(pointlight);
 
-                    pointlight2 = new THREE.PointLight(0x0000ff, 1, 100); // blue
-                    pointlight2.position.set(0, 10, 0);
+                    pointlight2 = new THREE.PointLight(get_random_color(), 1, 100);
+                    pointlight2.position.set(0, -10, 0);
                     scene.add(pointlight2);
 
 
@@ -92,7 +92,12 @@
                           // TODO Bonus Part 1
                           'material':  [ 'toon', 'standard', 'phong' ],
                           // TODO Bonus Part 2
-                          
+                          'add light button': function() {
+                                addNewLight();
+                          },
+                          'remove light button': function() {
+                                removeNewLight();
+                          }
                     }
 
 
@@ -200,4 +205,5 @@
         <body>
         </body>
 </html>
+
 
