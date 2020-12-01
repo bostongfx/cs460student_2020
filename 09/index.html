@@ -77,7 +77,7 @@
                           // Part-02: Configure the second mesh from above with a different material.
                           material2 = new THREE.MeshNormalMaterial({color: get_random_color()});
                           mesh2 = new THREE.Mesh( geometry, material2 );
-                          mesh2.position.x = -120;
+                          mesh2.position.x = 50;
                           scene.add( mesh2 );
                     } );
 
@@ -149,7 +149,7 @@
                                     color: 0x21ce70
                                 });
                           }
-                          });
+                    });
                     musicanFolder.open();
 
                     gui.open();
@@ -189,9 +189,9 @@
               function animate() {
 
                     requestAnimationFrame( animate );
-    
+
                     controls.update();
-    
+
                     renderer.render( scene, camera );
 
 
