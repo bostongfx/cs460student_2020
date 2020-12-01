@@ -54,7 +54,7 @@
 
 
                     var loader = new PLYLoader();
-                    loader.load('armadillo.ply', function (geometry) {
+                    loader.load('Sad-Armadillo.ply', function (geometry) {
 
                           geometry.computeVertexNormals();
 
@@ -91,13 +91,7 @@
 
                           // TODO Bonus Part 1
                           'material':  [ 'toon', 'standard', 'phong' ],
-                          // TODO Bonus Part 2
-                          'add light button': function() {
-                                addNewLight();
-                          },
-                          'remove light button': function() {
-                                removeNewLight();
-                          }
+                         
                     }
 
 
