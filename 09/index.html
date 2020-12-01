@@ -57,7 +57,6 @@
         // TODO Part 3 (add 2 pointlights)
 
 
-
         var loader = new PLYLoader();
         loader.load('armadillo.ply', function (geometry) {
 
@@ -135,7 +134,7 @@
         point2Folder.open();
 
         // TODO Part 5 (control the color of both materials in the scene)
-
+        // Insipired by Loraine Franke implementation!!!!!!
         var mesh1Folder = gui.addFolder('Armadillo 1');
         var col1 = mesh1Folder.addColor(controller, 'color').onChange( function(value) { toonMaterial.color.setHex(value);});
 
