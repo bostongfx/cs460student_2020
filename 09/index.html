@@ -17,9 +17,10 @@
               import { GUI } from 'https://threejs.org/examples/jsm/libs/dat.gui.module.js';
               import { TrackballControls } from 'https://threejs.org/examples/jsm/controls/TrackballControls.js';
               import { PLYLoader } from 'https://threejs.org/examples/jsm/loaders/PLYLoader.js';
+              import { OBJLoader } from 'https://threejs.org/examples/jsm/loaders/OBJLoader.js';
 
-              let scene, camera, renderer, normalMaterial, effect, ambientLight, directionalLight, light, mesh, mesh2;
-              let toonMaterial, controls, controller, light1, light2, newDirectionalLight, directionalLightsFolder;
+              let scene, camera, renderer, effect, ambientLight, directionalLight, light, mesh, toonMaterial, controls, controller;
+              let mesh2, material2, normalMaterial, pointlight, pointlight2, newDirectionalLight, directionalLightsFolder;
 
               window.onload = function() {
 
@@ -43,17 +44,17 @@
 
                     // Part-03: Add two point light sources to the scene.
 
-                    light1 = new THREE.PointLight(0xffff00, 1, 100); // yellow
-                    light1.position.set(0, 20, 0);
-                    scene.add(light1);
+                    pointlight = new THREE.PointLight(0xffff00, 1, 100); // yellow
+                    pointlight.position.set(0, 20, 0);
+                    scene.add(pointlight);
 
-                    light2 = new THREE.PointLight(0x0000ff, 1, 100); // blue
-                    light2.position.set(0, 10, 0);
-                    scene.add(light2);
+                    pointlight2 = new THREE.PointLight(0x0000ff, 1, 100); // blue
+                    pointlight2.position.set(0, 10, 0);
+                    scene.add(pointlight2);
 
 
                     var loader = new PLYLoader();
-                    loader.load('Sad-Armadillo.ply', function (geometry) {
+                    loader.load('armadillo.ply', function (geometry) {
 
                           geometry.computeVertexNormals();
 
@@ -74,14 +75,16 @@
                           geometry.computeVertexNormals();
 
                           // Part-02: Configure the second mesh from above with a different material.
-                          material2 = new THREE.MeshNormalMaterial({
-                              color: get_random_color()
-                          });
+                          var material2 = new THREE.MeshNormalMaterial({color: get_random_color()});
                           mesh2 = new THREE.Mesh( geometry, material2 );
+                          pi = -Math.PI;
+
+                          mesh2.rotation.x = pi / 2;
+
                           mesh2.position.x = 50;
                           mesh2.position.y = -100;
-                          mesh2.position.z = 100;
-                          mesh2.scale.multiplyScalar(60);
+                          mesh2.position.z = 200;
+
                           scene.add(mesh2);
                     } );
 
@@ -189,14 +192,14 @@
                     gui.open();
 
                     // Part-04: Setup dat.GUI to xontrol the color and position of point lights.
-                    var light1Folder = gui.addFolder('Point Light 1');
+                    var light1Folder = gui.addFolder('Point-Light 01');
                     light1Folder.addColor(controller, 'color').onChange( function(value) { directionalLight.color.setHex(value); });
                     light1Folder.add(directionalLight.position, 'x', -100, 100);
                     light1Folder.add(directionalLight.position, 'y', -100, 100);
                     light1Folder.add(directionalLight.position, 'z', -100, 100);
                     light1Folder.open();
 
-                    var light2Folder = gui.addFolder('Point Light 2');
+                    var light2Folder = gui.addFolder('Point-Light 02');
                     light2Folder.addColor(controller, 'color').onChange( function(value) { directionalLight.color.setHex(value); });
                     light2Folder.add(directionalLight.position, 'x', -100, 100);
                     light2Folder.add(directionalLight.position, 'y', -100, 100);
@@ -235,7 +238,8 @@
 
 
     </script>
-</head>
-<body>
-</body>
+    </head>
+        <body>
+        </body>
 </html>
+
