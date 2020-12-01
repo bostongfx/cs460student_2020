@@ -1,0 +1,12 @@
+Model Information:
+* title:	Westworld
+* source:	https://sketchfab.com/3d-models/westworld-03f11a6c291e411090164004d128c5d9
+* author:	wareFLO (https://sketchfab.com/wareFLO)
+
+Model License:
+* license type:	CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)
+* requirements:	Author must be credited. Commercial use is allowed.
+
+If you use this 3D model in your project be sure to copy paste this credit wherever you share it:
+This work is based on "Westworld" (https://sketchfab.com/3d-models/westworld-03f11a6c291e411090164004d128c5d9) 
+by wareFLO (https://sketchfab.com/wareFLO) licensed under CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)
