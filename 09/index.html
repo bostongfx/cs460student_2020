@@ -19,6 +19,7 @@
       import { PLYLoader } from 'https://threejs.org/examples/jsm/loaders/PLYLoader.js';
 
       let scene, camera, renderer, effect, ambientLight, directionalLight, light, mesh, toonMaterial, controls, controller;
+      var pointLight1, pointLight2, material, mesh1, mesh2;
 
       window.onload = function() {
 
@@ -38,6 +39,19 @@
         directionalLight = new THREE.DirectionalLight( 0xffffff, 5.0 );
         directionalLight.position.set( 10, 100, -100 );
         scene.add( directionalLight );
+        const directionalLightLightHelper = new THREE.DirectionalLightHelper(directionalLight, 5);
+        scene.add(directionalLightLightHelper);
+
+        pointLight1 = new THREE.PointLight(0xff0000, 1);
+        pointLight2 = new THREE.PointLight(0xff0000, 1);
+        pointLight1.position.set(160, 160, 0);
+        pointLight2.position.set(-160, 160, 0);
+        const pointLight1Helper = new THREE.PointLightHelper(pointLight1, 5);
+        const pointLight2Helper = new THREE.PointLightHelper(pointLight2, 5);
+        scene.add(pointLight1);
+        scene.add(pointLight2);
+        scene.add(pointLight1Helper);
+        scene.add(pointLight2Helper);
 
 
         // TODO Part 3 (add 2 pointlights)
@@ -53,9 +67,26 @@
              color: 0x21ce70
           } );
 
-          mesh = new THREE.Mesh( geometry, toonMaterial );
+          mesh1 = new THREE.Mesh( geometry, toonMaterial );
           
-          scene.add( mesh );
+          scene.add( mesh1 );
+
+        } );
+
+
+
+        loader.load('armadillo.ply', function (geometry) {
+
+          geometry.computeVertexNormals();
+
+          material = new THREE.MeshPhongMaterial({
+                color: '#505050'
+            });
+
+          mesh2 = new THREE.Mesh( geometry, material );
+          mesh2.position.x = -200;
+
+          scene.add( mesh2 );
 
         } );
 
@@ -65,11 +96,12 @@
 
 
         controller = {
-          'color': 0xffffff // we can use this single color
+          'color': 0xffffff, // we can use this single color
                             // container for all colors in the scene 
                             // if we modify the onChange callback (see below)
 
           // TODO Bonus Part 1
+          'material':  [ 'toon', 'standard', 'phong' ]
           // TODO Bonus Part 2
         }
 
@@ -88,7 +120,59 @@
 
         // TODO Part 4 (control the color and position of point lights)
 
+        var point1Folder = gui.addFolder( 'Point Light 1' );
+        point1Folder.addColor( controller, 'color' ).onChange( function(value) { pointLight1.color.setHex( value ); } );
+        point1Folder.add( pointLight1.position, 'x', -100, 100 );
+        point1Folder.add( pointLight1.position, 'y', -100, 100 );
+        point1Folder.add( pointLight1.position, 'z', -100, 100 );
+        point1Folder.open();
+
+        var point2Folder = gui.addFolder( 'Point Light 2' );
+        point2Folder.addColor( controller, 'color' ).onChange( function(value) { pointLight2.color.setHex( value ); } );
+        point2Folder.add( pointLight2.position, 'x', -100, 100 );
+        point2Folder.add( pointLight2.position, 'y', -100, 100 );
+        point2Folder.add( pointLight2.position, 'z', -100, 100) ;
+        point2Folder.open();
+
         // TODO Part 5 (control the color of both materials in the scene)
+
+        var mesh1Folder = gui.addFolder('Armadillo 1');
+        var col1 = mesh1Folder.addColor(controller, 'color').onChange( function(value) { toonMaterial.color.setHex(value);});
+
+        mesh1Folder.add(controller, 'material', [ 'toon', 'standard', 'phong' ] ).onChange( function(value) {
+        if (value == 'phong') {
+            var phongmesh = new THREE.MeshPhongMaterial({color: col1});
+            mesh1.material = phongmesh;
+          }
+          else if (value == 'toon'){
+            var toonmesh = new THREE.MeshToonMaterial({color: col1});
+            mesh1.material = toonmesh;
+          }
+          else if (value = 'standard') {
+            var standardmesh =  new THREE.MeshStandardMaterial({color: col1});
+            mesh1.material = standardmesh;
+          }
+        });
+        mesh1Folder.open();
+
+
+        var mesh2Folder = gui.addFolder('Armadillo 2');
+        var col2 = mesh2Folder.addColor(controller, 'color').onChange( function(value) { material.color.setHex(value);});
+        mesh2Folder.add(controller, 'material', [ 'toon', 'standard', 'phong' ] ).onChange( function(value) {
+        if (value == 'phong') {
+            var phongmesh = new THREE.MeshPhongMaterial({color: col2});
+            mesh2.material = phongmesh;
+          }
+          else if (value == 'toon'){
+            var toonmesh = new THREE.MeshToonMaterial({color: col2});
+            mesh2.material = toonmesh;
+          }
+          else if (value = 'standard') {
+            var standardmesh =  new THREE.MeshStandardMaterial({color: col2});
+            mesh2.material = standardmesh;
+          }
+        });
+        mesh2Folder.open();
 
         gui.open();
 
