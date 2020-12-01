@@ -142,45 +142,7 @@
                     var armadilloFolder = gui.addFolder('armadillo');
                     armadilloFolder.addColor(controller, 'color').onChange( function(value) { mesh.material.color.setHex(value); });
 
-                    //bonus 1 mesh 1
-                    // Choose from accepted values
-                    armadilloFolder.add(controller, 'material', [ 'toon', 'standard', 'phong' ] ).onChange( function(value) {
-                          if (value == 'phong') {
-                                mesh.material = new THREE.MeshPhongMaterial( {
-                                 color: 0x21ce70
-                                });
-                          }else if(value == 'toon'){
-                                mesh.material = new THREE.MeshToonMaterial( {
-                                 color: 0x21ce70
-                                });
-                          }else if(value == 'standard'){
-                                mesh.material = new THREE.MeshStandardMaterial( {
-                                 color: 0x21ce70
-                                });
-                          }
-                    });
-                    armadilloFolder.open();
-
-
-                    var musicanFolder = gui.addFolder('musican');
-                    musicanFolder.addColor(controller, 'color').onChange( function(value) { mesh2.material.color.setHex(value); });
-                    //bonus 1 mesh 2
-                    musicanFolder.add(controller, 'material', [ 'toon', 'standard', 'phong' ] ).onChange( function(value) {
-                          if (value == 'phong') {
-                                mesh2.material = new THREE.MeshPhongMaterial( {
-                                    color: 0x21ce70
-                                });
-                          }else if(value == 'toon'){
-                                mesh2.material = new THREE.MeshToonMaterial( {
-                                    color: 0x21ce70
-                                });
-                          }else if(value == 'standard'){
-                                mesh2.material = new THREE.MeshStandardMaterial( {
-                                    color: 0x21ce70
-                                });
-                          }
-                          });
-                    musicanFolder.open();
+                    
 
                     gui.open();
 
