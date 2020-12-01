@@ -20,7 +20,7 @@
               import { OBJLoader } from 'https://threejs.org/examples/jsm/loaders/OBJLoader.js';
 
               let scene, camera, renderer, effect, ambientLight, directionalLight, light, mesh, toonMaterial, controls, controller;
-              let mesh2, material2, normalMaterial, pointlight, pointlight2, newDirectionalLight, directionalLightsFolder;
+              let mesh2, material2, normalMaterial, pointlight, pointlight2;
 
               window.onload = function() {
 
@@ -77,7 +77,7 @@
                           // Part-02: Configure the second mesh from above with a different material.
                           material2 = new THREE.MeshNormalMaterial({color: get_random_color()});
                           mesh2 = new THREE.Mesh( geometry, material2 );
-                          mesh2.position.x = 50;
+                          mesh2.position.x = -120;
                           scene.add( mesh2 );
                     } );
 
@@ -106,43 +106,51 @@
                     ambientFolder.addColor(controller, 'color').onChange( function(value) { ambientLight.color.setHex(value); });
                     ambientFolder.open();
 
-                    // bonus 2
-                    function addNewLight(){
-                        newDirectionalLight = new THREE.DirectionalLight( 0xffffff, 5.0 );
-                        newDirectionalLight.position.set( 20, 100, -100 );
-                        scene.add( newDirectionalLight );
-
-                        directionalLightsFolder = gui.addFolder('directionalLight 2');
-                        directionalLightsFolder.addColor(controller, 'color').onChange( function(value) { newDirectionalLight.color.setHex(value); });
-                        directionalLightsFolder.add(newDirectionalLight.position, 'x', -100, 100);
-                        directionalLightsFolder.add(newDirectionalLight.position, 'y', -100, 100);
-                        directionalLightsFolder.add(newDirectionalLight.position, 'z ', -100, 100);
-                        directionalLightsFolder.open();
-                    }
-                    gui.add(controller, 'add light button');
-                    function removeNewLight(){
-                        scene.remove( newDirectionalLight );
-                        gui.removeFolder(directionalLightsFolder);
-                    }
-                    gui.add(controller, 'remove light button');
-
-
-                    var directionalFolder = gui.addFolder('Directional Light');
-                    directionalFolder.addColor(controller, 'color').onChange( function(value) { directionalLight.color.setHex(value); });
-                    directionalFolder.add(directionalLight.position, 'x', -100, 100);
-                    directionalFolder.add(directionalLight.position, 'y', -100, 100);
-                    directionalFolder.add(directionalLight.position, 'z', -100, 100);
-                    directionalFolder.open();
-
-
-
 
                     // Part-05: Setup dat.GUI to control the color of both materials.
 
                     var armadilloFolder = gui.addFolder('armadillo');
                     armadilloFolder.addColor(controller, 'color').onChange( function(value) { mesh.material.color.setHex(value); });
 
-                    
+                    // Bonus-Part-01: Add dat.GUI elements that allow to switch the material for the two meshes.
+                    // First, the mesh for the armadillo.
+                    armadilloFolder.add(controller, 'material', [ 'toon', 'standard', 'phong' ] ).onChange( function(value) {
+                          if (value == 'phong') {
+                                mesh.material = new THREE.MeshPhongMaterial( {
+                                    color: get_random_color()
+                                });
+                          }else if(value == 'toon'){
+                                mesh.material = new THREE.MeshToonMaterial( {
+                                    color: get_random_color()
+                                });
+                          }else if(value == 'standard'){
+                                mesh.material = new THREE.MeshStandardMaterial( {
+                                    color: get_random_color()
+                                });
+                          }
+                    });
+                    armadilloFolder.open();
+
+                    // Then, do the mesh2.
+                    var musicanFolder = gui.addFolder('musican');
+                    musicanFolder.addColor(controller, 'color').onChange( function(value) { mesh2.material.color.setHex(value); });
+                    //bonus 1 mesh 2
+                    musicanFolder.add(controller, 'material', [ 'toon', 'standard', 'phong' ] ).onChange( function(value) {
+                          if (value == 'phong') {
+                                mesh2.material = new THREE.MeshPhongMaterial( {
+                                    color: 0x21ce70
+                                });
+                          }else if(value == 'toon'){
+                                mesh2.material = new THREE.MeshToonMaterial( {
+                                    color: 0x21ce70
+                                });
+                          }else if(value == 'standard'){
+                                mesh2.material = new THREE.MeshStandardMaterial( {
+                                    color: 0x21ce70
+                                });
+                          }
+                          });
+                    musicanFolder.open();
 
                     gui.open();
 
@@ -180,11 +188,11 @@
 
               function animate() {
 
-                requestAnimationFrame( animate );
-
-                controls.update();
-
-                renderer.render( scene, camera );
+                    requestAnimationFrame( animate );
+    
+                    controls.update();
+    
+                    renderer.render( scene, camera );
 
 
               };
