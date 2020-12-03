@@ -151,11 +151,21 @@ def obj2gltf(file_path):
           "byteLength": HOWMANYBYTES_N
         }
       ],
+
+      "materials": [
+         {
+          "pbrMetallicRoughness": {
+          "baseColorFactor":
+            [ 1.0, 0.75, 0.35, 1.0 ]
+          }
+        }
+      ],
     
       "meshes": [
         {
           "primitives": [{
             "mode": 4,   # TRIANGLES
+            "material": 0,
             "indices": 0,
             "attributes": {
               "POSITION": 1,
@@ -233,11 +243,21 @@ def obj2gltf(file_path):
           "byteLength": HOWMANYBYTES_V
         }
       ],
+
+      "materials": [
+         {
+          "pbrMetallicRoughness": {
+          "baseColorFactor":
+            [ 1.0, 0.75, 0.35, 1.0 ]
+          }
+        }
+      ],
     
       "meshes": [
         {
           "primitives": [{
             "mode": 4,   # TRIANGLES
+            "material": 0,
             "indices": 0,
             "attributes": {
               "POSITION": 1
