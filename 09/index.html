@@ -41,9 +41,16 @@
 
 
         // TODO Part 3 (add 2 pointlights)
+        //light 1
+        var light1 = new THREE.PointLight(0xFFFFFF, 2);
+        light1.position.set(0, 10, 0);
+        scene.add(light1);
 
+        var light2 = new THREE.PointLight(0xFFFFFF, 2);
+        light2.position.set(0, 10, 0);
+        scene.add(light2);
 
-
+        //load first mesh
         var loader = new PLYLoader();
         loader.load('armadillo.ply', function (geometry) {
 
@@ -54,12 +61,26 @@
           } );
 
           mesh = new THREE.Mesh( geometry, toonMaterial );
-          
+          mesh.position.set( 0, 0, 0);
           scene.add( mesh );
 
         } );
 
         // TODO Part 1, load another mesh
+        var loader2 = new PLYLoader();
+        loader2.load('armadillo.ply', function (geometry) {
+
+          geometry.computeVertexNormals();
+
+          toonMaterial = new THREE.MeshPhongMaterial( {
+             color: 0x21ce70
+          } );
+
+          mesh = new THREE.Mesh( geometry, toonMaterial );
+          mesh.position.set( 200, 0, 0);
+          scene.add( mesh );
+
+        } );
         // TODO Part 2, use a different material for this mesh
 
 
@@ -87,7 +108,19 @@
         directionalFolder.open();
 
         // TODO Part 4 (control the color and position of point lights)
+        var PointLightFolder1 = gui.addFolder('light1');
+        PointLightFolder1.addColor(controller, 'color').onChange( function(value) { light1.color.setHex(value); });
+        PointLightFolder1.add(light1.position, 'x', -100, 100);
+        PointLightFolder1.add(light1.position, 'y', -100, 100);
+        PointLightFolder1.add(light1.position, 'z', -100, 100);
+        PointLightFolder1.open();
 
+        var PointLightFolder2 = gui.addFolder('light2');
+        PointLightFolder2.addColor(controller, 'color').onChange( function(value) { light2.color.setHex(value); });
+        PointLightFolder2.add(light2.position, 'x', -100, 100);
+        PointLightFolder2.add(light2.position, 'y', -100, 100);
+        PointLightFolder2.add(light2.position, 'z', -100, 100);
+        PointLightFolder2.open();light2
         // TODO Part 5 (control the color of both materials in the scene)
 
         gui.open();
