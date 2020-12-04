@@ -3,3 +3,13 @@ https://threejs.org/docs/#examples/en/loaders/OBJLoader
 
 3D Object Builder:
 https://3dc.io/
+
+
+To-Do:
+- Finish Artwork
+
+Ideas:
+- Make artwork so that users can insert objects (maybe people or trees or other stuff)
+- Set up a controller/dat gui
+
+Questions:
