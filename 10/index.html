@@ -1,195 +1,113 @@
 <html>
-	<head>
-	<script src='base64.js' type='text/javascript'></script>
-  <script>
 
-    window.onload = function() {
+<head>
+    <meta charset="UTF-8" />
+    <style>
+        html,
+        body {
+            background-color: #000;
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            overflow: hidden !important;
+        }
+    </style>
 
-      VERTICES = new Float32Array([0.,0.,0., 0.,1.,0., 1.,0.,0.])
-      INDICES = new Uint16Array([0,1,2])
+    <script type='module'>
 
-      HOWMANY = 3
-      MAX_X = 1. 
-      MAX_Y = 1.
-      MAX_Z = 0.
-      MIN_X = 0.
-      MIN_Y =  0.
-      MIN_Z = 0.
-      MAX = 2
-      MIN = 0
+        import * as THREE from 'https://threejs.org/build/three.module.js';
+        import { GUI } from 'https://threejs.org/examples/jsm/libs/dat.gui.module.js';
+        import { TrackballControls } from 'https://threejs.org/examples/jsm/controls/TrackballControls.js';
+        import { GLTFLoader } from 'https://threejs.org/examples/jsm/loaders/GLTFLoader.js';
 
-      HOWMANYBYTES_V = 9*4
-      HOWMANYBYTES_I = 3*2
+        let scene, camera, renderer, effect, ambientLight, directionalLight, light, mesh, toonMaterial, controls, controller;
 
-      BASE64_Vertices = base64.b64encode(VERTICES);
-      BASE64_Indices = base64.b64encode(INDICES);
-
-
-      gltf = {
-
-        "asset": {
-      	    "version": "2.0",
-            "generator": "CS460 Magic Fingers"
-    	},
-
-        "accessors": [
-        
-              {
-        
-                  "bufferView": 0,
-        
-                  "byteOffset": 0,
-        
-                  "componentType": 5126,
-        
-                  "count": HOWMANY,
-        
-                  "type": "VEC3",
-        
-                  "max": [MAX_X, MAX_Y, MAX_Z],
-        
-                  "min": [MIN_X, MIN_Y, MIN_Z]
-        
-              },
-        
-              {
-        
-                  "bufferView": 1,
-        
-                  "byteOffset": 0,
-        
-                  "componentType": 5123,
-        
-                  "count": HOWMANY,
-        
-                  "type": "SCALAR",
-        
-                  "max": [MAX],
-        
-                  "min": [MIN]
-        
-              }
-        
-          ], 
-        
-       
-        
-          "bufferViews": [
-        
-              {
-        
-                  "buffer": 0,
-        
-                  "byteOffset": 0,
-        
-                  "byteLength": HOWMANYBYTES_V,
-        
-                  "target": 34962
-        
-              },
-        
-              {
-        
-                  "buffer": 1,
-        
-                  "byteOffset": 0,
-        
-                  "byteLength": HOWMANYBYTES_I,
-        
-                  "target": 34963
-        
-              }
-        
-          ],
-        
-          
-        
-          "buffers": [
-        
-              {
-        
-                  "uri": "data:application/octet-stream;base64," + BASE64_Vertices,
-        
-                  "byteLength": HOWMANYBYTES_V
-        
-              },
-        
-              {
-        
-                  "uri": "data:application/octet-stream;base64," + BASE64_Indices,
-        
-                  "byteLength": HOWMANYBYTES_I
-        
-              }
-        
-          ],
-        
-        
-        
-          "meshes": [
-        
-              { 
-        
-                  "primitives": [{
-        
-                       "mode": 4,
-        
-                       "attributes": {
-        
-                           "POSITION": 0
-        
-                       },
-        
-                       "indices": 1
-        
-                  }]
-                
-              }
-        
-          ],
-        
-       
-        
-          "nodes": [
-        
-              {
-        
-                  "mesh": 0
-        
-              }
-        
-          ],
-        
-       
-        
-          "scenes": [
-        
-              {
-        
-                  "nodes": [
-        
-                      0
-        
-                  ]
-        
-              }
-        
-          ],
-        
-       
-        
-          "scene": 0
-        
-      }
-
-    window.document.body.innerHTML = JSON.stringify(gltf)
-
-    };
+        window.onload = function () {
 
 
-  </script>
-	</head>
-	<body>
+            scene = new THREE.Scene();
+            scene.background = new THREE.Color( 0xffffff );
+            camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 1, 10000);
+            camera.position.set(0, 0, -500);
 
-	</body>
+            renderer = new THREE.WebGLRenderer({});
+            
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            document.body.appendChild(renderer.domElement);
+
+            ambientLight = new THREE.AmbientLight(0xffffff, 5000);
+            scene.add(ambientLight);
+
+            directionalLight = new THREE.DirectionalLight(0xffffff, 5.0);
+            directionalLight.position.set(300, 300, -100);
+            scene.add(directionalLight);
+
+
+            var gltfLoader = new GLTFLoader();
+            gltfLoader.load('cow.gltf', function (gltf) {
+                gltf.scene.scale.set(20,20,20)
+                scene.add(gltf.scene);
+
+            }, function (xhr) {
+
+                console.log((xhr.loaded / xhr.total * 100) + '% loaded');
+
+            },
+                // called when loading has errors
+                function (error) {
+
+                    console.log('An error happened');
+
+                });
+
+
+
+            controller = {
+                'color': 0xffffff, // we can use this single color
+                // container for all colors in the scene 
+                // if we modify the onChange callback (see below)
+            }
+
+
+
+            var gui = new GUI();
+            var ambientFolder = gui.addFolder('Ambient Light');
+            ambientFolder.addColor(controller, 'color').onChange(function (value) { ambientLight.color.setHex(value); });
+            ambientFolder.open();
+
+            var directionalFolder = gui.addFolder('Directional Light');
+            directionalFolder.addColor(controller, 'color').onChange(function (value) { directionalLight.color.setHex(value); });
+            directionalFolder.add(directionalLight.position, 'x', -1000, 1000);
+            directionalFolder.add(directionalLight.position, 'y', -1000, 1000);
+            directionalFolder.add(directionalLight.position, 'z', -1000, 1000);
+            directionalFolder.open();
+
+            gui.open();
+
+
+
+
+            controls = new TrackballControls(camera, renderer.domElement);
+
+            animate();
+
+        };
+
+
+        function animate() {
+
+            requestAnimationFrame(animate);
+
+            controls.update();
+
+            renderer.render(scene, camera);
+
+        };
+
+    </script>
+</head>
+
+<body>
+</body>
+
 </html>
