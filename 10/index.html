@@ -1,220 +1,124 @@
 <html>
 
 <head>
-    <script src='base64.js' type='text/javascript'></script>
-    <script>
+  <meta charset="UTF-8" />
+  <style>
+    html,
+    body {
+      background-color: rgb(253, 249, 249);
+      margin: 0;
+      padding: 0;
+      height: 100%;
+      overflow: hidden !important;
+      background-repeat: no-repeat;
+      background-size: 100% 100%;
+    }
+  </style>
 
-        window.onload = function () {
+  <script src="https://threejs.org/build/three.min.js" type="text/javascript"></script>
+  <script src="https://threejs.org/examples/js/controls/TrackballControls.js" type="text/javascript"></script>
+  <script src="https://threejs.org/examples/js/loaders/GLTFLoader.js" type="text/javascript"></script>
 
-            //VERTICES = new Float32Array([0.,0.,0., 0.,1.,0., 1.,0.,0.])
-            //INDICES = new Uint16Array([0,1,2])
 
-            VERTICES = new Float32Array([-0.5, -0.5, 0.5,
-            0.5, -0.5, 0.5,
-            -0.5, 0.5, 0.5,
-            0.5, 0.5, 0.5,
-            -0.5, 0.5, -0.5,
-            0.5, 0.5, -0.5,
-            -0.5, -0.5, -0.5,
-            0.5, -0.5, - 0.5])
-            INDICES = new Uint16Array([0, 1, 2, 3, 4, 5, 6, 7])
+  <script>
+  var scene, camera, renderer, effect, ambientLight, light, controls;
+    var object;
+    var floor;
 
-/*            HOWMANY = 3
-            MAX_X = 1.
-            MAX_Y = 1.
-            MAX_Z = 0.
-            MIN_X = 0.
-            MIN_Y = 0.
-            MIN_Z = 0.
-            MAX = 2
-            MIN = 0
-*/
-            HOWMANY = 8
-            MAX_X = 0.5
-            MAX_Y = 0.5
-            MAX_Z = 0.5
-            MIN_X = -0.5
-            MIN_Y = -0.5
-            MIN_Z = -0.5
-            MAX = 7
-            MIN = 0
-//            HOWMANYBYTES_V = 9 * 4
-  //          HOWMANYBYTES_I = 3 * 2
+    window.onload = function () {
 
-            HOWMANYBYTES_V = 8 * 3 * 4
-            HOWMANYBYTES_I = 3 * 2
 
-            BASE64_Vertices = base64.b64encode(VERTICES);
-            BASE64_Indices = base64.b64encode(INDICES);
+      scene = new THREE.Scene();
 
+      var fov = 60;
+      var ratio = window.innerWidth / window.innerHeight;
+      var zNear = 1;
+      var zFar = 10000;
+      camera = new THREE.PerspectiveCamera(fov, ratio, zNear, zFar);
+      camera.position.set(0, 0, 500);
 
-            gltf = {
+      renderer = new THREE.WebGLRenderer({ alpha: true });
+      renderer.setSize(window.innerWidth, window.innerHeight);
+      document.body.appendChild(renderer.domElement);
 
-                "asset": {
-                    "version": "2.0",
-                    "generator": "CS460 Magic Fingers"
-                },
 
-                "accessors": [
+      ambientLight = new THREE.AmbientLight();
+      scene.add(ambientLight);
 
-                    {
+      light = new THREE.DirectionalLight(0xffffff, 5.0);
+      light.position.set(10, 100, 10);
+      scene.add(light);
 
-                        "bufferView": 0,
+      // FLOOR
+      //  var floorTexture = new THREE.TextureLoader().load('board.jpg');
+      var floorGeometry = new THREE.PlaneBufferGeometry(1000, 1000);
+      var floorMaterial = new THREE.MeshBasicMaterial({
+       //   map: floorTexture,
+          side: THREE.DoubleSide,
+        opacity: 0,
+        transparent: true
+      });
+      floor = new THREE.Mesh(floorGeometry, floorMaterial);
+      floor.position.y = -100;
+      floor.rotateX(Math.PI / 2);
+      scene.add(floor);
 
-                        "byteOffset": 0,
 
-                        "componentType": 5126,
+      // via https://threejs.org/docs/#examples/en/loaders/GLTFLoader
+      // Instantiate a loader
+const loader = new THREE.GLTFLoader();
 
-                        "count": HOWMANY,
 
-                        "type": "VEC3",
+// Load a glTF resource
+loader.load(
+	// resource URL
+	'pythoncube.gltf',
+	// called when the resource is loaded
+	function ( gltf ) {
 
-                        "max": [MAX_X, MAX_Y, MAX_Z],
+		scene.add( gltf.scene );
 
-                        "min": [MIN_X, MIN_Y, MIN_Z]
+		gltf.animations; // Array<THREE.AnimationClip>
+		gltf.scene; // THREE.Group
+		gltf.scenes; // Array<THREE.Group>
+		gltf.cameras; // Array<THREE.Camera>
+		gltf.asset; // Object
 
-                    },
+	},
+	// called while loading is progressing
+	function ( xhr ) {
 
-                    {
+		console.log( ( xhr.loaded / xhr.total * 100 ) + '% loaded' );
 
-                        "bufferView": 1,
+	},
+	// called when loading has errors
+	function ( error ) {
 
-                        "byteOffset": 0,
+		console.log( 'An error happened' );
 
-                        "componentType": 5123,
+	}
+);
 
-                        "count": HOWMANY,
+      controls = new THREE.TrackballControls(camera, renderer.domElement);
 
-                        "type": "SCALAR",
 
-                        "max": [MAX],
+      animate();
 
-                        "min": [MIN]
 
-                    }
+    };
 
-                ],
+    function animate() {
 
+      requestAnimationFrame(animate);
+      controls.update();
+      renderer.render(scene, camera);
 
+    };
 
-                "bufferViews": [
-
-                    {
-
-                        "buffer": 0,
-
-                        "byteOffset": 0,
-
-                        "byteLength": HOWMANYBYTES_V,
-
-                        "target": 34962
-
-                    },
-
-                    {
-
-                        "buffer": 1,
-
-                        "byteOffset": 0,
-
-                        "byteLength": HOWMANYBYTES_I,
-
-                        "target": 34963
-
-                    }
-
-                ],
-
-
-
-                "buffers": [
-
-                    {
-
-                        "uri": "data:application/octet-stream;base64," + BASE64_Vertices,
-
-                        "byteLength": HOWMANYBYTES_V
-
-                    },
-
-                    {
-
-                        "uri": "data:application/octet-stream;base64," + BASE64_Indices,
-
-                        "byteLength": HOWMANYBYTES_I
-
-                    }
-
-                ],
-
-
-
-                "meshes": [
-
-                    {
-
-                        "primitives": [{
-
-                            "mode": 4,
-
-                            "attributes": {
-
-                                "POSITION": 0
-
-                            },
-
-                            "indices": 1
-
-                        }]
-
-                    }
-
-                ],
-
-
-
-                "nodes": [
-
-                    {
-
-                        "mesh": 0
-
-                    }
-
-                ],
-
-
-
-                "scenes": [
-
-                    {
-
-                        "nodes": [
-
-                            0
-
-                        ]
-
-                    }
-
-                ],
-
-
-
-                "scene": 0
-
-            }
-
-            window.document.body.innerHTML = JSON.stringify(gltf)
-
-        };
-
-
-    </script>
+  </script>
 </head>
 
 <body>
-
 </body>
 
 </html>
