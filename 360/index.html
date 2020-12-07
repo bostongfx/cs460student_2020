@@ -1,0 +1,87 @@
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <style>
+      html, body { 
+        background-color:#000;
+        margin: 0;
+        padding: 0;
+        height: 100%;
+        overflow: hidden !important;  
+      }
+    </style>
+    <script src="https://threejs.org/build/three.min.js" type="text/javascript"></script>
+    <script src="https://threejs.org/examples/js/controls/TrackballControls.js" type="text/javascript"></script>
+    <script>
+
+      var video;
+
+      startvideo = function() {
+        console.log('start video')
+        video.play();
+        btn.style.display = 'none'
+      }
+
+      window.onload = function() {
+
+        scene = new THREE.Scene();
+
+        fov = 75;
+        ratio = window.innerWidth / window.innerHeight;
+        zNear = 1;
+        zFar = 10000;
+        // console.log(ratio);
+        camera = new THREE.PerspectiveCamera(fov, ratio, zNear, zFar);
+        camera.position.set( 0, 0, 80);
+
+        renderer = new THREE.WebGLRenderer();
+        renderer.setSize( window.innerWidth, window.innerHeight );
+        document.body.appendChild( renderer.domElement );
+        
+        ambientLight = new THREE.AmbientLight( 0x404040 );
+        scene.add( ambientLight );
+
+        light = new THREE.DirectionalLight( 0xffffff, 5.0 );
+        light.position.set( 10, 100, 10 );
+        scene.add( light );
+
+        controls = new THREE.TrackballControls( camera, renderer.domElement );
+        controls.rotateSpeed = 5.0;
+
+
+
+        var geometry = new THREE.SphereBufferGeometry( 500, 60, 40 );
+
+        video = document.getElementById('video');
+
+        var texture = new THREE.VideoTexture( video );
+        var material = new THREE.MeshBasicMaterial( { map: texture, side: THREE.BackSide } );
+        mesh = new THREE.Mesh( geometry, material );
+        scene.add( mesh );
+
+
+
+        animate();
+
+      };
+
+      function animate() {
+
+        controls.update();
+        renderer.render( scene, camera );
+
+        requestAnimationFrame( animate );
+      };
+
+    </script>
+  </head>
+  <body>
+
+    <button id='btn' onclick="startvideo()">Play</button>
+
+    <video id="video" loop="" crossorigin="anonymous" playsinline="" style="display:none">
+			<source src="videoplayback.mp4" type="video/mp4">
+    </video>
+    
+  </body>
+</html>
