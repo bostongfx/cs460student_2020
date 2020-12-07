@@ -10,6 +10,60 @@ To-Do:
 
 Ideas:
 - Make artwork so that users can insert objects (maybe people or trees or other stuff)
+    - ^ done, but now you need to draw these little objects
 - Set up a controller/dat gui
 
-Questions:
+Questions/Issues:
+- The planes I use to load the images: 
+    1. I need to manually set the dimensions. Is there a way the dimensions can be automatically calculated from the image itself?
+    2. The transparent parts of the image on the plane just show the background image of the scene instead of
+        showing the other planes/objects behind it. Is there a way to make the other objects/planes visible through 
+        the empty parts of another plane?
+
+        Tried to convert the image into a glb file using 3D paint and then loaded it using the following code but I couldn't
+        see the object on the scene. Maybe has to do with the colors again
+
+
+        include following two lines at the top of the file:
+          <script src="https://threejs.org/examples/js/loaders/GLTFLoader.js" type="text/javascript"></script>
+  <script src="https://threejs.org/examples/js/loaders/DRACOLoader.js" type="text/javascript"></script>
+
+              // testing - adding glb objects via https://threejs.org/docs/#examples/en/loaders/GLTFLoader
+      // Instantiate a loader
+const loader = new THREE.GLTFLoader();
+
+// Optional: Provide a DRACOLoader instance to decode compressed mesh data
+const dracoLoader = new THREE.DRACOLoader();
+dracoLoader.setDecoderPath( '/examples/js/libs/draco/' );
+loader.setDRACOLoader( dracoLoader );
+
+// Load a glTF resource
+loader.load(
+	// resource URL
+	'jminaretinprogress.glb',
+	// called when the resource is loaded
+	function ( gltf ) {
+
+		scene.add( gltf.scene );
+
+		gltf.animations; // Array<THREE.AnimationClip>
+		gltf.scene; // THREE.Group
+		gltf.scenes; // Array<THREE.Group>
+		gltf.cameras; // Array<THREE.Camera>
+		gltf.asset; // Object
+
+	},
+	// called while loading is progressing
+	function ( xhr ) {
+
+		console.log( ( xhr.loaded / xhr.total * 100 ) + '% loaded' );
+
+	},
+	// called when loading has errors
+	function ( error ) {
+
+		console.log( 'An error happened' );
+
+	}
+);
+// end testing ^
