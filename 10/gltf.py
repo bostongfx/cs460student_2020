@@ -1,18 +1,40 @@
 import numpy as np
 import base64
 
-VERTICES = np.array([0.,0.,0.,    0.,1.,0.,    1.,0.,0.], dtype=np.float32)
-INDICES = np.array([0, 1, 2], dtype=np.ushort)
 
-HOWMANY = 3
-MAX_X = 1
-MAX_Y = 1
-MAX_Z = 0
-MIN_X = 0
-MIN_Y = 0
-MIN_Z = 0
-MAX = 2
-MIN = 0
+VERTICES = []
+INDICES = []
+#cube = []
+with open('cube.obj' , 'r') as f:
+  for line in f:
+      token = line.split()
+      if not token:
+          continue
+      if token[0] == 'v':
+          VERTICES.append([float(v) for v in token[1:]])
+      elif token[0] == 'f':
+          INDICES.append([ int(v)-1 for v in token[1:] ])
+          
+
+MAX_X = int(max(map(lambda x: x[0], VERTICES)))
+
+MAX_Y = int(max(map(lambda x: x[1], VERTICES)))
+MAX_Z = int(max(map(lambda x: x[2], VERTICES)))
+MIN_X = int(min(map(lambda x: x[0], VERTICES)))
+
+MIN_Y = int(min(map(lambda x: x[1], VERTICES)))
+MIN_Z = int(min(map(lambda x: x[2], VERTICES)))
+MAX = np.max(INDICES)
+MIN = np.min(INDICES)
+
+
+
+
+VERTICES = np.array([value for item in VERTICES for value in item ], dtype=np.float32)
+INDICES = np.array([value for item in INDICES for value in item ], dtype=np.ushort)
+
+HOWMANY_V = len(VERTICES)/3
+HOWMANY_I = len(INDICES)
 
 HOWMANYBYTES_V = VERTICES.nbytes
 HOWMANYBYTES_I = INDICES.nbytes
@@ -31,7 +53,7 @@ gltf = {
             "bufferView": 0,
             "byteOffset": 0,
             "componentType": 5126,
-            "count": HOWMANY,
+            "count": HOWMANY_V,
             "type": "VEC3",
             "max": [MAX_X, MAX_Y, MAX_Z],
             "min": [MIN_X, MIN_Y, MIN_Z]
@@ -40,7 +62,7 @@ gltf = {
             "bufferView": 1,
             "byteOffset": 0,
             "componentType": 5123,
-            "count": HOWMANY,
+            "count": HOWMANY_I,
             "type": "SCALAR",
             "max": [MAX],
             "min": [MIN]
@@ -72,7 +94,17 @@ gltf = {
             "byteLength": HOWMANYBYTES_I
         }
     ],
-  
+    
+    "materials": [
+        {
+            
+            "pbrMetallicRoughness": {
+                "baseColorFactor": [ 1.000, 0.766, 0.336, 1.0 ],
+                "metallicFactor": 1.0,
+                "roughnessFactor": 0.0
+            }
+        }
+    ],  
     "meshes": [
         {
             "primitives": [{
@@ -80,6 +112,7 @@ gltf = {
                  "attributes": {
                      "POSITION": 0
                  },
+                 "material": 0,
                  "indices": 1
             }]
         }
@@ -103,4 +136,5 @@ gltf = {
 }
 
 print ( str(gltf).replace("'", '"') ) # we need double quotes instead of single quotes
+
 
