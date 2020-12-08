@@ -1,10 +1,8 @@
 import numpy as np
 import base64
 
- 
-
-VERTICES = [] #np.array([], dtype=np.float32)
-INDICES = [] #np.array([], dtype=np.ushort)
+VERTICES = [] 
+INDICES = [] 
 
 HOWMANY_V = 0
 HOWMANY_I = 0
@@ -16,7 +14,6 @@ MIN_Y = float("inf")
 MIN_Z = float("inf")
 MAX = float("-inf")
 MIN = float("inf")
-
 
 count = 0
 end_header = False
@@ -32,7 +29,7 @@ for line in fileObj.readlines():
     elif line[0:14] == "element vertex":
         numOfVertices = int(line[15:]) 
         numOfVertices = numOfVertices - 1
-        HOWMANY_V = int(line[15:18]) 
+        HOWMANY_V = int(line[15:]) 
     elif end_header and count <= numOfVertices:
         for i in line.split(' ')[:3]:
             tempArray.append(i)
@@ -47,7 +44,6 @@ for line in fileObj.readlines():
 fileObj.close()
 VERTICES = np.array(VERTICES, dtype=np.float32)
 INDICES = np.array(INDICES, dtype=np.ushort)
-
 
 HOWMANY_I = HOWMANY_I *3
 for a in VERTICES:
