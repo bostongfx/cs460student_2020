@@ -1,4 +1,5 @@
 # Did this on Colab Notebook
+# Inspired by YiWei Yao
 import numpy as np
 import base64
 
