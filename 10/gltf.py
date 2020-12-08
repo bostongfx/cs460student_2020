@@ -21,8 +21,8 @@ for line in fileObj.readlines():
 fileObj.close()
 
 
-VERTICES = np.array(VERICES_OUT_OF_PARSE, dtype=np.float32)
-INDICES = np.array(INDICE_OUF_OF_PARSE, dtype=np.ushort)
+VERTICES = np.array(VERTICES_a, dtype=np.float32)
+INDICES = np.array(INDICE_a, dtype=np.ushort)
 
 HOWMANY_V = int(VERTICES.size / 3)
 HOWMANY_I = int(INDICES.size)
@@ -55,11 +55,6 @@ while z_i < VERTICES.size:
 
 
 MAX = np.amax(INDICES)
-MIN = np.amin(INDICES)
-
-
-MAX = np.amax(INDICES)
-
 MIN = np.amin(INDICES)
 
 
@@ -150,5 +145,7 @@ gltf = {
 
     "scene": 0
 }
+
+gltf
 
 print ( str(gltf).replace("'", '"') ) # we need double quotes instead of single quotes
