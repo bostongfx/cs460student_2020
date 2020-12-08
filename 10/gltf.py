@@ -1,24 +1,26 @@
 import numpy as np
 import base64
 
-VERTICES = np.array([0.,0.,0.,    0.,1.,0.,    1.,0.,0.], dtype=np.float32)
-INDICES = np.array([0, 1, 2], dtype=np.ushort)
+obj_file = 'teapot.obj'
 
-HOWMANY = 3
-MAX_X = 1
-MAX_Y = 1
-MAX_Z = 0
-MIN_X = 0
-MIN_Y = 0
-MIN_Z = 0
-MAX = 2
-MIN = 0
 
-HOWMANYBYTES_V = VERTICES.nbytes
-HOWMANYBYTES_I = INDICES.nbytes
+VERTICES, INDICES = [], []
+
+with open(obj_file, 'r') as f:
+    for line in f.readlines():
+        if line[0] == 'v':
+            VERTICES.extend([float(i) for i in line.split()[1:]])
+        else:
+            INDICES.extend([int(i) - 1 for i in line.split()[1:]])
+
+
+VERTICES = np.array(VERTICES, dtype=np.float32)
+INDICES = np.array(INDICES, dtype=np.int16)
+VERTICES_3d = VERTICES.reshape((-1, 3))
 
 B64_VERTICES = base64.b64encode(VERTICES)
 B64_INDICES = base64.b64encode(INDICES)
+
 
 gltf = {
     "asset": {
@@ -26,61 +28,61 @@ gltf = {
         "generator": "CS460 Magic Fingers"
     },
 
-  "accessors": [
+    "accessors": [
         {
             "bufferView": 0,
             "byteOffset": 0,
             "componentType": 5126,
-            "count": HOWMANY,
+            "count": len(VERTICES_3d),
             "type": "VEC3",
-            "max": [MAX_X, MAX_Y, MAX_Z],
-            "min": [MIN_X, MIN_Y, MIN_Z]
+            "max": np.amax(VERTICES_3d, axis=0).tolist(),
+            "min": np.amin(VERTICES_3d, axis=0).tolist()
         },
         {
             "bufferView": 1,
             "byteOffset": 0,
             "componentType": 5123,
-            "count": HOWMANY,
+            "count": len(INDICES),
             "type": "SCALAR",
-            "max": [MAX],
-            "min": [MIN]
+            "max": [max(INDICES)],
+            "min": [min(INDICES)]
         }
-    ], 
+    ],
 
     "bufferViews": [
         {
             "buffer": 0,
             "byteOffset": 0,
-            "byteLength": HOWMANYBYTES_V,
+            "byteLength": VERTICES.nbytes,
             "target": 34962
         },
         {
             "buffer": 1,
             "byteOffset": 0,
-            "byteLength": HOWMANYBYTES_I,
+            "byteLength": INDICES.nbytes,
             "target": 34963
         }
     ],
-    
+
     "buffers": [
         {
             "uri": "data:application/octet-stream;base64,"+str(B64_VERTICES, 'utf-8'),
-            "byteLength": HOWMANYBYTES_V
+            "byteLength": VERTICES.nbytes
         },
         {
             "uri": "data:application/octet-stream;base64,"+str(B64_INDICES, 'utf-8'),
-            "byteLength": HOWMANYBYTES_I
+            "byteLength": INDICES.nbytes
         }
     ],
-  
+
     "meshes": [
         {
             "primitives": [{
-                 "mode": 4,
-                 "attributes": {
-                     "POSITION": 0
-                 },
-                 "indices": 1
+                "mode": 4,
+                "attributes": {
+                    "POSITION": 0
+                },
+                "indices": 1
             }]
         }
     ],
@@ -102,5 +104,6 @@ gltf = {
     "scene": 0
 }
 
-print ( str(gltf).replace("'", '"') ) # we need double quotes instead of single quotes
-
+# we need double quotes instead of single quotes
+with open(obj_file.split('.')[0] + '.gltf', 'w') as f:
+    f.write(str(gltf).replace("'", '"'))
