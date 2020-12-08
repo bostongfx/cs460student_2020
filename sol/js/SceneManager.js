@@ -1,4 +1,4 @@
-import { OrbitControls } from "./sceneControllers/OrbitControls.js";
+// import { OrbitControls } from "https://threejs.org/examples/js/controls/OrbitControls.js";
 import { SolSystem } from "./sceneSubjects/SolSystem.js";
 import { AU } from "./constants.js";
 
@@ -42,7 +42,7 @@ function SceneManager(canvas) {
     }
 
     function buildControls() {
-        const controls = new OrbitControls(camera, renderer.domElement);
+        const controls = new THREE.OrbitControls(camera, renderer.domElement);
         return controls;
     }
 
@@ -60,7 +60,7 @@ function SceneManager(canvas) {
 
     this.update = function() {
         const elapsedTime = clock.getElapsedTime();
-        // for (let subject of sceneSubjects) subject.update(elapsedTime);
+        for (let subject of sceneSubjects) subject.update(elapsedTime);
         renderer.render(scene, camera);
     }
 

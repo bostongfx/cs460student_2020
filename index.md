@@ -13,3 +13,7 @@ Assignment  7: [pdf](https://jamesedmichaud.github.io/07/Michaud_CS460_Assignmen
 Assignment  8: [pdf](https://jamesedmichaud.github.io/08/Michaud_CS460_Assignment_08.pdf) and [animation](https://jamesedmichaud.github.io/08/index.html)  
 Assignment  9: [pdf](https://jamesedmichaud.github.io/09/Michaud_CS460_Assignment_09.pdf) and [animation](https://jamesedmichaud.github.io/09/index.html)  
 Assignment 10: [pdf](https://jamesedmichaud.github.io/10/Michaud_CS460_Assignment_10.pdf) and [animation](https://jamesedmichaud.github.io/10/index.html)  
+
+Other Projects:
+
+[Solar System Model V1](https://jamesedmichaud.github.io/solar/index.html)  
