@@ -1,0 +1,104 @@
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <style>
+      html, body { 
+        background-color:#000;
+        margin: 0;
+        padding: 0;
+        height: 100%;
+        overflow: hidden !important;  
+      }
+    </style>
+
+    <script type='module'>
+
+      import * as THREE from 'https://threejs.org/build/three.module.js';
+      import { GUI } from 'https://threejs.org/examples/jsm/libs/dat.gui.module.js';
+      import { TrackballControls } from 'https://threejs.org/examples/jsm/controls/TrackballControls.js';
+      import { PLYLoader } from 'https://threejs.org/examples/jsm/loaders/PLYLoader.js';
+        import { GLTFLoader } from 'https://threejsfundamentals.org/threejs/resources/threejs/r122/examples/jsm/loaders/GLTFLoader.js';
+
+      let scene, camera, renderer, effect, ambientLight, directionalLight, light, mesh,  controls, controller, pointLight, mesh2, newdirectionalLight;
+
+      window.onload = function() {
+
+
+        scene = new THREE.Scene();
+
+        camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 1, 10000);
+        camera.position.set( 0, 0, 100);
+
+        renderer = new THREE.WebGLRenderer({antialias:true});
+        renderer.setSize( window.innerWidth, window.innerHeight );
+        document.body.appendChild( renderer.domElement );
+        
+        ambientLight = new THREE.AmbientLight(0x404040);
+        scene.add( ambientLight );
+
+        directionalLight = new THREE.DirectionalLight( 0xffffff, 5.0 );
+        directionalLight.position.set( 10, 100, -100 );
+        scene.add( directionalLight );
+
+
+          
+          
+        
+// from three.js docs
+// It says loaded and in progress in console but can't see the output
+const loader = new GLTFLoader();
+
+loader.load(
+	
+	'/triangle.gltf',
+	
+	function ( gltf ) {
+
+		scene.add( gltf.scene );
+
+		gltf.animations; // Array<THREE.AnimationClip>
+		gltf.scene; // THREE.Group
+		gltf.scenes; // Array<THREE.Group>
+		gltf.cameras; // Array<THREE.Camera>
+		gltf.asset; // Object
+
+	},
+	// called while loading is progressing
+	function ( xhr ) {
+
+		console.log( ( xhr.loaded / xhr.total * 100 ) + '% loaded' );
+
+	},
+	// called when loading has errors
+	function ( error ) {
+
+		console.log( 'An error happened' );
+
+	}
+);
+
+
+
+        controls = new TrackballControls( camera, renderer.domElement );
+
+        animate();
+
+      };
+
+
+      function animate() {
+
+        requestAnimationFrame( animate );
+
+        controls.update();
+
+        renderer.render( scene, camera );
+        
+
+      };
+
+    </script>
+  </head>
+  <body>
+  </body>
+</html>
