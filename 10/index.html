@@ -1,195 +1,105 @@
 <html>
-	<head>
-	<script src='base64.js' type='text/javascript'></script>
-  <script>
+<head>
+  <meta charset="UTF-8"/>
+  <style>
+      html, body {
+          background-color: #000;
+          margin: 0;
+          padding: 0;
+          height: 100%;
+          overflow: hidden !important;
+      }
+  </style>
 
-    window.onload = function() {
+  <script type='module'>
+      import * as THREE           from 'https://threejs.org/build/three.module.js';
+      import {GUI}                from 'https://threejs.org/examples/jsm/libs/dat.gui.module.js';
+      import {OrbitControls}      from 'https://threejs.org/examples/jsm/controls/OrbitControls.js';
+      import {GLTFLoader}         from 'https://threejs.org/examples/jsm/loaders/GLTFLoader.js';
 
-      VERTICES = new Float32Array([0.,0.,0., 0.,1.,0., 1.,0.,0.])
-      INDICES = new Uint16Array([0,1,2])
+      let scene, camera, renderer, ambientLight, controls, gui;
+      let lightCounter = 1;
 
-      HOWMANY = 3
-      MAX_X = 1. 
-      MAX_Y = 1.
-      MAX_Z = 0.
-      MIN_X = 0.
-      MIN_Y =  0.
-      MIN_Z = 0.
-      MAX = 2
-      MIN = 0
-
-      HOWMANYBYTES_V = 9*4
-      HOWMANYBYTES_I = 3*2
-
-      BASE64_Vertices = base64.b64encode(VERTICES);
-      BASE64_Indices = base64.b64encode(INDICES);
-
-
-      gltf = {
-
-        "asset": {
-      	    "version": "2.0",
-            "generator": "CS460 Magic Fingers"
-    	},
-
-        "accessors": [
-        
-              {
-        
-                  "bufferView": 0,
-        
-                  "byteOffset": 0,
-        
-                  "componentType": 5126,
-        
-                  "count": HOWMANY,
-        
-                  "type": "VEC3",
-        
-                  "max": [MAX_X, MAX_Y, MAX_Z],
-        
-                  "min": [MIN_X, MIN_Y, MIN_Z]
-        
-              },
-        
-              {
-        
-                  "bufferView": 1,
-        
-                  "byteOffset": 0,
-        
-                  "componentType": 5123,
-        
-                  "count": HOWMANY,
-        
-                  "type": "SCALAR",
-        
-                  "max": [MAX],
-        
-                  "min": [MIN]
-        
-              }
-        
-          ], 
-        
-       
-        
-          "bufferViews": [
-        
-              {
-        
-                  "buffer": 0,
-        
-                  "byteOffset": 0,
-        
-                  "byteLength": HOWMANYBYTES_V,
-        
-                  "target": 34962
-        
-              },
-        
-              {
-        
-                  "buffer": 1,
-        
-                  "byteOffset": 0,
-        
-                  "byteLength": HOWMANYBYTES_I,
-        
-                  "target": 34963
-        
-              }
-        
-          ],
-        
-          
-        
-          "buffers": [
-        
-              {
-        
-                  "uri": "data:application/octet-stream;base64," + BASE64_Vertices,
-        
-                  "byteLength": HOWMANYBYTES_V
-        
-              },
-        
-              {
-        
-                  "uri": "data:application/octet-stream;base64," + BASE64_Indices,
-        
-                  "byteLength": HOWMANYBYTES_I
-        
-              }
-        
-          ],
-        
-        
-        
-          "meshes": [
-        
-              { 
-        
-                  "primitives": [{
-        
-                       "mode": 4,
-        
-                       "attributes": {
-        
-                           "POSITION": 0
-        
-                       },
-        
-                       "indices": 1
-        
-                  }]
-                
-              }
-        
-          ],
-        
-       
-        
-          "nodes": [
-        
-              {
-        
-                  "mesh": 0
-        
-              }
-        
-          ],
-        
-       
-        
-          "scenes": [
-        
-              {
-        
-                  "nodes": [
-        
-                      0
-        
-                  ]
-        
-              }
-        
-          ],
-        
-       
-        
-          "scene": 0
-        
+      let controller = {
+          'color': 0xffffff,
       }
 
-    window.document.body.innerHTML = JSON.stringify(gltf)
+      let makeArmadillo = function() {
+          const gltfLoader = new GLTFLoader();
+          gltfLoader.setPath('./');
+          gltfLoader.load('armadillo.gltf', function(gltf) {
+              scene.add(gltf.scene);
 
-    };
+              let redAura   = new THREE.PointLight(0xff0000, 70, 60);
+              let greenAura = new THREE.PointLight(0x00ff00, 70, 50);
+              redAura  .position.set(0, 70,0);
+              greenAura.position.set(0, 20,0);
+              gltf.scene.add(greenAura);
+              gltf.scene.add(redAura);
+          });
+      }
+
+      let makeDirectionalLight = function() {
+          let directionalLight = new THREE.DirectionalLight(0xffffff, 3);
+          directionalLight.position.set(10, 100, -100);
+          scene.add(directionalLight);
+          makeLightFolder(directionalLight, 'Directional Light' + lightCounter++)
+      }
+
+      let makeLightFolder = function(light, name) {
+          let currFolder = gui.addFolder(name);
+          let currController = currFolder.addColor(controller, 'color').onChange(function (value) {
+              light.color.setHex(value);
+              // lightHelper.color = value;
+              // lightHelper.update();
+          });
+          currController.setValue(light.color.getHex());
+          currFolder.add(light, 'intensity', 0, 10, 0.01);
+          currFolder.add(light.position, 'x', -200, 200, 1);
+          currFolder.add(light.position, 'y', -200, 200, 1);
+          currFolder.add(light.position, 'z', -200, 200, 1);
+          // I wrote the remove function directly here so that each lightHelper object is bound
+          // to each GUI folder.
+          currFolder.add({'remove': function() {
+                  gui.removeFolder(currFolder);
+                  scene.remove(light);
+              }}, 'remove');
+          currFolder.open();
+      }
+
+      window.onload = function () {
+          scene = new THREE.Scene();
+          gui = new GUI();
+
+          camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 1, 10000);
+          camera.position.set(0, 50, -250);
+
+          renderer = new THREE.WebGLRenderer({antialias: true});
+          renderer.setSize(window.innerWidth, window.innerHeight);
+          document.body.appendChild(renderer.domElement);
+
+          makeArmadillo(160,0,0);
 
 
+          // Here's the button to add new directional lights.
+          gui.add({'AddDirectionalLight': function() {
+              makeDirectionalLight();
+              }}, 'AddDirectionalLight');
+          // Light Controls
+          makeDirectionalLight();
+
+          gui.open();
+          controls = new OrbitControls(camera, renderer.domElement);
+          animate();
+      };
+
+      function animate() {
+          requestAnimationFrame(animate);
+          controls.update();
+          renderer.render(scene, camera);
+      }
   </script>
-	</head>
-	<body>
-
-	</body>
+</head>
+<body>
+</body>
 </html>

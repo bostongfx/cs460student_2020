@@ -9,7 +9,7 @@ var base64 = {};
 
 base64.b64encode = function (array) {
 
-    array = new Uint8Array(array.buffer);
+    array = new Uint32Array(array.buffer);
 
     return btoa(String.fromCharCode.apply(null, array));
 

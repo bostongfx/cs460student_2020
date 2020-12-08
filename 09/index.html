@@ -68,6 +68,7 @@
       let makeArmadillo = function(x,y,z) {
           const loader = new PLYLoader();
           loader.load('armadillo.ply', function (geometry) {
+              console.log(geometry);
               geometry.computeVertexNormals();
               let material = materials.toon(); // Start off as Toon, but is randomized when dat gui folder is created.
               let mesh = new THREE.Mesh(geometry, material);
