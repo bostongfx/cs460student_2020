@@ -59,10 +59,11 @@
             scene.add(pointlight2);
 
             // Part-02: Load a mesh from an external file.
-            // I load an alocasia here.
+            // I load an cube here.
+            // I tried to load an alocasia plant here, but its structure is too complicated.
 
             var loader = new OBJLoader();
-            loader.load('Alocasia.obj', function (object) {
+            loader.load('cube.obj', function (object) {
 
                     scene.add(object);
 
@@ -96,10 +97,10 @@
             ambientFolder.addColor(controller, 'color').onChange(function (value) { ambientLight.color.setHex(value); });
             ambientFolder.open();
 
-            var alocasiaFolder = gui.addFolder('Alocasia');
-            alocasiaFolder.addColor(controller, 'color').onChange( function(value) { mesh.material.color.setHex(value); });
+            var cubeFolder = gui.addFolder('Cube');
+            cubeFolder.addColor(controller, 'color').onChange( function(value) { mesh.material.color.setHex(value); });
 
-            alocasiaFolder.add(controller, 'material', [ 'toon', 'standard', 'phong' ] ).onChange( function(value) {
+            cubeFolder.add(controller, 'material', [ 'toon', 'standard', 'phong' ] ).onChange( function(value) {
                 if (value == 'phong') {
                     mesh.material = new THREE.MeshPhongMaterial( {
                         color: get_random_color()
@@ -114,7 +115,7 @@
                     });
                 }
             });
-            alocasiaFolder.open();
+            cubeFolder.open();
 
             var directionalFolder = gui.addFolder('Directional Light');
             directionalFolder.addColor(controller, 'color').onChange(function (value) { directionalLight.color.setHex(value); });
@@ -157,7 +158,7 @@
     </script>
 </head>
 
-<body>
-</body>
+    <body>
+    </body>
 
 </html>
