@@ -17,4 +17,4 @@ Assignment 10: [pdf](https://jamesedmichaud.github.io/10/Michaud_CS460_Assignmen
 Other Projects:
 
 [Solar System Model V1](https://jamesedmichaud.github.io/solar/index.html)  
-[Solar System Model V2](https://jamesedmichaud.github.io/sol/index.html) (Doesn't work yet)
+[Solar System Model V2](https://jamesedmichaud.github.io/sol/index.html)
