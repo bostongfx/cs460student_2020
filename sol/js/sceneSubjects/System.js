@@ -13,9 +13,8 @@ Object.assign( System.prototype, {
     },
     addBody: function (body) {
         this.bodies.push(body);
-        this.scene.add(body.mesh);
-        if (body.type === 'Planet') this.scene.add(body.path);
-        if (body.type === 'Sun') this.scene.add(body.light);
+        this.scene.add(body);
+        if (body.path !== undefined) this.scene.add(body.path);
     },
     removeBody: function (body) {
         for (let i = 0; i < this.bodies.length; i++) {
@@ -25,9 +24,27 @@ Object.assign( System.prototype, {
             }
         }
     },
-    update: function (time) {
+    update: function (time, step, stepSize) {
+        let forces = {};
+        for (let body1 of this.bodies) {
+            let totalForce = new THREE.Vector3(0,0,0);
+            for (let body2 of this.bodies) {
+                totalForce.add(body1.interact(body2));
+            }
+            forces[body1.name] = totalForce;
+        }
+        // for (let body of this.bodies) {
+        //     let newPos = new THREE.Vector3(0,0,0);
+        //     body.update(null, time, step, stepSize);
+        // }
         for (let body of this.bodies) {
-            body.update(time);
+            let df = forces[body.name].divideScalar(body.mass).multiplyScalar(stepSize);
+            let newVel = body.velocity.clone().add(df);
+            let dPos = newVel.clone().multiplyScalar(stepSize);
+            let newPos = body.position.clone().add(dPos);
+            // console.log(df, vel, newPos);
+            // let newPos = new THREE.Vector3(0,0,0);
+            body.update(time, step, stepSize, newPos, newVel);
         }
     }
 } );

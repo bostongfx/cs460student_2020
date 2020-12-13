@@ -4,6 +4,9 @@ import { AU } from "./constants.js";
 
 function SceneManager(canvas) {
     const clock = new THREE.Clock();
+    const timeline = [];
+    let step = 0;
+    const stepSize = 6000;
 
     const screenDimensions = {
         width: canvas.width,
@@ -13,9 +16,41 @@ function SceneManager(canvas) {
     const scene = buildScene();
     const renderer = buildRender(screenDimensions);
     const camera = buildCamera(screenDimensions);
-    const control = buildControls();
+    const controls = buildControls();
     const sceneSubjects = createSceneSubjects(scene);
     const ambientEffects = createAmbientEffects(scene);
+
+    this.onWindowResize = function() {
+        const { width, height } = canvas;
+        screenDimensions.width = width;
+        screenDimensions.height = height;
+        camera.aspect = width / height;
+        camera.updateProjectionMatrix();
+        renderer.setSize(width, height);
+    }
+
+    this.handleOnClick = function(e) {
+        if (!e.shiftKey) {
+            e.preventDefault();
+            return false;
+        }
+        const pixel_coords = new THREE.Vector2( e.clientX, e.clientY );
+        const vp_coords = new THREE.Vector2(
+            ( pixel_coords.x / window.innerWidth ) * 2 - 1,
+            -(pixel_coords.y / window.innerHeight) * 2 + 1);
+        const raycaster = new THREE.Raycaster();
+        raycaster.setFromCamera(vp_coords, camera);
+        const intersects = raycaster.intersectObjects(sceneSubjects.bodies, true);
+        if (intersects.length > 0) {
+            // intersects[0].object.add(camera);
+            const controlTarget = intersects[0].object.parent.position;
+            const radius = intersects[0].object.parent.radius;
+            const camPos = intersects[0].object.parent.position.clone()
+                .add(new THREE.Vector3(-3 * radius, 3 * radius, 3 * radius));
+            controls.tween.to(controlTarget, 2000).start();
+            camera.tween.to(camPos, 2000).start();
+        }
+    }
 
     function buildScene() {
         const scene = new THREE.Scene();
@@ -37,19 +72,15 @@ function SceneManager(canvas) {
         const nearPlane = 1;
         const farPlane = 9.461e+15; // One light year
         const camera = new THREE.PerspectiveCamera(fieldOfView, aspectRatio, nearPlane, farPlane);
-        camera.position.set(0, 0, 2 * AU);
+        camera.position.set(0, 10*AU, 0);
+        camera.tween = new TWEEN.Tween(camera.position);
         return camera;
     }
 
     function buildControls() {
         const controls = new THREE.OrbitControls(camera, renderer.domElement);
+        controls.tween = new TWEEN.Tween(controls.target);
         return controls;
-    }
-
-    function createSceneSubjects(scene) {
-        return [
-            new SolSystem(scene)
-        ];
     }
 
     function createAmbientEffects(scene) {
@@ -58,19 +89,20 @@ function SceneManager(canvas) {
         return { ambientLight: ambientLight };
     }
 
-    this.update = function() {
-        const elapsedTime = clock.getElapsedTime();
-        for (let subject of sceneSubjects) subject.update(elapsedTime);
-        renderer.render(scene, camera);
+    function createSceneSubjects(scene) {
+        return new SolSystem(scene);
     }
 
-    this.onWindowResize = function() {
-        const { width, height } = canvas;
-        screenDimensions.width = width;
-        screenDimensions.height = height;
-        camera.aspect = width / height;
-        camera.updateProjectionMatrix();
-        renderer.setSize(width, height);
+    this.recordTimeSlice = function() {
+        const elapsedTime = clock.getElapsedTime();
+        sceneSubjects.update(elapsedTime, step++, stepSize);
+    }
+
+    this.update = function() {
+        TWEEN.update();
+        this.recordTimeSlice();
+        renderer.render(scene, camera);
+        controls.update();
     }
 }
 

@@ -8,15 +8,14 @@ function Sun( parameters ) {
         console.warn("Sun: 'radius' parameter undefined. Assigning Earth Sun's radius.");
         parameters.radius = SolSystem.Sol.radius;
     }
-    const geometry = new THREE.SphereBufferGeometry(parameters.radius, 32, 32);
+    const geometry = new THREE.SphereBufferGeometry(parameters.radius, 256, 256);
     const material = new THREE.MeshMatcapMaterial( {
         color: parameters.texture === undefined ? 0x050505 : 0xffffff,
         map: parameters.texture === undefined ? undefined : new THREE.TextureLoader().load(parameters.texture)
     } );
     const mesh = new THREE.Mesh(geometry, material);
-    parameters.geometry = geometry;
-    parameters.material = material;
     parameters.mesh = mesh;
+    this.add(parameters.mesh);
 
     if (parameters.mass === undefined) {
         console.warn("Sun: 'mass' parameter undefined. Assigning Earth Sun's mass.");
@@ -26,8 +25,11 @@ function Sun( parameters ) {
         console.warn("Sun: 'position' parameter undefined. Sun will be placed at [0,0,0].");
         parameters.position = new THREE.Vector3(0,0,0);
     }
+    parameters.mesh.add(new THREE.AxesHelper(parameters.radius*3))
     this.setValues( parameters );
     this.light = new THREE.PointLight("#ffface", 1);
+    this.add(this.light);
+
 }
 
 Sun.prototype = Object.create( Body.prototype );

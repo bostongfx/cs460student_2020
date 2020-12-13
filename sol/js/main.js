@@ -8,9 +8,13 @@ render();
 
 function bindEventListeners() {
     window.onresize = resizeCanvas;
+    window.onclick = handleOnClick;
     resizeCanvas();
 }
 
+function handleOnClick(e) {
+    sceneManager.handleOnClick(e);
+}
 function resizeCanvas() {
     canvas.style.width = '100%';
     canvas.style.height= '100%';
