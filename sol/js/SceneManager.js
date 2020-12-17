@@ -45,8 +45,8 @@ function SceneManager(canvas) {
 
     let demoCounter = 1;
     const controller = {
-        stepSize: 23.93*3600 * 400, // 1 day per second
-        // stepSize: 1, // 1 second per second
+        // stepSize: 23.93*3600, // 1 day per second
+        stepSize: 1, // 1 second per second
         scaleMultiplier: 1,
         demo: function() {
             if (!cameraTweening) {
