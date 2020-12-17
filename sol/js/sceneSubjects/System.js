@@ -14,7 +14,12 @@ Object.assign( System.prototype, {
     addBody: function (body) {
         this.bodies.push(body);
         this.scene.add(body);
-        if (body.path !== undefined) this.scene.add(body.path);
+        if (body.path !== undefined) {
+            this.scene.add(body.path);
+        }
+        if (body.path2 !== undefined) {
+            this.scene.add(body.path2);
+        }
     },
     removeBody: function (body) {
         for (let i = 0; i < this.bodies.length; i++) {
@@ -24,7 +29,8 @@ Object.assign( System.prototype, {
             }
         }
     },
-    update: function (time, step, stepSize) {
+    update: function (dt) {
+
         let forces = {};
         for (let body1 of this.bodies) {
             let totalForce = new THREE.Vector3(0,0,0);
@@ -33,18 +39,14 @@ Object.assign( System.prototype, {
             }
             forces[body1.name] = totalForce;
         }
-        // for (let body of this.bodies) {
-        //     let newPos = new THREE.Vector3(0,0,0);
-        //     body.update(null, time, step, stepSize);
-        // }
         for (let body of this.bodies) {
-            let df = forces[body.name].divideScalar(body.mass).multiplyScalar(stepSize);
+            let df = forces[body.name].divideScalar(body.mass).multiplyScalar(dt);
             let newVel = body.velocity.clone().add(df);
-            let dPos = newVel.clone().multiplyScalar(stepSize);
+            let dPos = newVel.clone().multiplyScalar(dt);
             let newPos = body.position.clone().add(dPos);
             // console.log(df, vel, newPos);
             // let newPos = new THREE.Vector3(0,0,0);
-            body.update(time, step, stepSize, newPos, newVel);
+            body.update(dt, newPos, newVel);
         }
     }
 } );
