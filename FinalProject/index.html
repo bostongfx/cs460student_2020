@@ -1,0 +1,537 @@
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <style>
+      html, body { 
+        background-color:rgb(7, 7, 7);
+        margin: 0;
+        padding: 0;
+        height: 100%;
+        overflow: hidden !important; 
+        
+        
+      }
+    </style>
+    <script type="text/javascript" src="http://get.goXTK.com/xtk_edge.js"></script>
+    <script src="https://threejs.org/build/three.min.js" type="text/javascript"></script>
+    <script src="https://threejs.org/examples/js/controls/TrackballControls.js" type="text/javascript"></script>
+    <script type='module'>
+        
+    import * as THREE from 'https://threejs.org/build/three.module.js';
+    import { GUI } from 'https://threejs.org/examples/jsm/libs/dat.gui.module.js';
+    import { TrackballControls } from 'https://threejs.org/examples/jsm/controls/TrackballControls.js';
+    import { GLTFLoader } from 'https://cdn.jsdelivr.net/npm/three/examples/jsm/loaders/GLTFLoader.js';
+    import { OBJLoader } from 'https://threejs.org/examples/jsm/loaders/OBJLoader.js'
+    import { MTLLoader } from 'https://threejs.org/examples/jsm/loaders/MTLLoader.js'
+    //import { TrackballControls } from 'https://threejs.org/examples/jsm/controls/TrackballControls.js';
+    
+    //import helvetiker_regular from 'three/examples/fonts/helvetiker_regular.typeface.json';
+    
+
+
+    let camera,scene, mesh,mesh1, particleSystem, ambientLight, light,material, renderer, group,scene2,nerve_mesh,mat,controls, virusSystem, moveSegment;
+    let group2 //virusSysttem
+      window.onload = function() {
+        
+        scene = new THREE.Scene();
+        scene2 = new THREE.Scene();
+        // scene.fog =  new THREE.Fog( 0x050505, 2000, 3500 );
+        //// camera：
+        //var fov = 75; // 视角
+        var ratio = window.innerWidth / window.innerHeight;
+        //var zNear = 1;  //近平面
+        //var zFar = 1000; 
+        
+        //camera = new THREE.PerspectiveCamera(27, window.innerWidth / window.innerHeight, 1, 3500);
+        //camera.position.set( 0, 0, 100);
+        camera = new THREE.PerspectiveCamera(27, ratio, 1, 10000);
+        camera.position.set( 0, 0, 2250);
+        
+        ambientLight = new THREE.AmbientLight( 0x444444 );
+        scene.add( ambientLight );
+        
+        
+        light = new THREE.DirectionalLight(0xffffff, 0.9)
+        light.position.set(0,0,100);
+        scene.add(light);
+
+        var light2 = new THREE.DirectionalLight(0xffffff, 0.9)
+        light2.position.set(100,200,-800);
+        scene.add(light2);       
+        
+        //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+        
+        var cube = new THREE.PlaneBufferGeometry( 8000,4000);
+        //var floorMat = new THREE.MeshPhongMaterial( { map: THREE.ImageUtils.loadTexture('https://www.google.com/url?sa=i&url=https%3A%2F%2Fkknews.cc%2Fnews%2Fo8a5mlq.html&psig=AOvVaw2cMQXJQUyC0-aI2TcgkftZ&ust=1608158190673000&source=images&cd=vfe&ved=0CAIQjRxqFwoTCJD2qKGG0e0CFQAAAAAdAAAAABAD') } )
+        var backTexture = new THREE.TextureLoader().load( 'bg.jpg' );
+        // var wallMat = new THREE.MeshPhongMaterial( { map: THREE.TextureLoader('back.png') } );
+        var wallMat = new THREE.MeshBasicMaterial( {
+          map: backTexture,
+          side: THREE.DoubleSide,
+          transparent: false
+        });
+        var backWall = new THREE.Mesh(cube, wallMat );
+            backWall.rotation.x = Math.PI/180 * 2;
+            //backWall.rotation.z = Math.PI/180 * 90;
+            backWall.position.set(0,1800,-7500);
+        scene.add( backWall );
+        
+        //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+        var geometry2 = new THREE.PlaneGeometry(30,60,2,3); //  rectangular
+        var material2 = new THREE.MeshBasicMaterial({vertexColors:THREE.VertexColors, wireframe:true}); //线段
+        var object = new THREE.Mesh(geometry,material);
+        scene2.add(object);
+
+        //particles:
+        var particles = 100000;
+        var positions = new Float32Array(particles*3);  // because each triangle has 3 vertices
+        var colors = new Float32Array(particles*3);
+        var color = new THREE.Color();
+        var n1 = 74, n2 = n1/2; //length
+        
+        
+        for(var i = 0; i<positions.length; i+=3){
+          // from -n2 to n1-n2
+          var x = Math.random() * n1 - n2;
+          var y = Math.random() * n1 - n2;
+          var z = Math.random() * n1 - n2;
+
+          //positions
+          positions[i] = x;
+          positions[i+1] = y;
+          positions[i+2] = z;
+
+          //colors:
+          var r = (x / n1) + 0.5; // the max value = 1
+          var g = (y / n1) + 0.5;
+          var b = (z / n1) + 0.5;
+
+          color.setRGB(r, g, b);
+
+          colors[i] = color.r;
+          colors[i+1] = color.g;
+          colors[i+2] = color.b;
+        }
+
+        var geometry = new THREE.BufferGeometry();
+        geometry.setAttribute("position",new THREE.BufferAttribute(positions,3));
+        geometry.setAttribute("color", new THREE.BufferAttribute(colors,3));
+        
+ 
+
+        material=new THREE.PointsMaterial({size:5,vertexColors: THREE.VertexColors});
+
+        
+        particleSystem = new THREE.Points(geometry,material);
+        particleSystem.position.x = 180;
+        particleSystem.position.y = -80;
+        scene.add(particleSystem);
+        //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+        /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+        
+
+        //var mesh = new THREE.Mesh(geometry, material);
+        //mesh.geometry.position = new THREE.Vector3(0,0,0);
+        group = new THREE.Group();
+        group.add(particleSystem);
+        moveSegment = 0;
+
+        //add 3D text
+        const loader = new THREE.FontLoader();
+
+        loader.load( 'helvetiker_regular.typeface.json', function ( font ) {
+          const text_geometry = new THREE.TextGeometry( 'CS480', {
+            font: font,
+            size: 80,
+            height: 5,
+            curveSegments: 12,
+            bevelEnabled: true,
+            bevelThickness: 10,
+            bevelSize: 8,
+            bevelOffset: 0,
+            bevelSegments: 5
+          } );
+          const text_material = new THREE.MeshNormalMaterial();
+          const textMesh = new THREE.Mesh(text_geometry, text_material);
+          group.add(textMesh);
+        });
+        //console.log(textMesh);
+
+        group.position.x = 0;
+        group.position.y = 0;
+        group.position.z = -5000;
+        scene.add(group);
+
+        // 红点
+        parent = new THREE.Object3D();
+        scene.add(parent);
+        var grid = new THREE.Points(new THREE.PlaneBufferGeometry(15000,15000,128,128), new THREE.PointsMaterial({
+          color: 0x0000ff, size:20
+        }));
+        grid.position.y = -200;
+        grid.rotation.x = -Math.PI /2;
+        parent.add(grid);
+        //
+
+        renderer = new THREE.WebGLRenderer({antialias:true}); // antialias: 抗锯齿，true 耗性能
+        //renderer.setClearColor(color= 0xffffff, 1.0);
+        renderer.setSize( window.innerWidth, window.innerHeight );
+        //renderer.setClearColor(scene.fog.color);
+        renderer.setPixelRatio( window.devicePixelRatio);
+        document.body.appendChild( renderer.domElement );
+        window.addEventListener('resize', onWindowResize, false);
+    
+        //controls = new THREE.TrackballControls( camera, renderer.domElement );
+        controls = new TrackballControls( camera, renderer.domElement );
+ 
+        /*
+        light = new THREE.DirectionalLight( 0xffffff, 5.0 );
+        light.position.set( 10, 100, 10 );
+        scene.add( light );
+        */
+
+        backGroundMusic();
+
+        //setTimeout(start_context, 6200);
+
+        animate();
+
+        setTimeout(createObject,10000); // virus logo appearans
+        renderVirus();
+
+        setTimeout(start_context,23000);
+
+        //animate1();
+      };
+      function animate1(){
+        renderer.render( scene, camera );
+        requestAnimationFrame( animate1 );
+        controls.update();
+      }
+
+      function createObject(){
+        var objLoader = new OBJLoader();
+        objLoader.load("maya.obj", function (object) {      
+              virusSystem = new THREE.Group();
+
+              for (let i = 0; i < object.children.length; i++) {          
+                  //var particles = new THREE.Points(object.children[i].geometry, mat);
+                  var child_array = object.children[i]
+                  //顶点数组
+                  child_array.geometry.vertices = []
+
+                  for (let j = 0; j < child_array.geometry.attributes.position.count; j++) {
+                      var position = child_array.geometry.attributes.position;
+                      child_array.geometry.vertices[j] = new THREE.Vector3(position.getX(j), position.getY(j), position.getZ(j))
+                  }
+                  createMesh(child_array.geometry, scene, 0, 100, 0, 0xF0FFFF); // create virus color 
+              }
+              //virusSystem.add(particles);
+              virusSystem.position.y = -220;
+              virusSystem.position.z = 1000;
+              //geometry.center(); //居中显示
+              scene.add(virusSystem);      
+
+        });
+      }
+      var meshes = []
+      function createMesh(originalGeometry, scene, x, y, z, color) {
+        //获取顶点位置
+        var vertices = originalGeometry.vertices; //顶点数组
+        var vLength = vertices.length; //顶点数组长度
+        //几何体对象
+        var geometry = new THREE.Geometry();
+
+        mesh = new THREE.Points(geometry, new THREE.PointsMaterial({
+            color: color, size: 0.1,
+        }));
+
+        mesh.scale.multiplyScalar(20);
+        
+        mesh.position.x = x;
+        mesh.position.y = y;
+        mesh.position.z = z;
+        virusSystem.add(mesh);
+
+        //存放几何体顶点和相关属性的数组
+        var vertices_tmp = [];//x,y,z,down,up
+        for (var i = 0; i < vLength; i++) {
+            var p = vertices[i];
+            geometry.vertices[i] = p.clone();
+            vertices_tmp[i] = [p.x, p.y, p.z, 0, 0];
+        }
+        //初始化参数
+        meshes.push({
+            mesh: mesh,
+            vertices: geometry.vertices,
+            vertices_tmp: vertices_tmp,
+            vLength: vLength,
+            down: 0,
+            up: vLength,
+            speed: 100,
+            delay: 50,
+            started: false,
+            start: 50,   //virus部分什么时候开始崩塌
+            direction: 0,
+        });
+}
+
+      function onWindowResize(){
+
+        camera.aspect = window.innerWidth / window.innerHeight;
+        camera.updateProjectionMatrix();
+        renderer.setSize( window.innerWidth, window.innerHeight);
+      }
+
+      function backGroundMusic(){
+        // 创建一个监听者
+          var listener = new THREE.AudioListener();
+          // camera.add( listener );
+          // 创建一个非位置音频对象  用来控制播放
+          var audio = new THREE.Audio(listener);
+          // 创建一个音频加载器对象
+          var audioLoader = new THREE.AudioLoader();
+          // 加载音频文件，返回一个音频缓冲区对象作为回调函数参数
+          audioLoader.load('movie.wav', function(AudioBuffer) {
+                // console.log(AudioBuffer)
+                // 音频缓冲区对象关联到音频对象audio
+                audio.setBuffer(AudioBuffer);
+                audio.setLoop(false); //是否循环
+                audio.setVolume(0.5); //音量
+                // 播放缓冲区中的音频数据
+                audio.play(); //play播放、stop停止、pause暂停
+          });
+      }
+
+      var clock = new THREE.Clock(); // get current time计算每一帧得时间
+      var index = 0;
+
+      
+      // 480 logo 最后停的位置
+      function moveLogo(){
+        var x = group.position.x;
+        var z = group.position.z;
+        if (moveSegment == 0) {
+                if(z < 1400){
+                  group.position.x -= 0.6;
+                  group.position.z += 30;
+                } else {
+                  setTimeout( function(){
+                      moveSegment = 1;
+                  }
+                  ,3000);
+                }
+        }else{
+          if(x > -800){
+              group.position.z -= 4.8;
+              group.position.x -= 2;  //500
+              group.position.y += 1.2;     
+          }
+      }
+  }
+
+
+
+      function animate() {
+        
+            requestAnimationFrame(animate);
+            //group.position.z = 0;
+            moveLogo();
+
+            
+            setTimeout(function(){
+              group.rotation.y += 0.01;
+            },6200);
+            
+            particleSystem.rotation.z += 0.005;
+            //group.rotation.y += 0.02;
+            
+           //console.log(group.position);
+            controls.update();
+            renderer.render(scene, camera);
+            //renderer.autoClear = false;
+            //renderVirus();
+            
+        //setTimeout(start_context, 6200);
+      };
+
+
+      function renderVirus(){
+        requestAnimationFrame(renderVirus);
+
+        //var delta = clock.getDelta();
+        //var delta = delta < 2 ? delta : 2;// 最大每帧两毫秒
+        //particleSystem.rotation.y += -0.5 * delta;
+        //遍历网格模型
+        for (index = 0; index < meshes.length; index++) {
+            var data = meshes[index];
+            mesh1 = data.mesh;
+            var vertices = data.vertices;
+            var vertices_tmp = data.vertices_tmp;
+            var vLength = data.vLength;
+
+        //最开始,没有移动,设置向下移动
+        if (data.start > 0) {
+            data.start -= 1; //减一帧
+        }
+        else {
+            //开始动画
+            if (!data.started) {
+                data.direction = -1;
+                data.started = true; //粒子系统开始运动了
+            }
+        }
+        //移动每一个顶点
+        for (var i = 0; i < vLength; i++) {
+            var p = vertices[i];
+            var vt = vertices_tmp[i];
+            if (data.direction < 0) {
+                if (p.y > 0) {
+                    //在每一个时间片段-0.5 ~ +0.5,左右移动 
+                    //1.5扩散范围,100左右类似爆破效果
+                    //p.x += 1.5 * (0.5 - Math.random()) * data.speed * delta;
+                    //向下的概率大于向上的概率,总体趋势向下
+                  // p.y += 3 * (0.15 - Math.random()) * data.speed * delta;
+                    p.y-= 0.3 * Math.random();
+                    //p.z += 1.5 * (0.5 - Math.random()) * data.speed * delta;
+                    
+                }
+                else {
+                    if (!vt[3]) { //0代表向下 x,y,z,down,up
+                        vt[3] = 1;
+                        data.down += 1;
+                    }
+                }
+            }
+            if (data.direction > 0) {
+              /*
+                var d = Math.sqrt(
+                  Math.pow((p.x - vt[0]),2) + Math.pow((p.y - vt[1]), 2) + Math.pow((p.z - vt[2]), 2)
+                );
+              */
+             var d = -(p.y - vt[1]);
+                if (d>0) {
+                    //p.x += -(p.x - vt[0]) / d * data.speed * delta * (0.75 - Math.random());
+                   //p.y += -(p.y - vt[1]) / d * data.speed * delta * (1 + Math.random());
+                    //p.z += -(p.z - vt[2]) / d * data.speed * delta * (0.75 - Math.random());
+                    p.y += 0.5 * Math.random();  // speed
+                }
+                else {
+                    if (!vt[4]) {
+                        vt[4] = 1; // upward = 1 
+                        data.up += 1;
+                    }
+                }
+            }
+        }
+        //初始化数据
+        if (data.down === vLength) {
+            if (data.delay === 0) {
+                data.direction = 1;
+                data.down = 0;
+                data.delay = 20; //set up delay time to downward
+                for (let i = 0; i < vLength; i++) {
+                    vertices_tmp[i][3] = 0;
+                }
+            }
+            else {
+                data.delay -= 1; //到下边时得等待时间
+            }
+        }
+        if (data.up === vLength) {
+            if (data.delay === 0) {
+                data.direction = -1;
+                data.up = 0;
+                data.delay = 20; //set up delay time to upward
+                for (let i = 0; i < vLength; i++) {
+                    vertices_tmp[i][4] = 0;
+                }
+            }
+            else {
+                data.delay -= 1;
+            }
+        }
+        //这个参数设置为true,GPU才会去刷新顶点的位置
+        mesh1.geometry.verticesNeedUpdate = true;
+        virusSystem.rotation.y += 0.005;
+        controls.update();
+        renderer.render(scene, camera);
+    }
+      }
+
+      ///////////////////////
+      function start_context(){
+        var frames = ['caption', 'content1', 'content2', 'content3', 'content4', 'content5', 
+        'content6', 'content7', 'content8',
+        null];
+
+        var s = 3000
+        var times = [0, // Welcome to CS480!
+                 1*s, // Biomedical Signal and Image Processing
+                 2*s, // In this course ...
+                 2.5*s, // Special Topics and Hands-on Training!
+                 3.5*s, // Including ...
+                 3.9*s, // Popular Medical Applications
+                 4.7*s, // Signal and Image Analysis with Python
+                 5.5*s, // Applied Deep Learning for Medical Imaging
+                 6.3*s // Now let's start Lecture 1!
+                 ];
+
+
+        var voice = document.getElementById('voice');
+        voice.volume = 1;
+        voice.autoplay = true;
+        voice.load();
+
+
+                for (var f in frames) { // f is index
+    
+                        setTimeout(function(f) {
+                          
+                          if (f > 0) {
+                            document.getElementById(frames[f-1]).style.display = 'none';
+                          }
+                          
+                          if (frames[f] != null) {
+                            document.getElementById(frames[f]).style.display = 'block';
+                          } 
+                          
+                        }.bind(this,f), times[f]);
+     
+                  }
+  
+      }
+ 
+    </script>
+  </head>
+  <body>
+    <audio id='voice'>
+      <source src="voice.mp3">
+    </audio>
+
+      <div id='caption' style='display:none;position: absolute;color:#00FF00;bottom:50%;right:10%;margin-left:150px;font-size:430%;text-align:center;text-shadow: 5px 5px 5px #FF0000;'>Welcome to CS480!</div>
+ 
+      <div id='content1' style='display:none;position: absolute;color:#FF00FF;bottom:40%;right:30%;margin-left:50px;font-size:430%;text-align:center;'>Biomedical Signal and Image Processing</div>
+ 
+      <div id='content2' style='display:none;position: absolute;color:#0000FF;bottom:50%;right:20%;margin-left:50px;font-size:430%;text-align:center;'>In this course ...</div>
+ 
+      <div id='content3' style='display:none;position: absolute;color:#00FF00;bottom:30%;right:10%;margin-left:50px;font-size:430%;text-align:center;'>Special Topics and Hands-on Training!</div>
+ 
+      <div id='content4' style='display:none;position: absolute;color:#00FFFF;bottom:50%;right:20%;margin-left:50px;font-size:440%;text-align:center;'>Including ...</div>
+ 
+      <div id='content5' style='display:none;position: absolute;color:white;bottom:40%;right:20%;margin-left:50px;font-size:350%;text-align:center;'>Popular Medical Applications</div>
+
+      <div id='content6' style='display:none;position: absolute;color:white;bottom:40%;right:20%;margin-left:50px;font-size:350%;text-align:center;'>Signal and Image Analysis with Python</div>
+
+      <div id='content7' style='display:none;position: absolute;color:white;bottom:40%;right:20%;margin-left:50px;font-size:350%;text-align:center;'>Applied Deep Learning for Medical Imaging</div>
+
+      <div id='content8' style='display:none;position: absolute;color:#FFA042;bottom:50%;right:20%;margin-left:50px;font-size:440%;text-align:center;'>Now let's start Lecture 1!</div>
+
+    
+
+  </body>
+
+
+</html>
