@@ -15,19 +15,26 @@
       background-repeat: no-repeat;
       background-size: 100% 100%;
     }
-  </style>
 
+ 
+      #instructions {
+        position: absolute;
+        top: 10px;
+        left: 10px;
+      };
+  </style>
+</head>
   <script src="https://threejs.org/build/three.min.js" type="text/javascript"></script>
   <script src="https://threejs.org/examples/js/controls/TrackballControls.js" type="text/javascript"></script>
-  <script src="https://threejs.org/examples/js/effects/AnaglyphEffect.js" type="text/javascript"></script>
-
   <script src="https://threejs.org/examples/js/libs/dat.gui.min.js" type="text/javascript"></script>
 
 
   <script>
-  var scene, camera, renderer, effect, ambientLight, light, controls;
+    var scene, camera, renderer, effect, ambientLight, light, controls;
     var object;
-    var floor;
+    var floor, jdome, jwall1, jwall2, greendome, nabMinaret, samark, samarkdome, isbcc, jama;
+    var infoappears = false;
+    var allinfos = [["nabawiInfo"], ["samarkInfo"], ["isbccInfo"], ["jamaInfo"], ["goldInfo"]];
 
     window.onload = function () {
 
@@ -40,6 +47,7 @@
       var zFar = 10000;
       camera = new THREE.PerspectiveCamera(fov, ratio, zNear, zFar);
       camera.position.set(0, 0, 5000);
+      //camera.rotateZ(90); I don't see a difference
 
       renderer = new THREE.WebGLRenderer({ alpha: true });
       renderer.setSize(window.innerWidth, window.innerHeight);
@@ -54,13 +62,13 @@
       scene.add(light);
 
       // FLOOR
-      //  var floorTexture = new THREE.TextureLoader().load('board.jpg');
-      var floorGeometry = new THREE.PlaneBufferGeometry(10000, 10000);
+        var floorTexture = new THREE.TextureLoader().load('illustrations/floor.png');
+      var floorGeometry = new THREE.PlaneBufferGeometry(7000, 7000);
       var floorMaterial = new THREE.MeshBasicMaterial({
-       //   map: floorTexture,
-          side: THREE.DoubleSide,
-        opacity: 0
-      //  transparent: true
+         map: floorTexture,
+        side: THREE.DoubleSide
+       // opacity: 0
+        //  transparent: true
       });
       floor = new THREE.Mesh(floorGeometry, floorMaterial);
       floor.rotateX(Math.PI / 2);
@@ -77,94 +85,81 @@
         side: THREE.DoubleSide,
         transparent: true
       });
-      object = new THREE.Mesh(objectGeometry, objectMaterial);
-      object.position.x = -1500;
-      object.position.z = -1000;
-      object.position.y = 100;
-      scene.add(object);
+      greendome = new THREE.Mesh(objectGeometry, objectMaterial);
+      greendome.position.x = -1350;
+      greendome.position.z = -900;
+      greendome.position.y = 500;
+      scene.add(greendome);
 
       // nabawi minaret
       var objectTexture = new THREE.TextureLoader().load('illustrations/madinahminaretT.png');
-      var objectGeometry = new THREE.PlaneBufferGeometry(250*2, 1000*2);
+      var objectGeometry = new THREE.PlaneBufferGeometry(250 * 2, 1000 * 2);
       var objectMaterial = new THREE.MeshBasicMaterial({
         map: objectTexture,
         side: THREE.DoubleSide,
         transparent: true
       });
-      object = new THREE.Mesh(objectGeometry, objectMaterial);
-      object.position.x = -2100;
-      object.position.z = -1050;
-      object.position.y = 450 + 100;
-      scene.add(object);
+      nabMinaret = new THREE.Mesh(objectGeometry, objectMaterial);
+      nabMinaret.position.x = -2100;
+      nabMinaret.position.z = -1050;
+      nabMinaret.position.y = 450 + 500;
+      scene.add(nabMinaret);
 
+      // jerusalem walls
       var objectTexture = new THREE.TextureLoader().load('illustrations/jwallsT.png');
-      var objectGeometry = new THREE.PlaneBufferGeometry(1111*0.7, 500*0.7);
+      var objectGeometry = new THREE.PlaneBufferGeometry(1111 * 0.7, 500 * 0.7);
       var objectMaterial = new THREE.MeshBasicMaterial({
         map: objectTexture,
         side: THREE.DoubleSide,
         transparent: true
       });
-      object = new THREE.Mesh(objectGeometry, objectMaterial);
-      object.position.x = -482*0.7;
-      object.position.y = 165;
-      object.rotateY(-22.5);
-      scene.add(object);
+      jwall1 = new THREE.Mesh(objectGeometry, objectMaterial);
+      jwall1.position.x = -482 * 0.7;
+      jwall1.position.y = 165;
+      jwall1.rotateY(-22.5);
+      scene.add(jwall1);
 
       objectTexture = new THREE.TextureLoader().load('illustrations/jwallsT.png');
-      objectGeometry = new THREE.PlaneBufferGeometry(1110*0.7, 500*0.7);
+      objectGeometry = new THREE.PlaneBufferGeometry(1110 * 0.7, 500 * 0.7);
       objectMaterial = new THREE.MeshBasicMaterial({
         map: objectTexture,
         side: THREE.DoubleSide,
         transparent: true
       });
-      object = new THREE.Mesh(objectGeometry, objectMaterial);
-      object.position.x = 482*0.7;
-      object.rotateY(22.5);
-      object.position.y = 165;
-     scene.add(object); //COMMENTED FOR PRESENTATION 
+      jwall2 = new THREE.Mesh(objectGeometry, objectMaterial);
+      jwall2.position.x = 482 * 0.7;
+      jwall2.rotateY(22.5);
+      jwall2.position.y = 165;
+      scene.add(jwall2); //COMMENTED FOR PRESENTATION 
 
-    // Golden Dome
-    var objectTexture = new THREE.TextureLoader().load('illustrations/jdome.png');
-      var objectGeometry = new THREE.PlaneBufferGeometry(1404*0.7, 1206*0.7);
+      // Golden Dome
+      var objectTexture = new THREE.TextureLoader().load('illustrations/jdome.png');
+      var objectGeometry = new THREE.PlaneBufferGeometry(1404 * 0.7, 1206 * 0.7);
       var objectMaterial = new THREE.MeshBasicMaterial({
         map: objectTexture,
         side: THREE.DoubleSide,
         transparent: true
       });
-      object = new THREE.Mesh(objectGeometry, objectMaterial);
-      object.position.y = 850*0.7 + 165;
-      scene.add(object);
+      jdome = new THREE.Mesh(objectGeometry, objectMaterial);
+      jdome.position.y = 850 * 0.7 + 165;
+      scene.add(jdome);
 
 
-
-
-   /*   objectTexture = new THREE.TextureLoader().load('illustrations/jminaretT.png');
-      objectGeometry = new THREE.PlaneBufferGeometry(525, 1600); //175, 566);
-      objectMaterial = new THREE.MeshBasicMaterial({
-        map: objectTexture,
-        side: THREE.DoubleSide,
-        transparent: true
-      });
-      object = new THREE.Mesh(objectGeometry, objectMaterial);
-      object.position.x = 2000;
-      // object.rotateX(-30);
-      scene.add(object);  */
-
+      // ISBCC
       objectTexture = new THREE.TextureLoader().load('illustrations/isbccT.png');
       objectGeometry = new THREE.PlaneBufferGeometry(1400, 1200);
       objectMaterial = new THREE.MeshBasicMaterial({
         map: objectTexture,
         side: THREE.DoubleSide,
-        //opacity: 0, makes the masjid white
         transparent: true
       });
-      object = new THREE.Mesh(objectGeometry, objectMaterial);
-      object.position.x = -700;
-      object.position.z = 1000;
-      object.position.y = 100;
-      // object.rotateX(-30);
-      scene.add(object);
+      isbcc = new THREE.Mesh(objectGeometry, objectMaterial);
+      isbcc.position.x = -700;
+      isbcc.position.z = 1000;
+      isbcc.position.y = 500;
+      scene.add(isbcc);
 
+      // SAMARKAND
       objectTexture = new THREE.TextureLoader().load('illustrations/samarkanddomeT.png');
       objectGeometry = new THREE.PlaneBufferGeometry(650, 650);
       objectMaterial = new THREE.MeshBasicMaterial({
@@ -172,12 +167,10 @@
         side: THREE.DoubleSide,
         transparent: true
       });
-      object = new THREE.Mesh(objectGeometry, objectMaterial);
-      object.position.x = 2000;
-     // object.position.y = -150;
-    //  object.position.z = -1000;
-      // object.rotateX(-30);
-      scene.add(object);
+      samarkdome = new THREE.Mesh(objectGeometry, objectMaterial);
+      samarkdome.position.x = 2000;
+      samarkdome.position.y = 300;
+      scene.add(samarkdome);
 
 
       objectTexture = new THREE.TextureLoader().load('illustrations/samarkandminaretT.png');
@@ -187,26 +180,27 @@
         side: THREE.DoubleSide,
         transparent: true
       });
-      object = new THREE.Mesh(objectGeometry, objectMaterial);
-      object.position.x = 2500;
-      object.position.z = 20;
-      object.position.y = 100;
-      // object.rotateX(-30);
-      scene.add(object);
+      samark = new THREE.Mesh(objectGeometry, objectMaterial);
+      samark.position.x = 2500;
+      samark.position.z = -20;
+      samark.position.y = 100 + 344;
+      scene.add(samark);
 
+      // JAMA MASJID
       objectTexture = new THREE.TextureLoader().load('illustrations/newdehliminaret.png');
-      objectGeometry = new THREE.PlaneBufferGeometry(200*2, 700*2);
+      objectGeometry = new THREE.PlaneBufferGeometry(200 * 2, 700 * 2);
       objectMaterial = new THREE.MeshBasicMaterial({
         map: objectTexture,
         side: THREE.DoubleSide,
         transparent: true
       });
-      object = new THREE.Mesh(objectGeometry, objectMaterial);
-      object.position.x = -2500;
-      object.position.z = 200;
-      object.position.y = 100;
-      scene.add(object);
+      jama = new THREE.Mesh(objectGeometry, objectMaterial);
+      jama.position.x = -2500;
+      jama.position.z = 200;
+      jama.position.y = 600;
+      scene.add(jama);
 
+      //infoappears = false;
 
       controls = new THREE.TrackballControls(camera, renderer.domElement);
 
@@ -217,7 +211,8 @@
     };
 
     // DOES NOT WORK IF FLOOR'S TRANSPARENT IS SET TO TRUE :(
-    /*window.onclick = function (e) {
+    window.onclick = function (e) {
+
 
       if (!e.shiftKey) {
         e.preventDefault();
@@ -235,24 +230,133 @@
       raycaster.setFromCamera(vp_coords_near, camera);
       intersects = raycaster.intersectObject(floor);
 
+
+      // If the user clicks anywhere and there is an info panel, remove it.
+        if (infoappears) { 
+          scene.remove(object);
+        }
+      /*****
+       * 
+       * INFO PANELS
+       * 
+       * ********/
+
+      // Nabawi Info Panel
+      intersects = raycaster.intersectObject(greendome);
+
       if (intersects.length > 0) {
-        objectTexture = new THREE.TextureLoader().load('jminaretinprogress.png');
-        objectGeometry = new THREE.PlaneBufferGeometry(175, 650);
+        if (infoappears) { // if there's another info box, remove it
+          scene.remove(object);
+        }
+        infoappears = true; // otherwise, set infoappears to true
+        objectTexture = new THREE.TextureLoader().load('illustrations/nabawiInfo.png');
+        objectGeometry = new THREE.PlaneBufferGeometry(600, 400);
         objectMaterial = new THREE.MeshBasicMaterial({
           map: objectTexture,
-          side: THREE.DoubleSide
+          //  side: THREE.DoubleSide,
+          transparent: true
         });
         object = new THREE.Mesh(objectGeometry, objectMaterial);
-        object.position.x = intersects[0].point.x;
-        object.position.y = intersects[0].point.y;
-        object.position.z = intersects[0].point.z;
+        object.position.x = greendome.position.x + 333;
+        object.position.y = greendome.position.y + 333;
+        object.position.z = greendome.position.z + 333;
 
         scene.add(object);
-        //object.show(scene);
-
       }
 
-    }; */
+      // Samarkand Info Panel
+      intersects = raycaster.intersectObject(samarkdome);
+
+      if (intersects.length > 0) {
+        if (infoappears) { // if there's another info box, remove it
+          scene.remove(object);
+        }
+        infoappears = true; // otherwise, set infoappears to true
+        objectTexture = new THREE.TextureLoader().load('illustrations/samarkInfo.png');
+        objectGeometry = new THREE.PlaneBufferGeometry(600, 400);
+        objectMaterial = new THREE.MeshBasicMaterial({
+          map: objectTexture,
+          //  side: THREE.DoubleSide,
+          transparent: true
+        });
+        object = new THREE.Mesh(objectGeometry, objectMaterial);
+        object.position.x = samarkdome.position.x + 333;
+        object.position.y = samarkdome.position.y + 333;
+        object.position.z = samarkdome.position.z + 333;
+
+        scene.add(object);
+      }
+
+      // ISBCC Info Panel
+      intersects = raycaster.intersectObject(isbcc);
+
+      if (intersects.length > 0) {
+        if (infoappears) { // if there's another info box, remove it
+          scene.remove(object);
+        }
+        infoappears = true; // otherwise, set infoappears to true
+        objectTexture = new THREE.TextureLoader().load('illustrations/isbccInfo.png');
+        objectGeometry = new THREE.PlaneBufferGeometry(600, 400);
+        objectMaterial = new THREE.MeshBasicMaterial({
+          map: objectTexture,
+          //  side: THREE.DoubleSide,
+          transparent: true
+        });
+        object = new THREE.Mesh(objectGeometry, objectMaterial);
+        object.position.x = isbcc.position.x + 333;
+        object.position.y = isbcc.position.y + 333;
+        object.position.z = isbcc.position.z + 333;
+
+        scene.add(object);
+      }
+
+      // Jama Info Panel
+      intersects = raycaster.intersectObject(jama);
+
+      if (intersects.length > 0) {
+        if (infoappears) { // if there's another info box, remove it
+          scene.remove(object);
+        }
+        infoappears = true; // otherwise, set infoappears to true
+        objectTexture = new THREE.TextureLoader().load('illustrations/jamaInfo.png');
+        objectGeometry = new THREE.PlaneBufferGeometry(600, 400);
+        objectMaterial = new THREE.MeshBasicMaterial({
+          map: objectTexture,
+          //  side: THREE.DoubleSide,
+          transparent: true
+        });
+        object = new THREE.Mesh(objectGeometry, objectMaterial);
+        object.position.x = jama.position.x + 333;
+        object.position.y = jama.position.y + 333;
+        object.position.z = jama.position.z + 333;
+
+        scene.add(object);
+      }
+
+      // Jerusalem Info Panel
+      intersects = raycaster.intersectObject(jdome);
+
+      if (intersects.length > 0) {
+        if (infoappears) { // if there's another info box, remove it
+          scene.remove(object);
+        }
+        infoappears = true; // otherwise, set infoappears to true
+        objectTexture = new THREE.TextureLoader().load('illustrations/goldInfo.png');
+        objectGeometry = new THREE.PlaneBufferGeometry(600, 400);
+        objectMaterial = new THREE.MeshBasicMaterial({
+          map: objectTexture,
+          //  side: THREE.DoubleSide,
+          transparent: true
+        });
+        object = new THREE.Mesh(objectGeometry, objectMaterial);
+        object.position.x = jdome.position.x + 333;
+        object.position.y = jdome.position.y + 333;
+        object.position.z = jdome.position.z + 333;
+
+        scene.add(object);
+      }
+
+    };
     function animate() {
 
       requestAnimationFrame(animate);
@@ -262,9 +366,13 @@
     };
 
   </script>
-</head>
+
 
 <body>
+
+  <div id="instructions">
+    <p style="font-family:verdana;background-color: #17aaaa"> Shift + Click on an illustration for more information!</p>
+  </div>
 </body>
 
 </html>
