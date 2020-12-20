@@ -10,7 +10,7 @@ arrow = function(x, y, z) {
   mesh.add( bones[0] );
   mesh.bind( skeleton );
 
-  this.root = bones[0]; // see visible ancor point
+  this.root = bones[0];
   this.root.position.set( x, y, z );
   this.head = bones[1];
   this.neck = bones[2];
@@ -38,9 +38,7 @@ arrow = function(x, y, z) {
   mesh.bind( skeleton );
 
   this.head.add(this.big_head);
-
   this.big_head = mesh;
-
   this.movement = null;
 
 };
@@ -59,6 +57,7 @@ arrow.prototype.moveRight = function() {
   this.movement = 'moveRight';
 };
 
+// Used to point arrows left or right.
 rightCount = 30;
 leftCount = 30;
 

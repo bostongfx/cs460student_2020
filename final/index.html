@@ -3,13 +3,11 @@
     <meta charset="UTF-8" />
     <style>
       html, body { 
-        background-color:#add8e6;
+        background-color:#0a943d;
         margin: 0;
         padding: 0;
         height: 100%;
         overflow: hidden !important;  
-
-        //background-image: url(umass.jpg);
         background-repeat: no-repeat;
         background-size: 100% 100%;
       }
@@ -17,8 +15,6 @@
 
     <script src="https://threejs.org/build/three.min.js" type="text/javascript"></script>
     <script src="https://threejs.org/examples/js/controls/TrackballControls.js" type="text/javascript"></script>
-    <script src="https://threejs.org/examples/js/effects/AnaglyphEffect.js" type="text/javascript"></script>
-    <script src="https://threejs.org/examples/js/libs/dat.gui.min.js" type="text/javascript"></script>
     <script src="arrow.js" type="text/javascript"></script>
     <script src="helper.js" type="text/javascript"></script>
     <script>
@@ -31,6 +27,7 @@
       var power = 0, score = 0, rand = 1;
       var scoreValue = false, powerValue = false, begin = true, first = false;
       var boundingBox, checkBoundingBox = false;
+
       window.onload = function() {
 
         scene = new THREE.Scene();
@@ -61,8 +58,8 @@
         // Floor
         //
 
-        var floorTexture = new THREE.TextureLoader().load( 'floor.jpg' );
-        var floorGeometry = new THREE.PlaneBufferGeometry( 2000, 1000 );
+        var floorTexture = new THREE.TextureLoader().load( 'floor2.jpg' );
+        var floorGeometry = new THREE.PlaneBufferGeometry( 3000, 1000 );
         var floorMaterial = new THREE.MeshBasicMaterial( {
           map: floorTexture,
           side: THREE.DoubleSide
@@ -70,6 +67,7 @@
         floor = new THREE.Mesh( floorGeometry, floorMaterial );
         floor.position.y = -200;
         floor.rotateX(-300);
+        floor.rotation.y = 0.01;
         scene.add( floor );
 
         //
@@ -104,8 +102,8 @@
 
           if (e.key == 'ArrowLeft'){
             if (rightCount == 30){
-              if (leftCount < 3) {
-                leftCount = 2;
+              if (leftCount < 4) {
+                leftCount = 3;
               }
               else {
                 leftCount -= 1;
@@ -118,15 +116,12 @@
               sphere.position.x += 1;
               sphere.position.y = 0;
             }
-            else if (sphere.position.x == 31) {
-              sphere.position.y = -30;
-            }
             r.movement = 'moveLeft';
           } 
           else if (e.key == 'ArrowRight'){
             if (leftCount == 30) {
-              if (rightCount < 3) {
-                rightCount = 2;
+              if (rightCount < 4) {
+                rightCount = 3;
               }
               else {
                 rightCount -= 1;
@@ -138,9 +133,6 @@
             if (sphere.position.x > -31) { 
               sphere.position.x -= 1;
               sphere.position.y = 0;
-            }
-            else if (sphere.position.x == -31) {
-              sphere.position.y = -30;
             }
             r.movement = 'moveRight';
           } 
@@ -186,12 +178,12 @@
 
       function ballThrow() {
         if (power > 0) {
-          sphere.position.x += -r.root.rotation.z*10; //(rightCount - leftCount)/2;
+          sphere.position.x += -r.root.rotation.z*10; 
           sphere.position.z -= 10;
           power -= 2;
         }
         else {
-          sphere.position.x += -r.root.rotation.z*10; //(rightCount - leftCount)/2;
+          sphere.position.x += -r.root.rotation.z*10; 
           sphere.position.z -= 10;
           sphere.position.y -= 10;
         }
@@ -205,25 +197,26 @@
         loader = new THREE.FontLoader();
           loader.load( 'helvetiker_regular.typeface.json', function ( font ) {
 
-            toonMaterial = new THREE.MeshLambertMaterial( {
-               color: 0x21ceff
+            toonMaterial = new THREE.MeshPhongMaterial( {
+               color: 0x00 // 0x21ceff
             } );
 
             geometry = new THREE.TextBufferGeometry( 'SCORE : ' + score, {
               font: font,
-              size: 60,
+              size: 30,
               height: 5,
               curveSegments: 12,
               bevelEnabled: true,
-              bevelThickness: 10,
-              bevelSize: 8,
+              bevelThickness: 1,
+              bevelSize: 1,
               bevelOffset: 0,
               bevelSegments: 5
             } );
             scoreMesh = new THREE.Mesh( geometry, toonMaterial );
-            scoreMesh.position.x = 170;
-            scoreMesh.position.y = 400;
+            scoreMesh.position.x = 500;
+            scoreMesh.position.y = 450;
             scoreMesh.position.z = -250;
+            scoreMesh.rotation.y = -0.1;
             scene.add(scoreMesh);
             return scoreMesh;
         } );
@@ -238,23 +231,23 @@
           loader.load( 'helvetiker_regular.typeface.json', function ( font ) {
 
             toonMaterial = new THREE.MeshLambertMaterial( {
-               color: 0x21ceff
+               color: 0x023013
             } );
 
             geometry = new THREE.TextBufferGeometry( 'You lost with the score ' + score + '.\nHit refresh to play again!', {
               font: font,
-              size: 60,
+              size: 50,
               height: 5,
               curveSegments: 12,
               bevelEnabled: true,
-              bevelThickness: 10,
-              bevelSize: 8,
+              bevelThickness: 1,
+              bevelSize: 4,
               bevelOffset: 0,
               bevelSegments: 5
             } );
             scoreMesh = new THREE.Mesh( geometry, toonMaterial );
-            scoreMesh.position.x = -450;
-            scoreMesh.position.y = 0;
+            scoreMesh.position.x = -350;
+            scoreMesh.position.y = 100;
             scoreMesh.position.z = 100;
             scene.add(scoreMesh);
             return scoreMesh;
@@ -266,13 +259,15 @@
       //
 
       function createBin() {
-        var binTexture = new THREE.TextureLoader().load( 'bin.jpg' );
+        var binTexture = new THREE.TextureLoader().load( 'bin2.png' );
         const points = [];
         for ( let i = 0; i < 10; i ++ ) {
-          points.push( new THREE.Vector2( Math.sin( i * 0.2 ) * 20 + 5, ( i - 5 ) * 5 ) );
+          points.push( new THREE.Vector2( Math.sin( i * 0.2 ) * 20 + 20, ( i - 5 ) * 5 ) );
         }
         const geometry = new THREE.LatheBufferGeometry( points );
-        const material = new THREE.MeshBasicMaterial( { color: 0xff0000, side: THREE.DoubleSide,map: binTexture });
+        const material = new THREE.MeshBasicMaterial( { color: 0x0a943d, 
+          side: THREE.DoubleSide,
+          map: binTexture });
         lathe = new THREE.Mesh( geometry, material );
         lathe.position.y = -50;
         if (Math.random() * 11 % 2 == 0) {
@@ -283,6 +278,8 @@
         }
         lathe.position.x = Math.floor(Math.random() * 400) * rand;
         lathe.position.z = Math.floor(Math.random() * 400) - 100;
+        lathe.rotation.y = 3;
+        lathe.rotation.x = -0.15;
         scene.add( lathe );
         boundingBox = [lathe.position.x-33, lathe.position.x+33, lathe.position.y-3, lathe.position.y+3, lathe.position.z-33, lathe.position.z+33];
       }
@@ -290,12 +287,18 @@
       // Create new Ball
       //
       function createBall() {
+        var ballTexture = new THREE.TextureLoader().load( 'ballz.jpg' );
         const ballGeometry = new THREE.SphereBufferGeometry( 10, 32, 32 );
-        const ballMaterial = new THREE.MeshBasicMaterial( {color: 0xffff00} );
+        const ballMaterial = new THREE.MeshBasicMaterial( {map: ballTexture,
+          // color: 0xffff00
+        } );
         sphere = new THREE.Mesh( ballGeometry, ballMaterial );
         sphere.position.set (0, 0, 500);
         scene.add( sphere );
       }
+      //
+      // Checks bounding box
+      //
       function checkBox() {
         if(boundingBox[0] < sphere.position.x && boundingBox[1] > sphere.position.x && boundingBox[2] < sphere.position.y &&boundingBox[3] > sphere.position.y && boundingBox[4] < sphere.position.z && boundingBox[5] > sphere.position.z)
           scoreValue = true;
@@ -308,34 +311,35 @@
       //
       function powerFunc(){
         loader = new THREE.FontLoader();
-          loader.load( 'helvetiker_regular.typeface.json', function ( font ) {
+        loader.load( 'helvetiker_regular.typeface.json', function ( font ) {
 
-            toonMaterial = new THREE.MeshLambertMaterial( {
-               color: 0x21ceff
-            } );
-
-            geometry = new THREE.TextBufferGeometry( 'Power : ' + power + '%', {
-              font: font,
-              size: 25,
-              height: 5,
-              curveSegments: 12,
-              bevelEnabled: true,
-              bevelThickness: 5,
-              bevelSize: 4,
-              bevelOffset: 0,
-              bevelSegments: 5
-            } );
-            if (first){
-              powerMesh.position.x = 1000;
-            }
-            powerMesh = new THREE.Mesh( geometry, toonMaterial );
-            powerMesh.position.x = -275;
-            powerMesh.position.y = -100;
-            powerMesh.position.z = 400;
-            scene.add(powerMesh);
-            return powerMesh;
+          toonMaterial = new THREE.MeshLambertMaterial( {
+            color: 0x21ceff
           } );
-        }
+
+          geometry = new THREE.TextBufferGeometry( 'Power : ' + power + '%', {
+            font: font,
+            size: 15,
+            height: 5,
+            curveSegments: 12,
+            bevelEnabled: true,
+            bevelThickness: 1,
+            bevelSize: 1,
+            bevelOffset: 0,
+            bevelSegments: 5
+          } );
+          if (first){
+            powerMesh.position.x = 1000;
+          }
+          powerMesh = new THREE.Mesh( geometry, toonMaterial );
+          powerMesh.position.x = -175;
+          powerMesh.position.y = -100;
+          powerMesh.position.z = 400;
+          powerMesh.rotation.x = -0.3;
+          scene.add(powerMesh);
+          return powerMesh;
+        } );
+      }
 
       function animate() {
         requestAnimationFrame( animate );
@@ -390,6 +394,6 @@
     </script>
   </head>
   <body>
-      <p id="log"></p>
+    <div style="visibility:hidden"></div>
   </body>
 </html>
