@@ -32,7 +32,7 @@
   <script>
     var scene, camera, renderer, effect, ambientLight, light, controls;
     var object;
-    var floor, jdome, jwall1, jwall2, greendome, nabMinaret, samark, samarkdome, isbcc, jama;
+    var floor, jdome, jwall1, jwall2, greendome, nabMinaret, samark, samarkdome, isbcc, jama, jamamin1, jamamin2;
     var infoappears = false;
     var allinfos = [["nabawiInfo"], ["samarkInfo"], ["isbccInfo"], ["jamaInfo"], ["goldInfo"]];
 
@@ -159,48 +159,92 @@
       isbcc.position.y = 500;
       scene.add(isbcc);
 
+      /*objectTexture = new THREE.TextureLoader().load('illustrations/hambu.png');
+      objectGeometry = new THREE.PlaneBufferGeometry(1400, 1200);
+      objectMaterial = new THREE.MeshBasicMaterial({
+        map: objectTexture,
+        side: THREE.DoubleSide,
+        transparent: true
+      });
+      isbcc = new THREE.Mesh(objectGeometry, objectMaterial);
+      isbcc.position.x = -700;
+      isbcc.position.z = 1500;
+      isbcc.position.y = 500;
+      scene.add(isbcc);
+*/
       // SAMARKAND
-      objectTexture = new THREE.TextureLoader().load('illustrations/samarkanddomeT.png');
-      objectGeometry = new THREE.PlaneBufferGeometry(650, 650);
+      objectTexture = new THREE.TextureLoader().load('illustrations/bukhara.png');
+      objectGeometry = new THREE.PlaneBufferGeometry(1232 + 616, 600 + 300);
       objectMaterial = new THREE.MeshBasicMaterial({
         map: objectTexture,
         side: THREE.DoubleSide,
         transparent: true
       });
       samarkdome = new THREE.Mesh(objectGeometry, objectMaterial);
-      samarkdome.position.x = 2000;
-      samarkdome.position.y = 300;
+      samarkdome.position.x = 3400;
+      samarkdome.position.y = 475;
+      samarkdome.rotateY(Math.PI/2);
       scene.add(samarkdome);
 
 
       objectTexture = new THREE.TextureLoader().load('illustrations/samarkandminaretT.png');
-      objectGeometry = new THREE.PlaneBufferGeometry(600, 1000);
+      objectGeometry = new THREE.PlaneBufferGeometry(600 + 300, 1000 + 500);
       objectMaterial = new THREE.MeshBasicMaterial({
         map: objectTexture,
         side: THREE.DoubleSide,
         transparent: true
       });
       samark = new THREE.Mesh(objectGeometry, objectMaterial);
-      samark.position.x = 2500;
-      samark.position.z = -20;
-      samark.position.y = 100 + 344;
+      samark.position.x = 3000;
+      samark.position.z = -1050;
+      samark.position.y = 100 + 600;
+      samark.rotateY(Math.PI/2);
       scene.add(samark);
 
       // JAMA MASJID
       objectTexture = new THREE.TextureLoader().load('illustrations/newdehliminaret.png');
-      objectGeometry = new THREE.PlaneBufferGeometry(200 * 2, 700 * 2);
+      objectGeometry = new THREE.PlaneBufferGeometry(300, 1250);
+      objectMaterial = new THREE.MeshBasicMaterial({
+        map: objectTexture,
+        side: THREE.DoubleSide,
+        transparent: true
+      });
+      jamamin1 = new THREE.Mesh(objectGeometry, objectMaterial);
+      jamamin1.position.x = -3375;
+      jamamin1.position.z = 75;
+      jamamin1.position.y = 575;
+      jamamin1.rotateY(Math.PI/2);
+      scene.add(jamamin1);
+
+      objectTexture = new THREE.TextureLoader().load('illustrations/newdelhientrance.png');
+      objectGeometry = new THREE.PlaneBufferGeometry(1600, 800);
       objectMaterial = new THREE.MeshBasicMaterial({
         map: objectTexture,
         side: THREE.DoubleSide,
         transparent: true
       });
       jama = new THREE.Mesh(objectGeometry, objectMaterial);
-      jama.position.x = -2500;
-      jama.position.z = 200;
-      jama.position.y = 600;
+      jama.position.x = -3400;
+      jama.position.z = 900;
+      jama.position.y = 350;
+      jama.rotateY(Math.PI/2);
       scene.add(jama);
 
-      //infoappears = false;
+      objectTexture = new THREE.TextureLoader().load('illustrations/newdehliminaret.png');
+      objectGeometry = new THREE.PlaneBufferGeometry(300, 1250);
+      objectMaterial = new THREE.MeshBasicMaterial({
+        map: objectTexture,
+        side: THREE.DoubleSide,
+        transparent: true
+      });
+      jamamin2 = new THREE.Mesh(objectGeometry, objectMaterial);
+      jamamin2.position.x = -3375;
+      jamamin2.position.z = 125 + 1675;
+      jamamin2.position.y = 575;
+      jamamin2.rotateY(Math.PI/2);
+      scene.add(jamamin2);
+  
+  
 
       controls = new THREE.TrackballControls(camera, renderer.domElement);
 
@@ -243,8 +287,9 @@
 
       // Nabawi Info Panel
       intersects = raycaster.intersectObject(greendome);
+      intersects2 = raycaster.intersectObject(nabMinaret);
 
-      if (intersects.length > 0) {
+      if (intersects.length > 0 || intersects2.length > 0) {
         if (infoappears) { // if there's another info box, remove it
           scene.remove(object);
         }
@@ -266,8 +311,9 @@
 
       // Samarkand Info Panel
       intersects = raycaster.intersectObject(samarkdome);
+      intersects2 = raycaster.intersectObject(samark);
 
-      if (intersects.length > 0) {
+      if (intersects.length > 0 || intersects2.length > 0) {
         if (infoappears) { // if there's another info box, remove it
           scene.remove(object);
         }
@@ -310,10 +356,13 @@
         scene.add(object);
       }
 
+      
+
       // Jama Info Panel
       intersects = raycaster.intersectObject(jama);
-
-      if (intersects.length > 0) {
+      intersects2 = raycaster.intersectObject(jamamin1);
+      intersects3 = raycaster.intersectObject(jamamin2);
+      if (intersects.length > 0 || intersects2.length > 0 || intersects3.length > 0) {
         if (infoappears) { // if there's another info box, remove it
           scene.remove(object);
         }
@@ -329,7 +378,7 @@
         object.position.x = jama.position.x + 333;
         object.position.y = jama.position.y + 333;
         object.position.z = jama.position.z + 333;
-
+        //object.position = camera.position;
         scene.add(object);
       }
 
