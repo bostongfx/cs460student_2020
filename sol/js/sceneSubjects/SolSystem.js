@@ -1,19 +1,23 @@
-import {System} from './System.js';
+import {SystemOfBodies} from './SystemOfBodies.js';
 import {Planet} from './Planet.js';
 import {Sun} from './Sun.js';
-import {G, AU, STARSCALE, PLANETSCALE, PLUTOSCALE} from "../constants.js";
+import {AU, STARSCALE, PLANETSCALE, PLUTOSCALE} from "../constants.js";
 
-const JDaysToStartOfEpoch = 2440587.5;
-const J2000 = 2451545.0;
-const epochToJ2000 = 10957.5; // J2000 - JDaysToStartOfEpoch;
-const J2020 = 2458929.0;
-const T2020 = 7384;
+// Important Julian Days
+const JDaysToStartOfEpoch = 2440587.5;  // Jan 1, 1970 00:00
+const J2000 = 2451545.0;                // Jan 1, 2000 12:00 (noon)
+const J2020 = 2458929.0;                // Jan 1, 2020 12:00 (noon)
+const T2020 = 7384;                     // J2020 - J2000
+const epochToJ2000 = 10957.5;           // J2000 - JDaysToStartOfEpoch;
 
-function SolSystem(scene) {
-    System.call(this);
+function SolSystem(scene, scaleMultiplier, systemScale) {
+    SystemOfBodies.call(this);
     this.setScene(scene);
+    // Scale everything down so that earth is about 1 unit away from the sun.
+    this.systemScale = systemScale;
+    this.scaleMultiplier = scaleMultiplier;
+
     const UNIX_TIME = Date.now();
-    this.JDAYSTART  = UNIX_TIME / 86400000 + JDaysToStartOfEpoch;
     this.TStart     = UNIX_TIME / 86400000 - epochToJ2000;
     const startTime = this.TStart;
     // const startTime = T2020;
@@ -23,22 +27,20 @@ function SolSystem(scene) {
         mass: 1.98892e30,
         radius: 6.957e8,
         scaleFactor: STARSCALE,
-        velocity: new THREE.Vector3(0, 0, 0),
-        position: new THREE.Vector3(0, 0, 0),
+        position: new THREE.Vector3(0,0,0),
         texture: 'textures/sun.jpg',
         color: new THREE.Color(1, 1, 0.6),
         tilt: 7.25 * Math.PI / 180,
         dayLength: 648 * 3600,
-    });
+    }, this.systemScale);
 
     this.Earth = new Planet({
         name: 'Earth',
         mass: 5.9742e24,
         radius: 6.371e6,
         scaleFactor: PLANETSCALE,
-        velocity: new THREE.Vector3(29783, 0, 0),
         texture: 'textures/earth_day.jpg',
-        color: new THREE.Color(0.05, 0.05, 0.75),
+        color: 0x00FFFF,
         tilt: 23.4 * Math.PI / 180,
         dayLength: 23.93 * 3600,
         orbitalPeriod: 365.25,
@@ -51,13 +53,13 @@ function SolSystem(scene) {
             longitudeOfPerihelion:       {degrees: 102.9376819, degreesPerCentury: 0.32327364},
             longitudeOfTheAscendingNode: {degrees: 0, degreesPerCentury: 0},
         },
-    }, startTime);
+    }, this.systemScale, startTime);
+
     this.Mercury = new Planet({
         name: 'Mercury',
         mass: 3.3e23,
         radius: 2.439e6,
         scaleFactor: PLANETSCALE,
-        velocity: new THREE.Vector3(0, 0, -47400),
         texture: 'textures/mercury.jpg',
         color: new THREE.Color(1, 0.27, 0),
         tilt: 0.034 * Math.PI / 180,
@@ -72,13 +74,13 @@ function SolSystem(scene) {
             longitudeOfPerihelion: {degrees: 77.45779628, degreesPerCentury: 0.16047689},
             longitudeOfTheAscendingNode: {degrees: 48.33076593, degreesPerCentury: -0.12534081},
         },
-    }, startTime);
+    }, this.systemScale, startTime);
+
     this.Venus = new Planet({
         name: 'Venus',
         mass: 4.8685e24,
         radius: 6.052e6,
         scaleFactor: PLANETSCALE,
-        velocity: new THREE.Vector3(0, 0, 35020),
         texture: 'textures/venus_atmo.jpg',
         color: new THREE.Color(0.8, 0.8, 0),
         tilt: 177.4 * Math.PI / 180,
@@ -93,13 +95,13 @@ function SolSystem(scene) {
             longitudeOfPerihelion: {degrees: 131.6024672, degreesPerCentury: 0.00268329},
             longitudeOfTheAscendingNode: {degrees: 76.67984255, degreesPerCentury: -0.27769418},
         },
-    }, startTime);
+    }, this.systemScale, startTime);
+
     this.Mars = new Planet({
         name: 'Mars',
         mass: 6.42e23,
         radius: 3.397e6,
         scaleFactor: PLANETSCALE,
-        velocity: new THREE.Vector3(0, 0, 24100),
         texture: 'textures/mars.jpg',
         color: new THREE.Color(1, 0, 0),
         tilt: 25.2 * Math.PI / 180,
@@ -114,13 +116,13 @@ function SolSystem(scene) {
             longitudeOfPerihelion: {degrees: -23.94362959, degreesPerCentury: 0.44441088},
             longitudeOfTheAscendingNode: {degrees: 49.55953891, degreesPerCentury: -0.29257343},
         },
-    }, startTime);
+    }, this.systemScale, startTime);
+
     this.Jupiter = new Planet({
         name: 'Jupiter',
         mass: 1.9e27,
         radius: 71.492e6,
         scaleFactor: PLANETSCALE,
-        velocity: new THREE.Vector3(0, 0, 13100),
         texture: 'textures/jupiter.jpg',
         color: new THREE.Color(1, 0.85, 0.72),
         tilt: 3.1 * Math.PI / 180,
@@ -135,7 +137,8 @@ function SolSystem(scene) {
             longitudeOfPerihelion: {degrees: 14.72847983, degreesPerCentury: 0.21252668},
             longitudeOfTheAscendingNode: {degrees: 100.4739091, degreesPerCentury: 0.20469106},
         },
-    }, startTime);
+    }, this.systemScale, startTime);
+
     this.Saturn = new Planet({
         name: 'Saturn',
         mass: 5.69e26,
@@ -143,8 +146,9 @@ function SolSystem(scene) {
         scaleFactor: PLANETSCALE,
         hasRings: true,
         ringRadius: 282.0e6,
+        // Texture found through threejs forum post:
+        // https://discourse.threejs.org/t/applying-a-texture-to-a-ringgeometry/9990
         ringTexture: 'textures/saturn_rings_line.png',
-        velocity: new THREE.Vector3(0, 0, -9600),
         texture: 'textures/saturn.jpg',
         color: new THREE.Color(0.82, 0.70, 0.55),
         tilt: 26.7 * Math.PI / 180,
@@ -159,13 +163,13 @@ function SolSystem(scene) {
             longitudeOfPerihelion: {degrees: 92.59887831, degreesPerCentury: -0.41897216},
             longitudeOfTheAscendingNode: {degrees: 113.6624245, degreesPerCentury: -0.28867794},
         },
-    }, startTime);
+    }, this.systemScale, startTime);
+
     this.Uranus = new Planet({
         name: 'Uranus',
         mass: 8.68e25,
         radius: 25.559e6,
         scaleFactor: PLANETSCALE,
-        velocity: new THREE.Vector3(0, 0, -6800),
         texture: 'textures/uranus.jpg',
         color: new THREE.Color(0.68, 0.88, 0.90),
         tilt: 97.8 * Math.PI / 180,
@@ -180,13 +184,13 @@ function SolSystem(scene) {
             longitudeOfPerihelion: {degrees: 170.9542763, degreesPerCentury: 0.40805281},
             longitudeOfTheAscendingNode: {degrees: 74.01692503, degreesPerCentury: 0.04240589},
         },
-    }, startTime);
+    }, this.systemScale, startTime);
+
     this.Neptune = new Planet({
         name: 'Neptune',
         mass: 1.03e26,
         radius: 24.764e6,
         scaleFactor: PLANETSCALE,
-        velocity: new THREE.Vector3(0, 0, -5400),
         texture: 'textures/neptune.jpg',
         color: new THREE.Color(0.25, 0.41, 0.88),
         tilt: 28.3 * Math.PI / 180,
@@ -201,13 +205,13 @@ function SolSystem(scene) {
             longitudeOfPerihelion: {degrees: 44.96476227, degreesPerCentury: -0.32241464},
             longitudeOfTheAscendingNode: {degrees: 131.7842257, degreesPerCentury: -0.00508664},
         },
-    }, startTime);
+    }, this.systemScale, startTime);
+
     this.Pluto = new Planet({
         name: 'Pluto',
         mass: 1.46e22,
         radius: 1.185e6,
         scaleFactor: PLUTOSCALE,
-        velocity: new THREE.Vector3(0, 0, 4740),
         texture: 'textures/pluto.jpg',
         color: new THREE.Color(0.96, 0.87, 0.70),
         tilt: 122.53 * Math.PI / 180,
@@ -222,7 +226,8 @@ function SolSystem(scene) {
             longitudeOfPerihelion: {degrees: 224.0689163, degreesPerCentury: -0.04062942},
             longitudeOfTheAscendingNode: {degrees: 110.3039368, degreesPerCentury: -0.01183482},
         },
-    }, startTime);
+    }, this.systemScale, startTime);
+
     this.addBody(this.Sol);
     this.addBody(this.Mercury);
     this.addBody(this.Venus);
@@ -233,21 +238,9 @@ function SolSystem(scene) {
     this.addBody(this.Uranus);
     this.addBody(this.Neptune);
     this.addBody(this.Pluto);
-
-    // for (let i = 0; i < this.bodies.length; i++) {
-    //     if (this.bodies[i].KeplerianData !== undefined) {
-    //         this.bodies[i].position.copy(this.bodies[i].calculatePositionFromKeplerianData(startTime));
-    //     }
-    // }
 }
 
-SolSystem.prototype = Object.create(System.prototype);
+SolSystem.prototype = Object.create(SystemOfBodies.prototype);
 SolSystem.prototype.constructor = SolSystem;
-SolSystem.prototype.updateSize = function(val) {
-    for (const body of this.bodies) {
-        body.updateSize(val);
-    }
-}
-
 
 export {SolSystem};

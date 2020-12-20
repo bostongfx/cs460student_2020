@@ -1,66 +1,113 @@
 import { G, AU } from "../constants.js";
 
-function Body() {
-    // Object.defineProperty(this, 'id', {value: bodyId++});
+function Body(systemScale) {
     THREE.Object3D.call(this);
-    this.name = '';
+    this.systemScale = systemScale;
     this.type = 'Body';
+    this._radius = 1;
+    this._ringRadius = 1;
+    Object.defineProperty(this, 'radius', {
+        get: function() { return this._radius * this.systemScale },
+        set: function(val) { this._radius = val }
+    });
+    Object.defineProperty(this, 'ringRadius', {
+        get: function() { return this._ringRadius * this.systemScale },
+        set: function(val) { this._ringRadius = val }
+    });
+    Object.defineProperty(this, 'position', {
+        get: function() { return this.fullPosition.clone().multiplyScalar(this.systemScale) }
+    });
+    this.name = '';
     this.mass = 0;
-    this.radius = 1;
-    this.velocity = null;
+    this.velocity = new THREE.Vector3(0,0,0);
+    this.fullPosition = new THREE.Vector3(0,0,0);
     this.texture = null;
     this.color = null;
     this.mesh = null;
-    this.dayCounter = 0;
     this.hasRings = false;
     this.dayLength = null;
     this.tilt = null;
     this.orbitalPeriod = null;
     this.ringTexture = null;
-    this.ringRadius = null;
     this.orbitalVelocity = 0;
     this.scaleFactor = 1;
+    this.toUpdate = [];
 }
 Body.prototype = new THREE.Object3D();
 
 Object.assign( Body.prototype, {
     constructor: Body,
+
     // setValue function taken and modified from the three.js 'Material' source code.
     setValues: function ( values ) {
         if ( values === undefined ) return;
         for ( const key in values ) {
 
-            const newValue = values[key];
-            if ( newValue === undefined ) {
+            const newVal = values[key];
+            if ( newVal === undefined ) {
                 console.warn(`Body.setValues(): '${key}' parameter is undefined.`);
                 continue;
             }
 
             if ( key === 'KeplerianData' ) {
-                this.setKeplerianData(newValue);
+                this.setKeplerianData(newVal);
                 continue;
             }
 
             if ( key === 'scaleFactor' ) {
-                this.scale.set(newValue, newValue, newValue);
+                this.scale.set(newVal, newVal, newVal);
             }
 
-            const currentValue = this[key];
-            if ( currentValue === undefined ) {
+            const currVal = this[key];
+            if ( currVal === undefined ) {
                 console.warn(`${this.type}: '${key}' is not a property of this body.`);
                 continue;
             }
 
-            if ( currentValue && currentValue.isColor ) {
-                currentValue.set( newValue );
-            } else if ( ( currentValue && currentValue.isVector3 ) && ( newValue && newValue.isVector3 ) ) {
-                currentValue.copy( newValue );
+            if ( currVal && currVal.isColor ) {
+                currVal.set( newVal );
+            } else if ((currVal && currVal.isVector3) && (newVal && newVal.isVector3)) {
+                currVal.copy( newVal );
             } else {
-                this[key] = newValue;
+                this[key] = newVal;
             }
         }
     },
 
+    setPosition: function(newPos) {
+        this.fullPosition.copy(newPos);
+        const scaledPosition = newPos.clone().multiplyScalar(this.systemScale);
+        this.position.copy(scaledPosition);
+    },
+
+    interact: function (other) {
+        // A body does not interact with itself
+        if (other === this) return new THREE.Vector3(0,0,0);
+
+        const thisPos = this.fullPosition;
+        const thatPos = other.fullPosition;
+
+        const distanceToSquared   = thatPos.clone().distanceToSquared(thisPos);
+        const forceMagnitude      = (G * other.mass * this.mass) / distanceToSquared;
+        const direction           = thatPos.clone().sub(thisPos).divideScalar(
+                                    thatPos.clone().distanceTo(thisPos));
+        const force               = direction.multiplyScalar(forceMagnitude);
+        return force;
+    },
+
+    updateSize: function (val) {
+        const scale = Math.max(1, val * this.scaleFactor);
+        this.scale.set(scale, scale, scale);
+    },
+
+    createAxesLines: function(radius) {
+        const axesHelper = new THREE.AxesHelper(radius*3);
+        axesHelper.castShadow = false;
+        axesHelper.receiveShadow = false;
+        return axesHelper;
+    },
+
+    // Sets this body's orbital data, ensuring all parts present
     setKeplerianData: function(data) {
         if ( data === undefined ) return;
         const KeplerianData = {
@@ -73,23 +120,36 @@ Object.assign( Body.prototype, {
         }
         for ( const key in KeplerianData ) {
             if (KeplerianData[key] === undefined) {
-                console.warn(`${this.type}.setKeplerianData(): '${key}' missing from argument data. Data not set`);
+                let msg = "missing from argument data. Data not set";
+                console.warn(`${this.type}.setKeplerianData(): '${key}' ${msg}`);
                 return;
             }
         }
         this.KeplerianData = KeplerianData;
     },
 
+    // Calculates this body's position using its orbital data and
+    // the T argument, which is the Julian time since J2000 at which
+    // this body's position is required.
+    // See https://ssd.jpl.nasa.gov/txt/aprx_pos_planets.pdf for the
+    // formulas implemented below.
     calculatePositionFromKeplerianData: function(T) {
+        // Data from NASA has change per century. Divide by that many days.
         T = T / 36525;
         const data = this.KeplerianData;
 
-        const semiMajorAxis = data.semiMajorAxis.au                    + T * data.semiMajorAxis.auPerCentury;
-        const eccentricity  = data.eccentricity.eccentricity           + T * data.eccentricity.eccentricityPerCentury;
-        const inclination   = data.inclination.degrees                 + T * data.inclination.degreesPerCentury;
-        const meanLongitude = data.meanLongitude.degrees               + T * data.meanLongitude.degreesPerCentury;
-        const lonPeri       = data.longitudeOfPerihelion.degrees       + T * data.longitudeOfPerihelion.degreesPerCentury;
-        const lonAscNode    = data.longitudeOfTheAscendingNode.degrees + T * data.longitudeOfTheAscendingNode.degreesPerCentury;
+        const semiMajorAxis = data.semiMajorAxis.au
+                        + T * data.semiMajorAxis.auPerCentury;
+        const eccentricity  = data.eccentricity.eccentricity
+                        + T * data.eccentricity.eccentricityPerCentury;
+        const inclination   = data.inclination.degrees
+                        + T * data.inclination.degreesPerCentury;
+        const meanLongitude = data.meanLongitude.degrees
+                        + T * data.meanLongitude.degreesPerCentury;
+        const lonPeri       = data.longitudeOfPerihelion.degrees
+                        + T * data.longitudeOfPerihelion.degreesPerCentury;
+        const lonAscNode    = data.longitudeOfTheAscendingNode.degrees
+                        + T * data.longitudeOfTheAscendingNode.degreesPerCentury;
 
         // Let's work in radians, shall we?
         const a = semiMajorAxis * AU;
@@ -101,7 +161,9 @@ Object.assign( Body.prototype, {
 
         const ap = lp - ln;
         const meanAnomaly = meanLongitude - lonPeri;
-        const meanAnomalyModulus = (meanAnomaly % 360) > 180 ? -(360-(meanAnomaly % 360)) : (meanAnomaly % 360);
+        const meanAnomalyModulus = (meanAnomaly % 360) > 180
+            ? -(360-(meanAnomaly % 360))
+            :       (meanAnomaly % 360);
         const M = meanAnomalyModulus * (Math.PI/180);
 
         let deltaE = 1;
@@ -125,39 +187,19 @@ Object.assign( Body.prototype, {
                   + zPrime * (-Math.sin(ap)*Math.sin(ln) + Math.cos(ap)*Math.cos(ln)*Math.cos(I)));
         const y =   xPrime * ( Math.sin(ap)*Math.sin(I)) + zPrime * (Math.cos(ap)*Math.sin(I));
 
-        // console.log(`${this.name}:
-        //  semiMajorAxis: ${semiMajorAxis}, a: ${a}
-        //   eccentricity: ${eccentricity}, e: ${e}
-        //    inclination: ${inclination}, I: ${I}
-        //  meanLongitude: ${meanLongitude}, L: ${L}
-        //        lonPeri: ${lonPeri}, lp: ${lp}
-        //     lonAscNode: ${lonAscNode}, ln: ${ln}
-        //        argPeri: ${lonPeri-lonAscNode}, ap: ${ap}`);
-        // console.log(`${this.name}: E: ${E}, M: ${M}, xPrime: ${xPrime}, yPrime: ${yPrime}`);
-        // console.log(`${this.name}: x: ${x}, y: ${y}, z: ${z}`);
         return new THREE.Vector3(x,y,z);
     },
 
-    createAxesLines: function(radius) {
-        const axesHelper = new THREE.AxesHelper(radius*3);
-        return axesHelper;
-    },
-
-    interact: function (other) {
-        // A body does not interact with itself
-        if (other === this) return new THREE.Vector3(0,0,0);
-
-        let distanceToSquared   = other.position.clone().distanceToSquared(this.position);
-        let forceMagnitude      = (G * other.mass * this.mass) / distanceToSquared;
-        let direction           = other.position.clone().sub(this.position).divideScalar(
-                                  other.position.clone().distanceTo(this.position));
-        let force               = direction.multiplyScalar(forceMagnitude);
-        return force;
-    },
-
-    updateSize: function (val) {
-        const newScale = Math.max(1, val * this.scaleFactor);
-        this.scale.set(newScale,newScale,newScale);
+    update: function(dt, newPos, newVel) {
+        if (this.dayLength > 0) {
+            this.mesh.rotateY((2 * Math.PI / this.dayLength)*dt);
+        }
+        this.setPosition(newPos);
+        this.velocity.copy(newVel);
+        this.orbitalVelocity = newVel.length();
+        for (let i = 0; i < this.toUpdate.length; i++) {
+            this.toUpdate[i].update();
+        }
     },
 } );
 

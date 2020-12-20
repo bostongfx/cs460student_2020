@@ -6,19 +6,31 @@
     <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
+    <!-- canvas where everything is drawn by the renderer -->
     <canvas id="canvas"></canvas>
+
+    <!-- Some imports -->
     <script type="text/javascript" src="https://threejs.org/build/three.min.js"></script>
     <script type="text/javascript" src="https://threejs.org/examples/js/controls/OrbitControls.js"></script>
+
+    <!-- Tween is used for smooth camera transitions. -->
     <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/tween.js/16.3.5/Tween.min.js"></script>
+
+    <!-- UI elements -->
     <script type="text/javascript" src="https://threejs.org/examples/js/libs/dat.gui.min.js"></script>
-    <!--    <script type="module" src="node_modules/three/build/three.module.js"></script>-->
-    <script type="module" src="js/sceneSubjects/Sun.js"></script>
-    <script type="module" src="js/sceneSubjects/Body.js"></script>
-    <script type="module" src="js/sceneSubjects/Planet.js"></script>
-    <script type="module" src="js/sceneSubjects/System.js"></script>
-    <script type="module" src="js/sceneSubjects/SolSystem.js"></script>
-    <script type="module" src="js/SceneManager.js"></script>
+
+    <!-- And the various local source code -->
     <script type="module" src="js/constants.js"></script>
+
+    <script type="module" src="js/sceneSubjects/SystemOfBodies.js"></script>
+    <script type="module" src="js/sceneSubjects/SolSystem.js"></script>
+
+    <script type="module" src="js/sceneSubjects/Body.js"></script>
+    <script type="module" src="js/sceneSubjects/Sun.js"></script>
+    <script type="module" src="js/sceneSubjects/Planet.js"></script>
+
+    <script type="module" src="js/SceneManager.js"></script>
+
     <script type="module" src="js/main.js"></script>
 </body>
 </html>
