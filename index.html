@@ -1,0 +1,289 @@
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <style>
+      html, body { 
+        background-color:#000;
+        margin: 0;
+        padding: 0;
+        height: 100%;
+        overflow: hidden !important;  
+
+        background-image: url(vapor.jpg);
+        background-repeat: no-repeat;
+        background-size: 100% 100%;
+      }
+    </style>
+    <!-- Three JS Imports -->
+    <script src="https://threejs.org/build/three.min.js" type="text/javascript"></script>
+    <script src="https://threejs.org/examples/js/controls/TrackballControls.js" type="text/javascript"></script>
+    <script src="https://threejs.org/examples/js/libs/dat.gui.min.js" type="text/javascript"></script>
+    <!-- Post Processing Imports  -->
+    <script src = "https://threejs.org/examples/js/postprocessing/EffectComposer.js" type="text/javascript"></script>
+    <script src = "https://threejs.org/examples/js/postprocessing/RenderPass.js" type="text/javascript"></script>
+    <script src = "https://threejs.org/examples/js/postprocessing/ShaderPass.js" type="text/javascript"></script>
+    <script src = "https://threejs.org/examples/js/shaders/CopyShader.js" type="text/javascript"></script>
+    <script src = "https://threejs.org/examples/js/shaders/LuminosityHighPassShader.js" type="text/javascript"></script>
+    <script src = "https://threejs.org/examples/js/postprocessing/UnrealBloomPass.js" type="text/javascript"></script>
+    <script>
+
+      var scene, camera, renderer, ambientLight, light, controls, bloomComposer, unrealbloom, volume;
+      var floor;
+      grid_scale = 250;
+      window.onload = function() {
+
+        scene = new THREE.Scene();
+        volume = {Volume:.5};
+        var fov = 60;
+        var ratio = window.innerWidth / window.innerHeight;
+        var zNear = 1;
+        var zFar = 10000;
+        camera = new THREE.PerspectiveCamera(fov, ratio, zNear, zFar);
+        camera.position.set(0, 0, 0);
+        camera.lookAt(0, 0, 6500);
+
+        renderer = new THREE.WebGLRenderer({ alpha: true });
+        renderer.setSize( window.innerWidth, window.innerHeight );
+        scene.fog = new THREE.FogExp2(0xcf1d83, 0.00035);
+
+        // Window resize
+        window.addEventListener('resize', function() {
+            var width = window.innerWidth;
+            var height = window.innerHeight;
+            renderer.setSize(width, height);
+            camera.aspect = width / height;
+            camera.updateProjectionMatrix();
+
+        });
+        /* Post Processing */   
+
+        // Set Passes
+        var renderPass = new THREE.RenderPass(scene, camera);
+        renderPass.renderToScreen = true;
+        unrealbloom = new THREE.UnrealBloomPass(1, .2, 0, 0);
+
+        // Bloom Effect Post processing
+        bloomComposer = new THREE.EffectComposer(renderer);
+        bloomComposer.addPass(renderPass);
+        bloomComposer.addPass(unrealbloom);
+        /* end Post Porcessing */ 
+        document.body.appendChild( renderer.domElement );
+        
+        ambientLight = new THREE.AmbientLight();
+        scene.add( ambientLight );
+
+        light = new THREE.DirectionalLight( 0xffffff, 5.0 );
+        light.position.set( 10, 100, 10 );
+        scene.add( light );
+
+        // Grid Foundations
+        gridHelper = new THREE.GridHelper(4000, 10, 0x0000ff, 0x0000ff);
+        gridHelper.position.y = -100;
+        gridHelper.position.z = 1500;
+        gridHelper2 = new THREE.GridHelper(4000, 10, 0x0000ff, 0x0000ff);
+        gridHelper2.position.y = -100;
+        gridHelper2.position.z = -2000;
+
+        scene.add(gridHelper);
+        scene.add(gridHelper2);
+
+        // Audio Replay (Reference three.js doc for audio)
+        const listener = new THREE.AudioListener();
+        camera.add( listener );
+        const sound = new THREE.Audio( listener );
+        const audioLoader = new THREE.AudioLoader();
+        audioLoader.load( 'music.mp3', function( buffer ) {
+	      sound.setBuffer( buffer );
+	      sound.setLoop( true );
+	      sound.setVolume( volume["Volume"] );
+        sound.play();
+        });
+
+        // Dat GUI IMplementation
+        controller = { 
+          'Forward': function() {
+             camera_perspective('Forward');
+          },
+          'Sideways': function() {
+            camera_perspective('Sideways');
+          },
+          'Pause Music': function() {
+            sound.pause();
+          },
+          'Play Music': function() {
+            sound.play();
+          }
+
+        };
+
+        // Dat GUI configuration
+        var gui = new dat.GUI();
+        var CameraFolder = gui.addFolder('Camera Perspective');
+        CameraFolder.add(controller, 'Forward');
+        CameraFolder.add(controller, 'Sideways');
+        CameraFolder.open();
+        var AudioFolder = gui.addFolder('Audio Settings');
+        var Volume = AudioFolder.add( volume, "Volume", 0, 1 );
+        Volume.onChange(function (value) {
+          sound.setVolume(value);
+        });
+        AudioFolder.add(controller, 'Pause Music');
+        AudioFolder.add(controller, 'Play Music');
+        AudioFolder.open();
+        
+       
+        // Floor Geometry
+        var floorGeometry = new THREE.PlaneBufferGeometry( 4000, 12000 );
+        var floorMaterial = new THREE.MeshBasicMaterial( {
+          color: 'black',
+          side: THREE.DoubleSide
+        } );
+        floor = new THREE.Mesh( floorGeometry, floorMaterial );
+        floor.position.y = -101;
+        floor.position.x = 0;
+        floor.rotateX(Math.PI/2);
+        scene.add( floor );
+        controls = new THREE.TrackballControls( camera, renderer.domElement );
+        
+        // Starter Buildings remain stationary to maintain Illusion
+        building_left = building_maker(-650, 100, -6000);
+        building_right = building_maker(650, 100, -6000);
+        arch = arch_maker(0, -97, -6000);
+        scene.add(arch);
+        scene.add(building_left);
+        scene.add(building_right);
+
+        // Create the extraneous buildings
+        //  Make sure z position is a multiple of 15
+        // plug into formula to derive final position of last index which you
+
+        left_buildings = [];
+        right_buildings = [];
+        center_arches = []; 
+     
+        for (var i = 0; i < 5; i++) {
+          left_buildings.push(building_maker(-650, 100, (-6000 + (900 * (i*2)))));
+          right_buildings.push(building_maker(650, 100, (-6000 + (750 *(i*2)))));
+          center_arches.push(arch_maker(0, -97, (-6000 + (1050 * (i*2)))));
+          scene.add(left_buildings[left_buildings.length - 1]);
+          scene.add(right_buildings[right_buildings.length - 1]);
+          scene.add(center_arches[center_arches.length - 1]);
+        }
+
+        animate();
+
+
+      };
+
+      
+      /* Create Arches Position is parameter */
+
+      function arch_maker(x, y , z) {
+        // Create Geometry
+        var arch_geometry = new THREE.RingBufferGeometry( 500, 300, 30, 30, 0, 3.15 );
+        var arch_material = new THREE.MeshBasicMaterial( { color: 0x000000, side: THREE.DoubleSide } )
+        var arch_mesh = new THREE.Mesh( arch_geometry, arch_material );
+
+        // Create Frame
+        var edge_geometry = new THREE.EdgesGeometry( arch_geometry );
+        var edge_mesh = new THREE.LineSegments( edge_geometry, new THREE.LineBasicMaterial( { color: 0x0000ff, linewidth: 2} ) );
+
+        // Combine Meshes of Edges and Geometry
+         arch_mesh.add(edge_mesh);
+
+        // Set Position
+        arch_mesh.position.x = x;
+        arch_mesh.position.y = y; 
+        arch_mesh.position.z = z; 
+        return arch_mesh;
+      }
+
+      /* Create Buildings Position is Parameter */
+      function building_maker(x, y, z) {
+
+        // Create Geometry
+        building_geometry = new THREE.BoxBufferGeometry(200, 400, 400);
+        building_material = new THREE.MeshToonMaterial({color: 0x0})
+        building_mesh = new THREE.Mesh(building_geometry, building_material);
+        // Create Wireframe
+        edge_geometry = new THREE.WireframeGeometry( building_geometry );
+        edge_mesh = new THREE.LineSegments( edge_geometry, new THREE.LineBasicMaterial( { color: 0x0000ff, linewidth: 2} ) );  
+        
+        // Combine Meshes of Wireframe and Geometry
+        building_mesh.add(edge_mesh);
+
+        // Set Position
+        building_mesh.position.x = x;
+        building_mesh.position.y = y; 
+        building_mesh.position.z = z; 
+        return building_mesh;
+      }
+
+      // Change Perspective of Scene
+      function camera_perspective(point_of_view) {
+        switch(point_of_view) {
+          case('Forward'):
+            camera.position.set(0, 0, 0);
+            camera.fov = 60;
+            grid_scale = 250;
+            break;
+          case('Sideways'):
+            camera.position.set(1344, 0, 2);
+            camera.fov = 45;
+            grid_scale = 2400;
+            break; 
+        }
+        camera.updateProjectionMatrix();
+        gridHelper.position.z = 1500;
+        gridHelper2.position.z = -2000;
+      }
+      // Animate Scene
+      function animate() {
+
+        requestAnimationFrame( animate );
+
+        controls.enabled = false;
+        controls.update();
+        // renderer.render( scene, camera );
+
+        // Translate Grids
+        gridHelper.translateZ(15);
+        gridHelper2.translateZ(15);
+        if(gridHelper.position.z > grid_scale) {
+          gridHelper.position.z = gridHelper2.position.z - 2000;
+        }
+        if(gridHelper2.position.z > grid_scale) {
+          gridHelper2.position.z = gridHelper.position.z - 2000;
+        }
+        // Structure Translations
+        // For future maybe better to put in a method
+        left_buildings.forEach(element => {
+          element.translateZ(15);
+          if (element.position.z > 3000) {
+            element.position.z = -6000;
+          }
+        });
+
+        right_buildings.forEach(element => {
+          element.translateZ(15);
+          if (element.position.z > 1500) {
+            element.position.z = -6000;
+          }
+        });
+
+        center_arches.forEach(element => {
+          element.translateZ(15);
+          if (element.position.z > 4500) {
+            element.position.z = -6000;
+          }
+        });
+        
+        bloomComposer.render();
+      };
+
+    </script>
+  </head>
+  <body>
+  
+  </body>
+</html>

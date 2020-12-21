@@ -1,0 +1,170 @@
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <style>
+      html, body { 
+        background-color:#000;
+        margin: 0;
+        padding: 0;
+        height: 100%;
+        overflow: hidden !important;  
+      }
+    </style>
+    <script src="https://threejs.org/build/three.min.js" type="text/javascript"></script>
+    <script src="https://threejs.org/examples/js/controls/TrackballControls.js" type="text/javascript"></script>
+    <script>
+      window.onload = function() {
+ 
+        scene = new THREE.Scene();
+        total_shapes = 0;
+        total_triangles = 0;
+        fov = 75;
+        ratio = window.innerWidth / window.innerHeight;
+        zNear = 1;
+        zFar = 10000;
+        // console.log(ratio);
+        camera = new THREE.PerspectiveCamera(fov, ratio, zNear, zFar);
+        camera.position.set( 0, 0, 100);
+ 
+        renderer = new THREE.WebGLRenderer();
+        renderer.setSize( window.innerWidth, window.innerHeight );
+        document.body.appendChild( renderer.domElement );
+        
+        ambientLight = new THREE.AmbientLight( 0x404040 );
+        scene.add( ambientLight );
+ 
+        light = new THREE.DirectionalLight( 0xffffff, 1.0 );
+        light.position.set( 10, 100, 10 );
+        scene.add( light );
+ 
+ 
+        /* now we add the cube
+        geometry = new THREE.BoxBufferGeometry( 20, 20, 20);
+        material = new THREE.MeshStandardMaterial({ color: 0xffffff });
+        cube = new THREE.Mesh( geometry, material);
+        scene.add(cube);
+        */
+ 
+        //
+        // The invisible plane
+        //
+        geometry = new THREE.PlaneBufferGeometry( 10000, 10000 );
+        material = new THREE.MeshBasicMaterial( {
+          visible: false
+        });
+ 
+        invisible_plane = new THREE.Mesh( geometry, material );
+ 
+        scene.add( invisible_plane );
+        //
+        //
+        //
+ 
+ 
+ 
+        controls = new THREE.TrackballControls( camera, renderer.domElement );
+ 
+        animate();
+ 
+ 
+        //
+        // ACTION!
+        //
+
+        // Randomly generates number "from" _ "to" _
+        function numGen(from, to) {
+          return Math.floor((Math.random() * to) + from);
+        }
+        
+        // Create a geometric shape of varying sizes
+        function createGeometry() {
+          var generator = numGen(1, 6);
+          var geometry;
+          var material = new THREE.MeshStandardMaterial({ color: numGen(0, 0xffffff) });
+
+          switch (generator) {
+            case 1:
+              var size = numGen(5, 10);
+              geometry = new THREE.BoxBufferGeometry(size, size, size);
+              total_triangles += 12;
+              break;
+            case 2: 
+              geometry = new THREE.TorusKnotBufferGeometry(numGen(4, 10), 1.1, 64, 8);
+              total_triangles += 280; // tube segments = (64 * 2) * 2 + radial segments = 3 * 8
+              break;
+            case 3:
+              geometry = new THREE.SphereBufferGeometry(numGen(7, 10), 32, 32);
+              total_triangles += 1984; // 64 + (30 * 32 * 2) 
+              break;
+            case 4: 
+              geometry = new THREE.OctahedronBufferGeometry(numGen(10, 15));
+              total_triangles += 8;
+              break;
+            case 5:  
+              geometry = new THREE.ConeBufferGeometry(numGen(5, 10), numGen(10, 20), 32);
+              total_triangles += 64;
+              break;
+            case 6:  
+              geometry = new THREE.RingBufferGeometry(numGen(5, 10), numGen(10, 15), 15);
+              total_triangles += 240; // each theta segment has twice the amount of pi segments
+              break;
+          }
+
+          shape = new THREE.Mesh(geometry, material);
+          total_shapes++;
+          return shape;
+        }
+        renderer.domElement.onmousemove = function(e) {
+ 
+          if (!e.shiftKey) {
+            e.preventDefault();
+            return false;
+          }
+ 
+          pixel_coords = new THREE.Vector2( e.clientX, e.clientY );
+ 
+          // console.log('Pixel coordinates', pixel_coords);
+ 
+          vp_coords = new THREE.Vector2( ( pixel_coords.x / window.innerWidth ) * 2 - 1,
+                                        -( pixel_coords.y / window.innerHeight ) * 2 + 1);
+ 
+         // console.log('Viewport coordinates', vp_coords);
+ 
+          vp_coords_near = new THREE.Vector3( vp_coords.x, vp_coords.y, 0);
+ 
+          raycaster = new THREE.Raycaster();
+          raycaster.setFromCamera(vp_coords_near, camera);
+          intersects = raycaster.intersectObject(invisible_plane);
+ 
+          // console.log('Ray to Invisible Plane', intersects[0].point);
+
+          // Add shape
+          var shape = createGeometry();
+          shape.position.set(intersects[0].point.x, intersects[0].point.y, intersects[0].point.z);
+          scene.add(shape);
+          console.log('yes! you clicked! total shapes:', total_shapes);
+          console.log('total triangles: ', total_triangles);
+          // console.log('Ray to Invisible Plane', intersects[0].point)
+          // update cube position
+          // cube.position.set(intersects[0].point.x, intersects[0].point.y, intersects[0].point.z);
+        
+        };
+ 
+        
+ 
+ 
+      };
+ 
+      function animate() {
+ 
+        requestAnimationFrame( animate );
+ 
+        controls.update();
+        renderer.render( scene, camera );
+ 
+      };
+ 
+    </script>
+  </head>
+  <body></body>
+</html>
