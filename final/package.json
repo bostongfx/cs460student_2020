@@ -1,0 +1,23 @@
+{
+  "name": "snowpack",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "dependencies": {
+    "canvas-confetti": "^1.3.2",
+    "echarts": "^5.0.0",
+    "google-palette": "^1.1.0",
+    "three": "^0.123.0"
+  },
+  "devDependencies": {
+    "snowpack": "^2.18.0"
+  },
+  "scripts": {
+    "start": "snowpack dev",
+    "build": "snowpack build",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC"
+}
