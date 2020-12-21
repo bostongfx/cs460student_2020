@@ -56,7 +56,7 @@
 
         var loader = new THREE.TextureLoader();
         geometry2 = new THREE.BoxBufferGeometry( 200, 100 , 1 );
-        material2 = new THREE.MeshBasicMaterial( { map: loader.load( 'Title.png' ) } );
+        material2 = new THREE.MeshBasicMaterial( { map: loader.load( 'Title.PNG' ) } );
         cube2 = new THREE.Mesh( geometry2, material2 );
         cube2.position.set( 0, 120, 25 );
         scene.add( cube2 );
@@ -71,14 +71,14 @@
 
         var loader = new THREE.TextureLoader();
         geometry1 = new THREE.BoxBufferGeometry( 50, 1, 50 );
-        material1 = new THREE.MeshBasicMaterial( { map: loader.load( 'mc3.png' ) } );
+        material1 = new THREE.MeshBasicMaterial( { map: loader.load( 'mc3.PNG' ) } );
         cube1 = new THREE.Mesh( geometry1, material1 );
         cube1.position.set( 0, 25, 25 );
         scene.add( cube1 );
 
         var loader = new THREE.TextureLoader();
         geometry100 = new THREE.BoxBufferGeometry( 200, 100 , 1 );
-        material100 = new THREE.MeshBasicMaterial( { map: loader.load( 'Magic.png' ) } );
+        material100 = new THREE.MeshBasicMaterial( { map: loader.load( 'Magic.PNG' ) } );
         cube2 = new THREE.Mesh( geometry100, material100 );
         cube2.position.set( 150, 30, -100);
         scene.add( cube2 );
@@ -97,7 +97,7 @@
 
         var loader = new THREE.TextureLoader();
         geometry5 = new THREE.BoxBufferGeometry( 50, 50, 1 );
-        material5 = new THREE.MeshBasicMaterial( { map: loader.load( 'mc.jpg' ) } );
+        material5 = new THREE.MeshBasicMaterial( { map: loader.load( 'mc.PNG' ) } );
         cube5 = new THREE.Mesh( geometry5, material5 );
         cube5.position.set( 0, 0, 50 );
         scene.add( cube5 );
@@ -261,10 +261,10 @@
             material.map = new THREE.TextureLoader().load( 'mc2.jpg' );
             material.needsUpdate = true;
 
-            material1.map = new THREE.TextureLoader().load( 'mc3.png' );
+            material1.map = new THREE.TextureLoader().load( 'mc3.PNG' );
             material1.needsUpdate = true;
 
-            material2.map = new THREE.TextureLoader().load( 'Title.png' );
+            material2.map = new THREE.TextureLoader().load( 'Title.PNG' );
             material2.needsUpdate = true;
 
             document.body.style.backgroundImage = "url('mcbackground.jpg')";
@@ -282,7 +282,7 @@
           material1.map = new THREE.TextureLoader().load( 'crate.jpg' );
           material1.needsUpdate = true;
 
-          material2.map = new THREE.TextureLoader().load( 'Title1.png' );
+          material2.map = new THREE.TextureLoader().load( 'Title1.PNG' );
           material2.needsUpdate = true;
 
            document.body.style.backgroundImage = "url('barn.jpg')";
@@ -301,7 +301,7 @@
           material1.map = new THREE.TextureLoader().load( 'granite.jpg' );
           material1.needsUpdate = true;
 
-          material2.map = new THREE.TextureLoader().load( 'Title2.png' );
+          material2.map = new THREE.TextureLoader().load( 'Title2.PNG' );
           material2.needsUpdate = true;
 
            document.body.style.backgroundImage = "url('boston.jpg')";
@@ -320,7 +320,7 @@
           material1.map = new THREE.TextureLoader().load( 'pokemon.jpg' );
           material1.needsUpdate = true;
 
-          material2.map = new THREE.TextureLoader().load( 'Title3.png' );
+          material2.map = new THREE.TextureLoader().load( 'Title3.PNG' );
           material2.needsUpdate = true;
 
            document.body.style.backgroundImage = "url('pokemonb.jpg')";
@@ -339,10 +339,10 @@
           material1.map = new THREE.TextureLoader().load( 'sonic.jpg' );
           material1.needsUpdate = true;
 
-          material2.map =new THREE.TextureLoader().load( 'Title4.png' );
+          material2.map =new THREE.TextureLoader().load( 'Title4.PNG' );
           material2.needsUpdate = true;
 
-           document.body.style.backgroundImage = "url('sonicb.png')";
+           document.body.style.backgroundImage = "url('sonicb.PNG')";
           }
 
         });
