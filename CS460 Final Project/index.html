@@ -1,1 +1,391 @@
 
+
+<html>
+  <head>
+    <style>
+      html, body {
+        background-color:	#000;
+        margin: 0;
+        padding: 0;
+        height: 100%;
+        overflow: hidden !important;
+        background-image: url(mcbackground.jpg);
+        background-repeat: no-repeat;
+        background-size: 100% 100%;
+      }
+
+
+    </style>
+    <script src="https://threejs.org/build/three.min.js" type="text/javascript"></script>
+    <script src="https://threejs.org/examples/js/controls/TrackballControls.js" type="text/javascript"></script>
+    <script src="https://threejs.org/examples/js/libs/dat.gui.min.js" type="text/javascript"></script>
+    <script>
+      var count = 0;
+
+      window.onload = function() {
+
+        scene = new THREE.Scene();
+
+        camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 1, 10000 );
+        camera.position.set( 0, 0, 250 );
+
+
+
+        renderer = new THREE.WebGLRenderer({ alpha: true });
+        renderer.setSize( window.innerWidth, window.innerHeight );
+        document.body.appendChild( renderer.domElement );
+
+        var floorTexture = new THREE.TextureLoader().load( 'stone.jpg' );
+        var floorGeometry = new THREE.PlaneBufferGeometry( 1000, 1000 );
+        var floorMaterial = new THREE.MeshBasicMaterial( {
+          map: floorTexture,
+          side: THREE.DoubleSide
+        } );
+        floor = new THREE.Mesh( floorGeometry, floorMaterial );
+        floor.position.y = -26;
+        floor.rotateX(Math.PI/2);
+        scene.add( floor );
+
+
+        ambientLight = new THREE.AmbientLight( 0x404040 );
+        scene.add( ambientLight );
+
+        light = new THREE.DirectionalLight( 0xffffff, 5.0 );
+        light.position.set( 10, 100, 10 );
+        scene.add( light );
+
+        var loader = new THREE.TextureLoader();
+        geometry2 = new THREE.BoxBufferGeometry( 200, 100 , 1 );
+        material2 = new THREE.MeshBasicMaterial( { map: loader.load( 'Title.png' ) } );
+        cube2 = new THREE.Mesh( geometry2, material2 );
+        cube2.position.set( 0, 120, 25 );
+        scene.add( cube2 );
+
+
+        var loader = new THREE.TextureLoader();
+        geometry = new THREE.BoxBufferGeometry( 50, 50, 1 );
+        material = new THREE.MeshBasicMaterial( { map: loader.load( 'mc2.jpg' ) } );
+        cube = new THREE.Mesh( geometry, material );
+
+        scene.add( cube );
+
+        var loader = new THREE.TextureLoader();
+        geometry1 = new THREE.BoxBufferGeometry( 50, 1, 50 );
+        material1 = new THREE.MeshBasicMaterial( { map: loader.load( 'mc3.png' ) } );
+        cube1 = new THREE.Mesh( geometry1, material1 );
+        cube1.position.set( 0, 25, 25 );
+        scene.add( cube1 );
+
+        var loader = new THREE.TextureLoader();
+        geometry100 = new THREE.BoxBufferGeometry( 200, 100 , 1 );
+        material100 = new THREE.MeshBasicMaterial( { map: loader.load( 'Magic.png' ) } );
+        cube2 = new THREE.Mesh( geometry100, material100 );
+        cube2.position.set( 150, 30, -100);
+        scene.add( cube2 );
+
+        var loader = new THREE.TextureLoader();
+        geometry3 = new THREE.BoxBufferGeometry( 1, 50, 50 );
+        cube3 = new THREE.Mesh( geometry3, material );
+        cube3.position.set( 25, 0, 25 );
+        scene.add( cube3 );
+
+        var loader = new THREE.TextureLoader();
+        geometry4 = new THREE.BoxBufferGeometry( 1, 50, 50 );
+        cube4 = new THREE.Mesh( geometry4, material );
+        cube4.position.set( -25, 0, 25 );
+        scene.add( cube4 );
+
+        var loader = new THREE.TextureLoader();
+        geometry5 = new THREE.BoxBufferGeometry( 50, 50, 1 );
+        material5 = new THREE.MeshBasicMaterial( { map: loader.load( 'mc.jpg' ) } );
+        cube5 = new THREE.Mesh( geometry5, material5 );
+        cube5.position.set( 0, 0, 50 );
+        scene.add( cube5 );
+
+        var loader = new THREE.TextureLoader();
+        geometry6 = new THREE.BoxBufferGeometry( 50, 1, 50 );
+        cube6 = new THREE.Mesh( geometry6, material1 );
+        cube6.position.set( 0, -25, 25 );
+        storymode(count);
+        scene.add( cube6 );
+
+        var numbered = Math.floor(Math.random() * 1000);
+        randomshape(numbered);
+
+
+        controller = {
+          Start: false,
+        'Rumble': function() {
+           document.body.style.backgroundImage = "url('rumbleb.gif')";
+           const listener = new THREE.AudioListener();
+           camera.add( listener );
+
+           const sound = new THREE.Audio( listener );
+
+
+           const audioLoader = new THREE.AudioLoader();
+           audioLoader.load( 'secretsong.mp3', function( buffer ) {
+              sound.setBuffer( buffer );
+               //sound.setLoop( true );
+                sound.setVolume( 0.5 );
+                 sound.play();
+               });
+        },
+          'background': 'minecraft',
+        'Reset': function() {
+          cube.position.set( 0, 0, 0 );
+          cube1.position.set( 0, 25, 25 );
+          cube3.position.set( 25, 0, 25 );
+          cube4.position.set( -25, 0, 25 );
+          cube5.position.set( 0, 0, 50 );
+          cube6.position.set( 0, -25, 25 );
+          scene.remove(cube7);
+          var numbered = Math.floor(Math.random() * 1000);
+          randomshape(numbered)
+
+        }
+      }
+
+      function randomshape(numbered){
+        if (numbered < 800) {
+          geometry7 = new THREE.BoxBufferGeometry( 15, 15, 15 );
+          material7 = new THREE.MeshStandardMaterial({ color: 0xff0000}); //common = red
+          cube7 = new THREE.Mesh( geometry7, material7 );
+          cube7.position.set( 0, 12, 25 );
+          scene.add( cube7 );
+          count ++;
+          storymode(count);
+        }
+        else if (numbered < 900) {
+          geometry7 = new THREE.TorusKnotBufferGeometry( 10, 5, 8, 8 );
+          material8 = new THREE.MeshStandardMaterial({color: 0x0000ff}); //uncommon = blue
+          cube7 = new THREE.Mesh( geometry7, material8 );
+          cube7.position.set( 0, 5, 25 );
+          scene.add( cube7 );
+          count++;
+          storymode(count);
+        }
+        else if (numbered < 970) {
+          geometry7 = new THREE.SphereBufferGeometry( 10, 10, 10 );
+          material9 = new THREE.MeshStandardMaterial({color: 0xff00ff}); //semi-rare = purple
+          cube7 = new THREE.Mesh( geometry7, material9 );
+          cube7.position.set( 0, 12, 25 );
+          scene.add( cube7 );
+          count++;
+          storymode(count);
+        }
+        else if (numbered < 985) {
+          geometry7 = new THREE.OctahedronBufferGeometry( 20 );
+          material10 = new THREE.MeshStandardMaterial({color: 0x00ff00}); //rare = green
+          cube7 = new THREE.Mesh( geometry7, material10 );
+          cube7.position.set( 0, 12, 25 );
+          scene.add( cube7 );
+          count++;
+          storymode(count);
+        }
+
+        else if (numbered < 995) {
+          geometry7 = new THREE.ConeBufferGeometry( 20, 20 );
+          material11 = new THREE.MeshStandardMaterial({color: 0xFFC0CB}); //mystic = white
+          cube7 = new THREE.Mesh( geometry7, material11 );
+          cube7.position.set( 0, 12, 25 );
+          scene.add( cube7 );
+          count++;
+          storymode(count);
+        }
+
+        else {
+          geometry7 = new THREE.RingBufferGeometry( 1, 5, 32 );
+          material12 = new THREE.MeshStandardMaterial({color: 0xffff00}); //legendary = yellow
+          cube7 = new THREE.Mesh( geometry7, material12 );
+          cube7.position.set( 0, 12, 25 );
+          scene.add( cube7 );
+          count++;
+          storymode(count);
+        }
+        return numbered;
+      }
+      function storymode(count) {
+        if (count == 2){
+          alert("You are a random dude on the planet Earth named Sam. You had everything. You have a huge family with a loving wife and well-behaved kids. Also, ten dogs all named Sam. You have a lambo in the garage. You own a mansion with a bathroom in each room. You decide to play some Lootbox Simulator and you pulled out your credit card.")
+        }
+        if(count == 15){
+          alert( "You lost some money, but that is ok. What else did you lost? You just lost a little dignity. You felt the urge to get that money back. Keep rolling." );
+        }
+        if(count == 20){
+          alert("Ok. You lost even more money. That is ok. at least you still have everything in this world. ");
+        }
+        if(count == 25){
+          alert("Oh no. Your credit card got declined. You begged your wife to borrow her credit card. I think she is very disappointed in you. ");
+        }
+        if(count == 30){
+          alert("Your wife is begging you to stop now. She said Please stop, Sam But, you ignore her and keep playing. You got to get that 1 million you lost back. You believe your wife does not understand your true mission.");
+        }
+        if(count == 35){
+          alert("Just got an angry email from your boss asking why you have not been to work for the past few days. I think you got fired.");
+        }
+        if(count == 40){
+          alert("Your lambo is gone. I think your oldest son took it for a joy ride and crashed it. But you have no money to pay to fix it and for the surgery. You got to gamble more to pay it off.");
+        }
+        if(count == 45){
+          alert("Your wife handed you the divorce papers and kicked you out of the house. She also took your kids and dogs. Where are you going to go now? Lucky you, Lootbox Simulator just got released on mobile. So you gamble away in a homeless shelter.");
+        }
+        if(count == 50){
+          alert("Ten years later, you are walking down the street asking people for change. A lambo stop in front of you and it turns out to be your wife with her new husband. She does not recognize you and dropped a thousand dollars in your cup. She then walks back to her lambo and drives away.");
+        }
+        if(count == 56){
+          alert("You then lay on the ground and realize that Lootbox Simulator have ruined your life. You should not have played it in the first place.");
+        }
+          return count;
+        }
+
+
+        controls = new THREE.TrackballControls( camera, renderer.domElement );
+
+        var gui = new dat.GUI();
+        var action = gui.addFolder( "Choices" );
+        action.add( controller, 'Start' );
+        action.add( controller, 'Reset' );
+        action.add( controller, 'Rumble' );
+        action.open();
+        var background = gui.addFolder('Change the scene');
+        background.add(controller, 'background', [ 'minecraft', 'barnyard', 'city', 'pokemon', 'sonic' ] ).onChange( function(value) {
+
+          if (value == 'minecraft') {
+            floorMaterial.map = new THREE.TextureLoader().load( 'stone.jpg' );
+            floorMaterial.needsUpdate = true;
+
+            material5.map = new THREE.TextureLoader().load( 'mc.jpg' );
+            material5.needsUpdate = true;
+
+            material.map = new THREE.TextureLoader().load( 'mc2.jpg' );
+            material.needsUpdate = true;
+
+            material1.map = new THREE.TextureLoader().load( 'mc3.png' );
+            material1.needsUpdate = true;
+
+            material2.map = new THREE.TextureLoader().load( 'Title.png' );
+            material2.needsUpdate = true;
+
+            document.body.style.backgroundImage = "url('mcbackground.jpg')";
+          }
+          if (value == 'barnyard') {
+          floorMaterial.map = new THREE.TextureLoader().load( 'hay.jpg' );
+          floorMaterial.needsUpdate = true;
+
+          material5.map = new THREE.TextureLoader().load( 'crate.jpg' );
+          material5.needsUpdate = true;
+
+          material.map = new THREE.TextureLoader().load( 'crate.jpg' );
+          material.needsUpdate = true;
+
+          material1.map = new THREE.TextureLoader().load( 'crate.jpg' );
+          material1.needsUpdate = true;
+
+          material2.map = new THREE.TextureLoader().load( 'Title1.png' );
+          material2.needsUpdate = true;
+
+           document.body.style.backgroundImage = "url('barn.jpg')";
+          }
+
+          if (value == 'city') {
+          floorMaterial.map = new THREE.TextureLoader().load( 'pavement.jpg' );
+          floorMaterial.needsUpdate = true;
+
+          material5.map = new THREE.TextureLoader().load( 'granite.jpg' );
+          material5.needsUpdate = true;
+
+          material.map = new THREE.TextureLoader().load( 'granite.jpg' );
+          material.needsUpdate = true;
+
+          material1.map = new THREE.TextureLoader().load( 'granite.jpg' );
+          material1.needsUpdate = true;
+
+          material2.map = new THREE.TextureLoader().load( 'Title2.png' );
+          material2.needsUpdate = true;
+
+           document.body.style.backgroundImage = "url('boston.jpg')";
+          }
+
+          if (value == 'pokemon') {
+          floorMaterial.map = new THREE.TextureLoader().load( 'mat.jpg' );
+          floorMaterial.needsUpdate = true;
+
+          material5.map = new THREE.TextureLoader().load( 'pokemon.jpg' );
+          material5.needsUpdate = true;
+
+          material.map = new THREE.TextureLoader().load( 'pokemon.jpg' );
+          material.needsUpdate = true;
+
+          material1.map = new THREE.TextureLoader().load( 'pokemon.jpg' );
+          material1.needsUpdate = true;
+
+          material2.map = new THREE.TextureLoader().load( 'Title3.png' );
+          material2.needsUpdate = true;
+
+           document.body.style.backgroundImage = "url('pokemonb.jpg')";
+          }
+
+          if (value == 'sonic') {
+          floorMaterial.map = new THREE.TextureLoader().load( 'grass.jpg' );
+          floorMaterial.needsUpdate = true;
+
+          material5.map = new THREE.TextureLoader().load( 'sonic.jpg' );
+          material5.needsUpdate = true;
+
+          material.map = new THREE.TextureLoader().load( 'sonic.jpg' );
+          material.needsUpdate = true;
+
+          material1.map = new THREE.TextureLoader().load( 'sonic.jpg' );
+          material1.needsUpdate = true;
+
+          material2.map =new THREE.TextureLoader().load( 'Title4.png' );
+          material2.needsUpdate = true;
+
+           document.body.style.backgroundImage = "url('sonicb.png')";
+          }
+
+        });
+        background.open();
+
+        animate();
+
+      };
+
+
+      function animate() {
+          document.getElementById('Counter').innerHTML = '<font size="5"> Counter: ' + count;
+        requestAnimationFrame( animate );
+        controls.update();
+        if (controller.Start) {
+          if (counter <=500){
+            cube.position.x += 0.5;
+            cube3.position.x += 0.5;
+            cube4.position.x -= 0.5;
+            cube5.position.x += 0.5;
+            cube6.position.x -= 0.5;
+            cube1.position.x -= 0.5;
+            counter++;
+          }
+
+        }
+        else{
+          counter = 0;
+          cube.position.set( 0, 0, 0 );
+          cube1.position.set( 0, 25, 25 );
+          cube3.position.set( 25, 0, 25 );
+          cube4.position.set( -25, 0, 25 );
+          cube5.position.set( 0, 0, 50 );
+          cube6.position.set( 0, -25, 25 );
+        }
+
+
+        renderer.render( scene, camera );
+
+      };
+    </script>
+  </head>
+  <body>
+    <div id="Counter">0</div>
+  </body>
+</html>
