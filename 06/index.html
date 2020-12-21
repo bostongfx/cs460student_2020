@@ -18,14 +18,22 @@
     <script src="https://threejs.org/build/three.min.js" type="text/javascript"></script>
     <script src="https://threejs.org/examples/js/controls/TrackballControls.js" type="text/javascript"></script>
     <script src="https://threejs.org/examples/js/effects/AnaglyphEffect.js" type="text/javascript"></script>
-
-
+    <script src="robot.js" type="text/javascript"></script>
+    <script src="https://threejs.org/examples/js/libs/dat.gui.min.js" type="text/javascript"></script>
     <script>
 
       var scene, camera, renderer, ambientLight, light, controls;
       var floor;
 
       window.onload = function() {
+        // Adding the GUI
+        var controller = {
+          anaglyph: false
+        }
+        var gui = new dat.GUI();
+        var rendering = gui.addFolder( "Rendering" );
+        rendering.add( controller, 'anaglyph' );
+        rendering.open();
 
         scene = new THREE.Scene();
 
@@ -60,23 +68,79 @@
         scene.add( floor );
 
         controls = new THREE.TrackballControls( camera, renderer.domElement );
+        robots = [];
+        r = new Robot(50, 0, 0);
+        r.show(scene);
+        robots.push(r);
 
-
-        // ROBOT GOES HERE!
-
-
-
+        r2 = new Robot(100, 0, 0);
+        r2.show(scene);
         animate();
+        robots.push(r2);
 
+        // GUI Helper
+        var controller = {
+          'raise_left_arm': function() {
+            r.raise_left_arm();
+          },
+          'lower_left_arm': function() {
+            r.lower_left_arm();
+          },
+          'left_kick': function() {
+            r.left_kick();
+          },
+          'dance': function() {
+            r.dance();
+          },
+        }
+        // GUI menu options
+        var moving = gui.addFolder( "Movement Robot 1" );
+        moving.add( r.head.position, "x", -1000, 1000 );
+        moving.add( r.head.position, "y", -1000, 1000 );
+        moving.add( r.head.position, "z", -1000, 1000 );
+        moving.open();
+        var action = gui.addFolder( "Actions Robot 1" );
+        action.add(controller, 'raise_left_arm');
+        action.add(controller, 'lower_left_arm');
+        action.add(controller, 'left_kick');
+        action.add(controller, 'dance');
+        action.open();
 
+        camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 1, 10000 );
+        camera.position.set( 0, 0, 500 );
+
+        renderer.domElement.onmousemove = function(e) {
+          // listens to if shift key is pressed
+          if(e.shiftKey) {
+            // where it clicks, screen space
+            pixel_coords = new THREE.Vector2(e.clientX, e.clientY);
+            vp_coords = new THREE.Vector2(( pixel_coords.x / window.innerWidth ) * 2 - 1, // X
+                   - ( pixel_coords.y / window.innerHeight ) * 2 + 1 ); // Y
+
+            vp_coords_3d_near = new THREE.Vector3(vp_coords.x,
+                                          vp_coords.y,
+                                          0); // for zNear
+            raycaster = new THREE.Raycaster();
+            raycaster.setFromCamera(vp_coords_3d_near, camera);
+
+            intersects = raycaster.intersectObject( floor );
+            r.head.position.set(intersects[0].point.x, intersects[0].point.y+100,intersects[0].point.z);
+         
+            console.log(e);
+          }
+
+        }
+        controls = new THREE.TrackballControls( camera, renderer.domElement );
       };
 
       function animate() {
 
         requestAnimationFrame( animate );
 
-        // TODO
-
+        for (var o in robots) {
+          o = robots[o]
+          o.onAnimate();
+        }
         controls.update();
         renderer.render( scene, camera );
 

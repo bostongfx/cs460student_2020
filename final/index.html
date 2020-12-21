@@ -1,0 +1,399 @@
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <style>
+      html, body { 
+        background-color:#0a943d;
+        margin: 0;
+        padding: 0;
+        height: 100%;
+        overflow: hidden !important;  
+        background-repeat: no-repeat;
+        background-size: 100% 100%;
+      }
+    </style>
+
+    <script src="https://threejs.org/build/three.min.js" type="text/javascript"></script>
+    <script src="https://threejs.org/examples/js/controls/TrackballControls.js" type="text/javascript"></script>
+    <script src="arrow.js" type="text/javascript"></script>
+    <script src="helper.js" type="text/javascript"></script>
+    <script>
+
+      //
+      // Global variables
+      //
+      var scene, camera, renderer, effect, ambientLight, light, controls;
+      var floor, lathe, sphere, ballToss, scoreMesh, powerMesh, test = true, active = false;
+      var power = 0, score = 0, rand = 1;
+      var scoreValue = false, powerValue = false, begin = true, first = false;
+      var boundingBox, checkBoundingBox = false;
+
+      window.onload = function() {
+
+        scene = new THREE.Scene();
+
+        //
+        // Camera and light
+        // 
+
+        var fov = 60;
+        var ratio = window.innerWidth / window.innerHeight;
+        var zNear = 1;
+        var zFar = 10000;
+        camera = new THREE.PerspectiveCamera(fov, ratio, zNear, zFar);
+        camera.position.set( -10, 100, 750);
+
+        renderer = new THREE.WebGLRenderer({ alpha: true });
+        renderer.setSize( window.innerWidth, window.innerHeight );
+        document.body.appendChild( renderer.domElement );
+
+        ambientLight = new THREE.AmbientLight();
+        scene.add( ambientLight );
+
+        light = new THREE.DirectionalLight( 0xffffff, 5.0 );
+        light.position.set( 10, 100, 10 );
+        scene.add( light );
+
+        //
+        // Floor
+        //
+
+        var floorTexture = new THREE.TextureLoader().load( 'floor2.jpg' );
+        var floorGeometry = new THREE.PlaneBufferGeometry( 3000, 1000 );
+        var floorMaterial = new THREE.MeshBasicMaterial( {
+          map: floorTexture,
+          side: THREE.DoubleSide
+        } );
+        floor = new THREE.Mesh( floorGeometry, floorMaterial );
+        floor.position.y = -200;
+        floor.rotateX(-300);
+        floor.rotation.y = 0.01;
+        scene.add( floor );
+
+        //
+        // Wall
+        // 
+
+        var wallTexture = new THREE.TextureLoader().load( 'umass.jpg' );
+        var wallGeometry = new THREE.PlaneBufferGeometry( 2000, 1000 );
+        var wallMaterial = new THREE.MeshBasicMaterial( {
+          map: wallTexture,
+        } );
+        wall = new THREE.Mesh( wallGeometry, wallMaterial );
+        wall.position.y = 300;
+        wall.position.z = -500;
+        scene.add( wall );
+
+        //
+        // Arrow
+        //
+
+        r = new arrow(0, -30, 500);
+        r.show(scene);
+
+        //
+        // Listener to keypress
+        // For keys, ArrowLeft, ArrowRight, and spacebar.
+        // 
+
+        document.addEventListener('keydown', logKey);
+
+        function logKey(e) {
+
+          if (e.key == 'ArrowLeft'){
+            if (rightCount == 30){
+              if (leftCount < 4) {
+                leftCount = 3;
+              }
+              else {
+                leftCount -= 1;
+              }
+            } 
+            else {
+              rightCount += 1;
+            }
+            if (sphere.position.x < 31) { 
+              sphere.position.x += 1;
+              sphere.position.y = 0;
+            }
+            r.movement = 'moveLeft';
+          } 
+          else if (e.key == 'ArrowRight'){
+            if (leftCount == 30) {
+              if (rightCount < 4) {
+                rightCount = 3;
+              }
+              else {
+                rightCount -= 1;
+              }
+            }
+            else {
+              leftCount += 1;
+            }
+            if (sphere.position.x > -31) { 
+              sphere.position.x -= 1;
+              sphere.position.y = 0;
+            }
+            r.movement = 'moveRight';
+          } 
+          if (e.key == ' '){
+            if (test && power < 100) {
+              power += 1;
+            }
+            else if (test && power == 100) {
+              test = false;
+            }
+            else if (test == false && power > 0) {
+              power -= 1;
+            } 
+            else {
+              test = true;
+            }
+            powerValue = true;
+            active = true;
+          }
+          return true;
+        }
+
+        //
+        // This checks if user let go of ANY key.
+        //
+
+        document.addEventListener("keyup", activeFunc);
+        function activeFunc(){
+          if (active) {
+            ballToss = true;
+          }
+        }
+        controls = new THREE.TrackballControls( camera, renderer.domElement );
+
+        animate();
+
+
+      };
+
+      //
+      // Ball Throw function
+      //
+
+      function ballThrow() {
+        if (power > 0) {
+          sphere.position.x += -r.root.rotation.z*10; 
+          sphere.position.z -= 10;
+          power -= 2;
+        }
+        else {
+          sphere.position.x += -r.root.rotation.z*10; 
+          sphere.position.z -= 10;
+          sphere.position.y -= 10;
+        }
+      }
+
+      //
+      // Create/Update score board
+      // 
+
+      function createScoreBoard(){
+        loader = new THREE.FontLoader();
+          loader.load( 'helvetiker_regular.typeface.json', function ( font ) {
+
+            toonMaterial = new THREE.MeshPhongMaterial( {
+               color: 0x00 // 0x21ceff
+            } );
+
+            geometry = new THREE.TextBufferGeometry( 'SCORE : ' + score, {
+              font: font,
+              size: 30,
+              height: 5,
+              curveSegments: 12,
+              bevelEnabled: true,
+              bevelThickness: 1,
+              bevelSize: 1,
+              bevelOffset: 0,
+              bevelSegments: 5
+            } );
+            scoreMesh = new THREE.Mesh( geometry, toonMaterial );
+            scoreMesh.position.x = 500;
+            scoreMesh.position.y = 450;
+            scoreMesh.position.z = -250;
+            scoreMesh.rotation.y = -0.1;
+            scene.add(scoreMesh);
+            return scoreMesh;
+        } );
+      } 
+
+      //
+      // Creates losing message
+      //
+
+      function createLoser(){
+        loader = new THREE.FontLoader();
+          loader.load( 'helvetiker_regular.typeface.json', function ( font ) {
+
+            toonMaterial = new THREE.MeshLambertMaterial( {
+               color: 0x023013
+            } );
+
+            geometry = new THREE.TextBufferGeometry( 'You lost with the score ' + score + '.\nHit refresh to play again!', {
+              font: font,
+              size: 50,
+              height: 5,
+              curveSegments: 12,
+              bevelEnabled: true,
+              bevelThickness: 1,
+              bevelSize: 4,
+              bevelOffset: 0,
+              bevelSegments: 5
+            } );
+            scoreMesh = new THREE.Mesh( geometry, toonMaterial );
+            scoreMesh.position.x = -350;
+            scoreMesh.position.y = 100;
+            scoreMesh.position.z = 100;
+            scene.add(scoreMesh);
+            return scoreMesh;
+        } );
+      }
+
+      //
+      // Trash bin
+      //
+
+      function createBin() {
+        var binTexture = new THREE.TextureLoader().load( 'bin2.png' );
+        const points = [];
+        for ( let i = 0; i < 10; i ++ ) {
+          points.push( new THREE.Vector2( Math.sin( i * 0.2 ) * 20 + 20, ( i - 5 ) * 5 ) );
+        }
+        const geometry = new THREE.LatheBufferGeometry( points );
+        const material = new THREE.MeshBasicMaterial( { color: 0x0a943d, 
+          side: THREE.DoubleSide,
+          map: binTexture });
+        lathe = new THREE.Mesh( geometry, material );
+        lathe.position.y = -50;
+        if (Math.random() * 11 % 2 == 0) {
+          rand = 1
+        }
+        else {
+          rand = -1;
+        }
+        lathe.position.x = Math.floor(Math.random() * 400) * rand;
+        lathe.position.z = Math.floor(Math.random() * 400) - 100;
+        lathe.rotation.y = 3;
+        lathe.rotation.x = -0.15;
+        scene.add( lathe );
+        boundingBox = [lathe.position.x-33, lathe.position.x+33, lathe.position.y-3, lathe.position.y+3, lathe.position.z-33, lathe.position.z+33];
+      }
+      //
+      // Create new Ball
+      //
+      function createBall() {
+        var ballTexture = new THREE.TextureLoader().load( 'ballz.jpg' );
+        const ballGeometry = new THREE.SphereBufferGeometry( 10, 32, 32 );
+        const ballMaterial = new THREE.MeshBasicMaterial( {map: ballTexture,
+          // color: 0xffff00
+        } );
+        sphere = new THREE.Mesh( ballGeometry, ballMaterial );
+        sphere.position.set (0, 0, 500);
+        scene.add( sphere );
+      }
+      //
+      // Checks bounding box
+      //
+      function checkBox() {
+        if(boundingBox[0] < sphere.position.x && boundingBox[1] > sphere.position.x && boundingBox[2] < sphere.position.y &&boundingBox[3] > sphere.position.y && boundingBox[4] < sphere.position.z && boundingBox[5] > sphere.position.z)
+          scoreValue = true;
+        else
+          scoreValue = false;
+      }
+      //
+      // This is the power bar/function. Goes from 0 to 100 and back
+      // down to 0.
+      //
+      function powerFunc(){
+        loader = new THREE.FontLoader();
+        loader.load( 'helvetiker_regular.typeface.json', function ( font ) {
+
+          toonMaterial = new THREE.MeshLambertMaterial( {
+            color: 0x21ceff
+          } );
+
+          geometry = new THREE.TextBufferGeometry( 'Power : ' + power + '%', {
+            font: font,
+            size: 15,
+            height: 5,
+            curveSegments: 12,
+            bevelEnabled: true,
+            bevelThickness: 1,
+            bevelSize: 1,
+            bevelOffset: 0,
+            bevelSegments: 5
+          } );
+          if (first){
+            powerMesh.position.x = 1000;
+          }
+          powerMesh = new THREE.Mesh( geometry, toonMaterial );
+          powerMesh.position.x = -175;
+          powerMesh.position.y = -100;
+          powerMesh.position.z = 400;
+          powerMesh.rotation.x = -0.3;
+          scene.add(powerMesh);
+          return powerMesh;
+        } );
+      }
+
+      function animate() {
+        requestAnimationFrame( animate );
+        r.onAnimate();
+        renderer.render( scene, camera );
+
+        // This creates the initial objects
+        if (begin){
+          createScoreBoard();
+          createBin();
+          createBall();
+          powerFunc();
+          scoreValue = false;
+          begin = false;
+        }
+        // This is true after ball hits the bounding box of bin.
+        if (scoreValue){
+          scoreMesh.position.x = 1000;
+          score += 10;
+          createScoreBoard();
+          sphere.position.x = 1100;
+          createBall();
+          active = false;
+          ballToss = false;
+          scoreValue = false;
+          power = 0;
+          powerFunc();
+          lathe.position.x = 1000;
+          createBin();
+          active = false;
+          r.root.quaternion.slerp( new THREE.Quaternion(0,0,0,1), 1 );
+        } 
+        // This controls the changes in power message.
+        else if (powerValue) {
+          first = true;
+          powerFunc();
+          powerValue = false;
+        }
+        // This is if you miss the bin.
+        else if (sphere.position.y < -100 || sphere.position.z < -500) {
+          power = 0;
+          powerFunc();
+          active = false
+          createLoser();
+        }
+        // This throws the ball after space is pressed and let go.
+        if (active && ballToss){
+          ballThrow();
+          checkBox();
+        }
+      };
+    </script>
+  </head>
+  <body>
+    <div style="visibility:hidden"></div>
+  </body>
+</html>

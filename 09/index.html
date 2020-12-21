@@ -18,7 +18,7 @@
       import { TrackballControls } from 'https://threejs.org/examples/jsm/controls/TrackballControls.js';
       import { PLYLoader } from 'https://threejs.org/examples/jsm/loaders/PLYLoader.js';
 
-      let scene, camera, renderer, effect, ambientLight, directionalLight, light, mesh, toonMaterial, controls, controller;
+      let scene, camera, renderer, effect, ambientLight, directionalLight, light, mesh, toonMaterial, controls, controller,dolpinsMesh, armadilloMesh;
 
       window.onload = function() {
 
@@ -41,7 +41,17 @@
 
 
         // TODO Part 3 (add 2 pointlights)
+        var color = 0xFFFFFF;
+        var intensity = 1;
+        var light1 = new THREE.PointLight(color, intensity);
+        light1.position.set(0, 10, 0);
+        scene.add(light1);
 
+        var color = 0xFFFFFF;
+        var intensity = 1;
+        var light2 = new THREE.PointLight(color, intensity);
+        light2.position.set(0, 20, 0);
+        scene.add(light2);
 
 
         var loader = new PLYLoader();
@@ -53,24 +63,44 @@
              color: 0x21ce70
           } );
 
-          mesh = new THREE.Mesh( geometry, toonMaterial );
+          armadilloMesh = new THREE.Mesh( geometry, toonMaterial );
           
-          scene.add( mesh );
+          scene.add( armadilloMesh );
 
         } );
 
         // TODO Part 1, load another mesh
         // TODO Part 2, use a different material for this mesh
 
+        var dolphins1 = new PLYLoader();
+        dolphins1.load('dolphins.ply', function (geometry) {
 
+          geometry.computeVertexNormals();
+
+          toonMaterial = new THREE.MeshLambertMaterial( {
+             color: 0x21ce70
+          } );
+
+          dolpinsMesh = new THREE.Mesh( geometry, toonMaterial );
+          dolpinsMesh.position.x = 550;
+          scene.add( dolpinsMesh );
+
+        } );
 
         controller = {
-          'color': 0xffffff // we can use this single color
+          'color': 0xffffff, // we can use this single color
                             // container for all colors in the scene 
                             // if we modify the onChange callback (see below)
 
           // TODO Bonus Part 1
+          'material':  [ 'toon', 'standard', 'phong' ], 
           // TODO Bonus Part 2
+          'add': function() { 
+            addLight(); 
+          },
+          'remove': function() {
+            removeLight();
+          }
         }
 
 
@@ -90,17 +120,90 @@
 
         // TODO Part 5 (control the color of both materials in the scene)
 
+        var directionalFolder = gui.addFolder('Point 1 Light');
+        directionalFolder.addColor(controller, 'color').onChange( function(value) { light1.color.setHex(value); });
+        directionalFolder.add(light1.position, 'x', -100, 100);
+        directionalFolder.add(light1.position, 'y', -100, 100);
+        directionalFolder.add(light1.position, 'z', -100, 100);
+        directionalFolder.open();
+
+        var directionalFolder = gui.addFolder('Point 2 Light');
+        directionalFolder.addColor(controller, 'color').onChange( function(value) { light2.color.setHex(value); });
+        directionalFolder.add(light2.position, 'x', -100, 100);
+        directionalFolder.add(light2.position, 'y', -100, 100);
+        directionalFolder.add(light2.position, 'z', -100, 100);
+        directionalFolder.open();
+
+        // Dolphins folder
+        var dolphinFolder = gui.addFolder('Dolphins');
+        dolphinFolder.add(controller, 'material', [ 'toon', 'standard', 'phong' ] ).onChange( function(value) {
+          if (value == 'phong') {
+          // TODO
+          var phong = new THREE.MeshPhongMaterial({color: 0x21ce70});
+            dolpinsMesh.material = phong;
+            }
+          else if (value == 'toon'){
+            var Toon = new THREE.MeshToonMaterial({color: 0x21ce70});
+            dolpinsMesh.material = Toon;
+          }
+          else if (value = 'standard') {
+            var Standard =  new THREE.MeshStandardMaterial({color: 0x21ce70});
+            dolpinsMesh.material = Standard;
+          }});
+        dolphinFolder.open();
+
+        // Amardillo folder
+        var amardilloFolder = gui.addFolder('Amardillo');
+        amardilloFolder.add(controller, 'material', [ 'toon', 'standard', 'phong' ] ).onChange( 
+          function(value) {
+          if (value == 'phong') {
+          // TODO
+          var phong = new THREE.MeshPhongMaterial({color: 0x21ce70});
+            armadilloMesh.material = phong;
+            }
+          else if (value == 'toon'){
+            var Toon = new THREE.MeshToonMaterial({color: 0x21ce70});
+            armadilloMesh.material = Toon;
+          }
+          else if (value = 'standard') {
+            var Standard =  new THREE.MeshStandardMaterial({color: 0x21ce70});
+            armadilloMesh.material = Standard;
+          }});
+        amardilloFolder.open();
+
+        // Creates dynamic directional lights and folder to hold it
+        var directionalLightsFolder = gui.addFolder('Directional Lights');
+        var num = 1;
+        function addLight() {
+          directionalLight = new THREE.DirectionalLight( 0xffffff, 5.0 );
+          directionalLight.position.set( 10, 100, 10 );
+          scene.add( directionalLight );
+          var directionalLightFolder = directionalLightsFolder.addFolder('Directional Light '+ num++);
+          directionalLightFolder.addColor(controller, 'color').onChange( 
+            function(value) { directionalLight.color.setHex(value); });
+          directionalLightFolder.add(directionalLight.position, 'x', -100, 100);
+          directionalLightFolder.add(directionalLight.position, 'y', -100, 100);
+          directionalLightFolder.add(directionalLight.position, 'z', -100, 100);
+          directionalLightFolder.add(controller,'remove');
+        }
+        function removeLight() {
+          // Did not finish because I couldn't remove the folder. I assumme
+          // it somehow uses the code below, but I couldn't make it work.
+
+          // directionalLight.visible = false;
+          // gui.remove(directionalLightFolder);
+        }
+        gui.add(controller,'add').name('Add Light');
+        directionalLightsFolder.open(); 
+
+
         gui.open();
-
-
-
 
         controls = new TrackballControls( camera, renderer.domElement );
 
         animate();
 
       };
-
 
       function animate() {
 
@@ -109,7 +212,6 @@
         controls.update();
 
         renderer.render( scene, camera );
-        
 
       };
 
