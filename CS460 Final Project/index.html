@@ -1,5 +1,3 @@
-
-
 <html>
   <head>
     <style>
@@ -71,7 +69,7 @@
 
         var loader = new THREE.TextureLoader();
         geometry1 = new THREE.BoxBufferGeometry( 50, 1, 50 );
-        material1 = new THREE.MeshBasicMaterial( { map: loader.load( 'mc3.PNG' ) } );
+        material1 = new THREE.MeshBasicMaterial( { map: loader.load( 'mc3.png' ) } );
         cube1 = new THREE.Mesh( geometry1, material1 );
         cube1.position.set( 0, 25, 25 );
         scene.add( cube1 );
@@ -97,7 +95,7 @@
 
         var loader = new THREE.TextureLoader();
         geometry5 = new THREE.BoxBufferGeometry( 50, 50, 1 );
-        material5 = new THREE.MeshBasicMaterial( { map: loader.load( 'mc.PNG' ) } );
+        material5 = new THREE.MeshBasicMaterial( { map: loader.load( 'mc.jpg' ) } );
         cube5 = new THREE.Mesh( geometry5, material5 );
         cube5.position.set( 0, 0, 50 );
         scene.add( cube5 );
@@ -261,7 +259,7 @@
             material.map = new THREE.TextureLoader().load( 'mc2.jpg' );
             material.needsUpdate = true;
 
-            material1.map = new THREE.TextureLoader().load( 'mc3.PNG' );
+            material1.map = new THREE.TextureLoader().load( 'mc3.png' );
             material1.needsUpdate = true;
 
             material2.map = new THREE.TextureLoader().load( 'Title.PNG' );
@@ -342,7 +340,7 @@
           material2.map =new THREE.TextureLoader().load( 'Title4.PNG' );
           material2.needsUpdate = true;
 
-           document.body.style.backgroundImage = "url('sonicb.PNG')";
+           document.body.style.backgroundImage = "url('sonicb.png')";
           }
 
         });
