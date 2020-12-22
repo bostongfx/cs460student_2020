@@ -1,0 +1,1424 @@
+<html>
+	<head>
+		<meta content="text/html;charset=utf-8" http-equiv="Content-Type">
+		<meta content="utf-8" http-equiv="encoding">
+		<title>CS460 Final Project</title>
+		<style>
+				body {
+					background-color: black;
+					color: white; /* font color */
+					font-family: sans-serif;
+					margin: 0;
+					padding: 0;
+					height: 100%;
+					overflow: hidden !important;
+
+					background-image: url(stream.gif);
+					background-repeat: no-repeat;
+					background-size: 100% 100%;
+				}
+
+				#logo {
+					position: absolute;
+					right: 10px;
+					top: 10px;
+				}
+			</style>
+
+		<script type="text/javascript" src="http://get.goXTK.com/xtk_edge.js"></script>
+
+		<script type="text/javascript">
+
+			window.onload = function() {
+
+				// this gets called when the site is ready
+
+				// create a new scene and renderer
+				r = new X.renderer3D();
+				r.init();
+
+				y = new X.cube();
+				y.color = [.9, .6, 0];
+				y.center = [0, 0, 0];
+				r.add(y);
+
+				y1 = new X.cube();
+				y1.color = [.9, .6, 0];
+				y1.center = [-20, 0, 0];
+				r.add(y1);
+
+				y2 = new X.cube();
+				y2.color = [.9, .6, 0];
+				y2.center = [20, 0, 0];
+				r.add(y2);
+
+				y3 = new X.cube();
+				y3.color = [.9, .6, 0];
+				y3.center = [0, -20, 0];
+				r.add(y3);
+
+				y4 = new X.cube();
+				y4.color = [.9, .6, 0];
+				y4.center = [20, -20, 0];
+				r.add(y4);
+
+				y5 = new X.cube();
+				y5.color = [.9, .6, 0];
+				y5.center = [-20, -20, 0];
+				r.add(y5);
+
+				y6 = new X.cube();
+				y6.color = [.9, .6, 0];
+				y6.center = [-40, -20, 0];
+				r.add(y6);
+
+				y7 = new X.cube();
+				y7.color = [.9, .6, 0];
+				y7.center = [40, 0, 0];
+				r.add(y7);
+
+				y8 = new X.cube();
+				y8.color = [.9, .6, 0];
+				y8.center = [40, -20, 0];
+				r.add(y8);
+
+				y9 = new X.cube();
+				y9.color = [.9, .6, 0];
+				y9.center = [40, -40, 0];
+				r.add(y9);
+
+				y10 = new X.cube();
+				y10.color = [.9, .6, 0];
+				y10.center = [20, -40, 0];
+				r.add(y10);
+
+				y11 = new X.cube();
+				y11.color = [.9, .6, 0];
+				y11.center = [0, -40, 0];
+				r.add(y11);
+
+				y12 = new X.cube();
+				y12.color = [.9, .6, 0];
+				y12.center = [-20, -40, 0];
+				r.add(y12);
+
+				y13 = new X.cube();
+				y13.color = [.9, .6, 0];
+				y13.center = [-40, -40, 0];
+				r.add(y13);
+
+				y14 = new X.cube();
+				y14.color = [.9, .6, 0];
+				y14.center = [-40, -40, 0];
+				r.add(y14);
+
+				y15 = new X.cube();
+				y15.color = [.9, .6, 0];
+				y15.center = [-60, 0, 0];
+				r.add(y15);
+
+				y16 = new X.cube();
+				y16.color = [.9, .6, 0];
+				y16.center = [-60, -20, 0];
+				r.add(y16);
+
+				y17 = new X.cube();
+				y17.color = [.9, .6, 0];
+				y17.center = [-60, -40, 0];
+				r.add(y17);
+
+				y18 = new X.cube();
+				y18.color = [.9, .6, 0];
+				y18.center = [-80, 0, 0];
+				r.add(y18);
+
+				y19 = new X.cube();
+				y19.color = [.9, .6, 0];
+				y19.center = [-80, -20, 0];
+				r.add(y19);
+
+				y20 = new X.cube();
+				y20.color = [.9, .6, 0];
+				y20.center = [-100, 0, 0];
+				r.add(y20);
+
+				y21 = new X.cube();
+				y21.color = [.9, .6, 0];
+				y21.center = [-100, -20, 0];
+				r.add(y21);
+
+				y22 = new X.cube();
+				y22.color = [.9, .6, 0];
+				y22.center = [-100, -40, 0];
+				r.add(y22);
+
+				y23 = new X.cube();
+				y23.color = [.9, .6, 0];
+				y23.center = [-120, 0, 0];
+				r.add(y23);
+
+				y24 = new X.cube();
+				y24.color = [.9, .6, 0];
+				y24.center = [-120, -20, 0];
+				r.add(y24);
+
+				y25 = new X.cube();
+				y25.color = [.9, .6, 0];
+				y25.center = [-120, -40, 0];
+				r.add(y25);
+
+				y26 = new X.cube();
+				y26.color = [.9, .6, 0];
+				y26.center = [-80, -40, 0];
+				r.add(y26);
+
+				y27 = new X.cube();
+				y27.color = [.9, .6, 0];
+				y27.center = [-140, -40, 0];
+				r.add(y27);
+
+				y28 = new X.cube();
+				y28.color = [.9, .6, 0];
+				y28.center = [60, 0, 0];
+				r.add(y28);
+
+				y29 = new X.cube();
+				y29.color = [.9, .6, 0];
+				y29.center = [60, -20, 0];
+				r.add(y29);
+
+				y30 = new X.cube();
+				y30.color = [.9, .6, 0];
+				y30.center = [60, -40, 0];
+				r.add(y30);
+
+				y31 = new X.cube();
+				y31.color = [.9, .6, 0];
+				y31.center = [80, -40, 0];
+				r.add(y31);
+
+				y32 = new X.cube();
+				y32.color = [.9, .6, 0];
+				y32.center = [80, -20, 0];
+				r.add(y32);
+
+				y33 = new X.cube();
+				y33.color = [.9, .6, 0];
+				y33.center = [80, 0, 0];
+				r.add(y33);
+
+				y34 = new X.cube();
+				y34.color = [.9, .6, 0];
+				y34.center = [100, -40, 0];
+				r.add(y34);
+
+				y35 = new X.cube();
+				y35.color = [.9, .6, 0];
+				y35.center = [100, -20, 0];
+				r.add(y35);
+
+				y36 = new X.cube();
+				y36.color = [.9, .6, 0];
+				y36.center = [100, 0, 0];
+				r.add(y36);
+
+				y37 = new X.cube();
+				y37.color = [.9, .6, 0];
+				y37.center = [120, -40, 0];
+				r.add(y37);
+
+				y38 = new X.cube();
+				y38.color = [.9, .6, 0];
+				y38.center = [120, -20, 0];
+				r.add(y38);
+
+				y39 = new X.cube();
+				y39.color = [.9, .6, 0];
+				y39.center = [120, 0, 0];
+				r.add(y39);
+
+				y40 = new X.cube();
+				y40.color = [.9, .6, 0];
+				y40.center = [140, -40, 0];
+				r.add(y40);
+
+				y41 = new X.cube();
+				y41.color = [.9, .6, 0];
+				y41.center = [140, -20, 0];
+				r.add(y41);
+
+				y42 = new X.cube();
+				y42.color = [.9, .6, 0];
+				y42.center = [140, 0, 0];
+				r.add(y42);
+
+				y43 = new X.cube();
+				y43.color = [.9, .6, 0];
+				y43.center = [0, 20, 0];
+				r.add(y43);
+
+				y44 = new X.cube();
+				y44.color = [.9, .6, 0];
+				y44.center = [0, 40, 0];
+				r.add(y44);
+
+				y45 = new X.cube();
+				y45.color = [.9, .6, 0];
+				y45.center = [-20, 40, 0];
+				r.add(y45);
+
+				y46 = new X.cube();
+				y46.color = [.9, .6, 0];
+				y46.center = [-60, 40, 0];
+				r.add(y46);
+
+				y47 = new X.cube();
+				y47.color = [.9, .6, 0];
+				y47.center = [-80, 40, 0];
+				r.add(y47);
+
+				y48 = new X.cube();
+				y48.color = [.9, .6, 0];
+				y48.center = [-100, 40, 0];
+				r.add(y48);
+
+				y49 = new X.cube();
+				y49.color = [.9, .6, 0];
+				y49.center = [0, 60, 0];
+				r.add(y49);
+
+				y50 = new X.cube();
+				y50.color = [.9, .6, 0];
+				y50.center = [-80, 20, 0];
+				r.add(y50);
+
+				y51 = new X.cube();
+				y51.color = [.9, .6, 0];
+				y51.center = [-120, 40, 0];
+				r.add(y51);
+
+				y52 = new X.cube();
+				y52.color = [.9, .6, 0];
+				y52.center = [-100, 60, 0];
+				r.add(y52);
+
+				y53 = new X.cube();
+				y53.color = [.9, .6, 0];
+				y53.center = [-100, 80, 0];
+				r.add(y53);
+
+				y54 = new X.cube();
+				y54.color = [.9, .6, 0];
+				y54.center = [-80, 100, 0];
+				r.add(y54);
+
+				y55 = new X.cube();
+				y55.color = [.9, .6, 0];
+				y55.center = [-40, 120, 0];
+				r.add(y55);
+
+				y56 = new X.cube();
+				y56.color = [.9, .6, 0];
+				y56.center = [-20, 120, 0];
+				r.add(y56);
+
+				y57 = new X.cube();
+				y57.color = [.9, .6, 0];
+				y57.center = [0, 120, 0];
+				r.add(y57);
+
+				y58 = new X.cube();
+				y58.color = [.9, .6, 0];
+				y58.center = [0, 100, 0];
+				r.add(y58);
+
+				y59 = new X.cube();
+				y59.color = [.9, .6, 0];
+				y59.center = [-20, 80, 0];
+				r.add(y59);
+
+				y60 = new X.cube();
+				y60.color = [.9, .6, 0];
+				y60.center = [-20, 60, 0];
+				r.add(y60);
+
+				y61 = new X.cube();
+				y61.color = [.9, .6, 0];
+				y61.center = [0, 80, 0];
+				r.add(y61);
+
+				y62 = new X.cube();
+				y62.color = [.9, .6, 0];
+				y62.center = [120, -100, 0];
+				r.add(y62);
+
+				y63 = new X.cube();
+				y63.color = [.9, .6, 0];
+				y63.center = [120, 80, 0];
+				r.add(y63);
+
+				y64 = new X.cube();
+				y64.color = [.9, .6, 0];
+				y64.center = [120, 40, 0];
+				r.add(y64);
+
+				y65 = new X.cube();
+				y65.color = [.9, .6, 0];
+				y65.center = [120, 60, 0];
+				r.add(y65);
+
+				y66 = new X.cube();
+				y66.color = [.9, .6, 0];
+				y66.center = [120, -100, 0];
+				r.add(y66);
+
+				y67 = new X.cube();
+				y67.color = [.9, .6, 0];
+				y67.center = [100, 80, 0];
+				r.add(y67);
+
+				y68 = new X.cube();
+				y68.color = [.9, .6, 0];
+				y68.center = [100, 40, 0];
+				r.add(y68);
+
+				y69 = new X.cube();
+				y69.color = [.9, .6, 0];
+				y69.center = [100, 60, 0];
+				r.add(y69);
+
+				y70 = new X.cube();
+				y70.color = [.9, .6, 0];
+				y70.center = [80, 80, 0];
+				r.add(y70);
+
+				y71 = new X.cube();
+				y71.color = [.9, .6, 0];
+				y71.center = [80, 40, 0];
+				r.add(y71);
+
+				y72 = new X.cube();
+				y72.color = [.9, .6, 0];
+				y72.center = [80, 60, 0];
+				r.add(y72);
+
+				y73 = new X.cube();
+				y73.color = [.9, .6, 0];
+				y73.center = [60, 100, 0];
+				r.add(y73);
+
+				y74 = new X.cube();
+				y74.color = [.9, .6, 0];
+				y74.center = [60, 80, 0];
+				r.add(y74);
+
+				y75 = new X.cube();
+				y75.color = [.9, .6, 0];
+				y75.center = [60, 40, 0];
+				r.add(y75);
+
+				y76 = new X.cube();
+				y76.color = [.9, .6, 0];
+				y76.center = [60, 60, 0];
+				r.add(y76);
+
+				y77 = new X.cube();
+				y77.color = [.9, .6, 0];
+				y77.center = [40, 80, 0];
+				r.add(y77);
+
+				y78 = new X.cube();
+				y78.color = [.9, .6, 0];
+				y78.center = [40, 40, 0];
+				r.add(y78);
+
+				y79 = new X.cube();
+				y79.color = [.9, .6, 0];
+				y79.center = [40, 60, 0];
+				r.add(y79);
+
+				y80 = new X.cube();
+				y80.color = [.9, .6, 0];
+				y80.center = [20, 80, 0];
+				r.add(y80);
+
+				y80 = new X.cube();
+				y80.color = [.9, .6, 0];
+				y80.center = [20, 40, 0];
+				r.add(y80);
+
+				y81 = new X.cube();
+				y81.color = [.9, .6, 0];
+				y81.center = [20, 60, 0];
+				r.add(y81);
+
+				y82 = new X.cube();
+				y82.color = [.9, .6, 0];
+				y82.center = [20, 100, 0];
+				r.add(y82);
+
+				y83 = new X.cube();
+				y83.color = [.9, .6, 0];
+				y83.center = [20, 120, 0];
+				r.add(y83);
+
+				y84 = new X.cube();
+				y84.color = [.9, .6, 0];
+				y84.center = [40, 100, 0];
+				r.add(y84);
+
+				y85 = new X.cube();
+				y85.color = [.9, .6, 0];
+				y85.center = [40, 120, 0];
+				r.add(y85);
+
+				y86 = new X.cube();
+				y86.color = [.9, .6, 0];
+				y86.center = [60, 120, 0];
+				r.add(y86);
+
+				y87 = new X.cube();
+				y87.color = [.9, .6, 0];
+				y87.center = [140, 40, 0];
+				r.add(y87);
+
+				y88 = new X.cube();
+				y88.color = [.9, .6, 0];
+				y88.center = [80, 100, 0];
+				r.add(y88);
+
+				y89 = new X.cube();
+				y89.color = [.9, .6, 0];
+				y89.center = [100, 100, 0];
+				r.add(y89);
+
+				y90 = new X.cube();
+				y90.color = [.9, .6, 0];
+				y90.center = [160, -40, 0];
+				r.add(y90);
+
+				y91 = new X.cube();
+				y91.color = [.9, .6, 0];
+				y91.center = [-40, 60, 0];
+				r.add(y91);
+
+				y92 = new X.cube();
+				y92.color = [.9, .6, 0];
+				y92.center = [140, 60, 0];
+				r.add(y92);
+
+				y93 = new X.cube();
+				y93.color = [.9, .6, 0];
+				y93.center = [140, -160, 0];
+				r.add(y93);
+
+				y94 = new X.cube();
+				y94.color = [.9, .6, 0];
+				y94.center = [140, -180, 0];
+				r.add(y94);
+
+				y95 = new X.cube();
+				y95.color = [.9, .6, 0];
+				y95.center = [120, -180, 0];
+				r.add(y95);
+
+				y96 = new X.cube();
+				y96.color = [.9, .6, 0];
+				y96.center = [100, -180, 0];
+				r.add(y96);
+
+				y97 = new X.cube();
+				y97.color = [.9, .6, 0];
+				y97.center = [80, -180, 0];
+				r.add(y97);
+
+				y98 = new X.cube();
+				y98.color = [.9, .6, 0];
+				y98.center = [60, -180, 0];
+				r.add(y98);
+
+				y99 = new X.cube();
+				y99.color = [.9, .6, 0];
+				y99.center = [40, -180, 0];
+				r.add(y99);
+
+				y100 = new X.cube();
+				y100.color = [.9, .6, 0];
+				y100.center = [20, -180, 0];
+				r.add(y100);
+
+				y101 = new X.cube();
+				y101.color = [.9, .6, 0];
+				y101.center = [60, -160, 0];
+				r.add(y101);
+
+				y102 = new X.cube();
+				y102.color = [.9, .6, 0];
+				y102.center = [80, -160, 0];
+				r.add(y102);
+
+				y103 = new X.cube();
+				y103.color = [.9, .6, 0];
+				y103.center = [80, -140, 0];
+				r.add(y103);
+
+				y104 = new X.cube();
+				y104.color = [.9, .6, 0];
+				y104.center = [100, -140, 0];
+				r.add(y104);
+
+				y105 = new X.cube();
+				y105.color = [.9, .6, 0];
+				y105.center = [120, -140, 0];
+				r.add(y105);
+
+				y106 = new X.cube();
+				y106.color = [.9, .6, 0];
+				y106.center = [-60, -180, 0];
+				r.add(y106);
+
+				y107 = new X.cube();
+				y107.color = [.9, .6, 0];
+				y107.center = [-60, -200, 0];
+				r.add(y107);
+
+				y108 = new X.cube();
+				y108.color = [.9, .6, 0];
+				y108.center = [-40, -200, 0];
+				r.add(y108);
+
+				y109 = new X.cube();
+				y109.color = [.9, .6, 0];
+				y109.center = [-20, -200, 0];
+				r.add(y109);
+
+				y110 = new X.cube();
+				y110.color = [.9, .6, 0];
+				y110.center = [-80, -200, 0];
+				r.add(y110);
+
+				y111 = new X.cube();
+				y111.color = [.9, .6, 0];
+				y111.center = [-100, -200, 0];
+				r.add(y111);
+
+				y112 = new X.cube();
+				y112.color = [.9, .6, 0];
+				y112.center = [-120, -200, 0];
+				r.add(y112);
+
+				y113 = new X.cube();
+				y113.color = [.9, .6, 0];
+				y113.center = [-100, -180, 0];
+				r.add(y113);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+				b = new X.cube();
+				b.color = [0, 0, 0];
+				b.center = [-40, 20, 0];
+				r.add(b);
+
+				b1 = new X.cube();
+				b1.color = [0, 0, 0];
+				b1.center = [-20, 20, 0];
+				r.add(b1);
+
+				b2 = new X.cube();
+				b2.color = [0, 0, 0];
+				b2.center = [20, 20, 0];
+				r.add(b2);
+
+				b3 = new X.cube();
+				b3.color = [0, 0, 0];
+				b3.center = [40, 20, 0];
+				r.add(b3);
+
+				b4 = new X.cube();
+				b4.color = [0, 0, 0];
+				b4.center = [60, 20, 0];
+				r.add(b4);
+
+				b5 = new X.cube();
+				b5.color = [0, 0, 0];
+				b5.center = [80, 20, 0];
+				r.add(b5);
+
+				b6 = new X.cube();
+				b6.color = [0, 0, 0];
+				b6.center = [100, 20, 0];
+				r.add(b6);
+
+				b7 = new X.cube();
+				b7.color = [0, 0, 0];
+				b7.center = [120, 20, 0];
+				r.add(b7);
+
+				b8 = new X.cube();
+				b8.color = [0, 0, 0];
+				b8.center = [140, 20, 0];
+				r.add(b8);
+
+				b9 = new X.cube();
+				b9.color = [0, 0, 0];
+				b9.center = [160, 20, 0];
+				r.add(b9);
+
+				b10 = new X.cube();
+				b10.color = [0, 0, 0];
+				b10.center = [-40, 00, 0];
+				r.add(b10);
+
+				b11 = new X.cube();
+				b11.color = [0, 0, 0];
+				b11.center = [-60, 20, 0];
+				r.add(b11);
+
+				b12 = new X.cube();
+				b12.color = [0, 0, 0];
+				b12.center = [-40, 40, 0];
+				r.add(b12);
+
+				b13 = new X.cube();
+				b13.color = [0, 0, 0];
+				b13.center = [-100, 20, 0];
+				r.add(b13);
+
+				b14 = new X.cube();
+				b14.color = [0, 0, 0];
+				b14.center = [-120, 20, 0];
+				r.add(b14);
+
+				b15 = new X.cube();
+				b15.color = [0, 0, 0];
+				b15.center = [-140, 20, 0];
+				r.add(b15);
+
+				b16 = new X.cube();
+				b16.color = [0, 0, 0];
+				b16.center = [-140, 0, 0];
+				r.add(b16);
+
+				b17 = new X.cube();
+				b17.color = [0, 0, 0];
+				b17.center = [-140, 40, 0];
+				r.add(b17);
+
+				b18 = new X.cube();
+				b18.color = [0, 0, 0];
+				b18.center = [-140, -20, 0];
+				r.add(b18);
+
+				b19 = new X.cube();
+				b19.color = [0, 0, 0];
+				b19.center = [-160, -40, 0];
+				r.add(b19);
+
+				b20 = new X.cube();
+				b20.color = [0, 0, 0];
+				b20.center = [-160, -60, 0];
+				r.add(b20);
+
+				b21 = new X.cube();
+				b21.color = [0, 0, 0];
+				b21.center = [-140, -60, 0];
+				r.add(b21);
+
+				b22 = new X.cube();
+				b22.color = [0, 0, 0];
+				b22.center = [-120, -60, 0];
+				r.add(b22);
+
+				b23 = new X.cube();
+				b23.color = [0, 0, 0];
+				b23.center = [-100, -60, 0];
+				r.add(b23);
+
+				b24 = new X.cube();
+				b24.color = [0, 0, 0];
+				b24.center = [-80, -60, 0];
+				r.add(b24);
+
+				b25 = new X.cube();
+				b25.color = [0, 0, 0];
+				b25.center = [-60, -60, 0];
+				r.add(b25);
+
+				b26 = new X.cube();
+				b26.color = [0, 0, 0];
+				b26.center = [-40, -60, 0];
+				r.add(b26);
+
+				b27 = new X.cube();
+				b27.color = [0, 0, 0];
+				b27.center = [-20, -60, 0];
+				r.add(b27);
+
+				b28 = new X.cube();
+				b28.color = [0, 0, 0];
+				b28.center = [0, -60, 0];
+				r.add(b28);
+
+				b29 = new X.cube();
+				b29.color = [0, 0, 0];
+				b29.center = [-100, -60, 0];
+				r.add(b29);
+
+				b30 = new X.cube();
+				b30.color = [0, 0, 0];
+				b30.center = [160, 0, 0];
+				r.add(b30);
+
+				b31 = new X.cube();
+				b31.color = [0, 0, 0];
+				b31.center = [160, -20, 0];
+				r.add(b31);
+
+				b32 = new X.cube();
+				b32.color = [0, 0, 0];
+				b32.center = [180, -40, 0];
+				r.add(b32);
+
+				b33 = new X.cube();
+				b33.color = [0, 0, 0];
+				b33.center = [160, 40, 0];
+				r.add(b33);
+
+				b34 = new X.cube();
+				b34.color = [0, 0, 0];
+				b34.center = [180, -60, 0];
+				r.add(b34);
+
+				b35 = new X.cube();
+				b35.color = [0, 0, 0];
+				b35.center = [160, -60, 0];
+				r.add(b35);
+
+				b36 = new X.cube();
+				b36.color = [0, 0, 0];
+				b36.center = [140, -60, 0];
+				r.add(b36);
+
+				b37 = new X.cube();
+				b37.color = [0, 0, 0];
+				b37.center = [120, -60, 0];
+				r.add(b37);
+
+				b38 = new X.cube();
+				b38.color = [0, 0, 0];
+				b38.center = [100, -60, 0];
+				r.add(b38);
+
+				b39 = new X.cube();
+				b39.color = [0, 0, 0];
+				b39.center = [80, -60, 0];
+				r.add(b39);
+
+				b40 = new X.cube();
+				b40.color = [0, 0, 0];
+				b40.center = [60, -60, 0];
+				r.add(b40);
+
+				b41 = new X.cube();
+				b41.color = [0, 0, 0];
+				b41.center = [40, -60, 0];
+				r.add(b41);
+
+				b42 = new X.cube();
+				b42.color = [0, 0, 0];
+				b42.center = [20, -60, 0];
+				r.add(b42);
+
+				b43 = new X.cube();
+				b43.color = [0, 0, 0];
+				b43.center = [-120, 60, 0];
+				r.add(b43);
+
+				b44 = new X.cube();
+				b44.color = [0, 0, 0];
+				b44.center = [-100, 100, 0];
+				r.add(b44);
+
+				b45 = new X.cube();
+				b45.color = [0, 0, 0];
+				b45.center = [-120, 80, 0];
+				r.add(b45);
+
+				b46 = new X.cube();
+				b46.color = [0, 0, 0];
+				b46.center = [-80, 120, 0];
+				r.add(b46);
+
+				b47 = new X.cube();
+				b47.color = [0, 0, 0];
+				b47.center = [-60, 120, 0];
+				r.add(b47);
+
+				b48 = new X.cube();
+				b48.color = [0, 0, 0];
+				b48.center = [-40, 140, 0];
+				r.add(b48);
+
+				b49 = new X.cube();
+				b49.color = [0, 0, 0];
+				b49.center = [-20, 140, 0];
+				r.add(b49);
+
+				b50 = new X.cube();
+				b50.color = [0, 0, 0];
+				b50.center = [0, 140, 0];
+				r.add(b50);
+
+				b51 = new X.cube();
+				b51.color = [0, 0, 0];
+				b51.center = [20, 140, 0];
+				r.add(b51);
+
+				b52 = new X.cube();
+				b52.color = [0, 0, 0];
+				b52.center = [40, 140, 0];
+				r.add(b52);
+
+				b53 = new X.cube();
+				b53.color = [0, 0, 0];
+				b53.center = [60, 140, 0];
+				r.add(b53);
+
+				b54 = new X.cube();
+				b54.color = [0, 0, 0];
+				b54.center = [80, 120, 0];
+				r.add(b54);
+
+				b55 = new X.cube();
+				b55.color = [0, 0, 0];
+				b55.center = [100, 120, 0];
+				r.add(b55);
+
+				b56 = new X.cube();
+				b56.color = [0, 0, 0];
+				b56.center = [120, 100, 0];
+				r.add(b56);
+
+				b57 = new X.cube();
+				b57.color = [0, 0, 0];
+				b57.center = [140, 80, 0];
+				r.add(b57);
+
+				b58 = new X.cube();
+				b58.color = [0, 0, 0];
+				b58.center = [20, -80, 0];
+				r.add(b58);
+
+				b59 = new X.cube();
+				b59.color = [0, 0, 0];
+				b59.center = [160, 60, 0];
+				r.add(b59);
+
+				b60 = new X.cube();
+				b60.color = [0, 0, 0];
+				b60.center = [40, -80, 0];
+				r.add(b60);
+
+				b61 = new X.cube();
+				b61.color = [0, 0, 0];
+				b61.center = [-60, -80, 0];
+				r.add(b61);
+
+				b62 = new X.cube();
+				b62.color = [0, 0, 0];
+				b62.center = [-80, -80, 0];
+				r.add(b62);
+
+				b63 = new X.cube();
+				b63.color = [0, 0, 0];
+				b63.center = [100, -80, 0];
+				r.add(b63);
+
+				b64 = new X.cube();
+				b64.color = [0, 0, 0];
+				b64.center = [100, -100, 0];
+				r.add(b64);
+
+				b65 = new X.cube();
+				b65.color = [0, 0, 0];
+				b65.center = [120, -80, 0];
+				r.add(b65);
+
+				b66 = new X.cube();
+				b66.color = [0, 0, 0];
+				b66.center = [140, -80, 0];
+				r.add(b66);
+
+				b67 = new X.cube();
+				b67.color = [0, 0, 0];
+				b67.center = [160, -100, 0];
+				r.add(b67);
+
+				b68 = new X.cube();
+				b68.color = [0, 0, 0];
+				b68.center = [160, -120, 0];
+				r.add(b68);
+
+				b69 = new X.cube();
+				b69.color = [0, 0, 0];
+				b69.center = [140, -120, 0];
+				r.add(b69);
+
+				b70 = new X.cube();
+				b70.color = [0, 0, 0];
+				b70.center = [120, -120, 0];
+				r.add(b70);
+
+				b71 = new X.cube();
+				b71.color = [0, 0, 0];
+				b71.center = [100, -120, 0];
+				r.add(b71);
+
+				b72 = new X.cube();
+				b72.color = [0, 0, 0];
+				b72.center = [80, -120, 0];
+				r.add(b72);
+
+				b73 = new X.cube();
+				b73.color = [0, 0, 0];
+				b73.center = [-20, -80, 0];
+				r.add(b73);
+
+				b74 = new X.cube();
+				b74.color = [0, 0, 0];
+				b74.center = [-20, -100, 0];
+				r.add(b74);
+
+				b75 = new X.cube();
+				b75.color = [0, 0, 0];
+				b75.center = [-20, -120, 0];
+				r.add(b75);
+
+				b76 = new X.cube();
+				b76.color = [0, 0, 0];
+				b76.center = [0, -120, 0];
+				r.add(b76);
+
+				b77 = new X.cube();
+				b77.color = [0, 0, 0];
+				b77.center = [-40, -120, 0];
+				r.add(b77);
+
+				b78 = new X.cube();
+				b78.color = [0, 0, 0];
+				b78.center = [-20, -140, 0];
+				r.add(b78);
+
+				b79 = new X.cube();
+				b79.color = [0, 0, 0];
+				b79.center = [-20, -160, 0];
+				r.add(b79);
+
+				b80 = new X.cube();
+				b80.color = [0, 0, 0];
+				b80.center = [0, -160, 0];
+				r.add(b80);
+
+				b81 = new X.cube();
+				b81.color = [0, 0, 0];
+				b81.center = [0, -140, 0];
+				r.add(b81);
+
+				b82 = new X.cube();
+				b82.color = [0, 0, 0];
+				b82.center = [20, -160, 0];
+				r.add(b82);
+
+				b83 = new X.cube();
+				b83.color = [0, 0, 0];
+				b83.center = [20, -140, 0];
+				r.add(b83);
+
+				b84 = new X.cube();
+				b84.color = [0, 0, 0];
+				b84.center = [40, -140, 0];
+				r.add(b84);
+
+				b85 = new X.cube();
+				b85.color = [0, 0, 0];
+				b85.center = [60, -140, 0];
+				r.add(b85);
+
+				b86 = new X.cube();
+				b86.color = [0, 0, 0];
+				b86.center = [40, -160, 0];
+				r.add(b86);
+
+				b87 = new X.cube();
+				b87.color = [0, 0, 0];
+				b87.center = [-120, -80, 0];
+				r.add(b87);
+
+				b88 = new X.cube();
+				b88.color = [0, 0, 0];
+				b88.center = [-120, -100, 0];
+				r.add(b88);
+
+				b89 = new X.cube();
+				b89.color = [0, 0, 0];
+				b89.center = [-100, -120, 0];
+				r.add(b89);
+
+				b90 = new X.cube();
+				b90.color = [0, 0, 0];
+				b90.center = [-80, -140, 0];
+				r.add(b90);
+
+				b91 = new X.cube();
+				b91.color = [0, 0, 0];
+				b91.center = [-60, -140, 0];
+				r.add(b91);
+
+				b92 = new X.cube();
+				b92.color = [0, 0, 0];
+				b92.center = [-80, -160, 0];
+				r.add(b92);
+
+				b93 = new X.cube();
+				b93.color = [0, 0, 0];
+				b93.center = [-60, -160, 0];
+				r.add(b93);
+
+				b94 = new X.cube();
+				b94.color = [0, 0, 0];
+				b94.center = [-40, -160, 0];
+				r.add(b94);
+
+				b95 = new X.cube();
+				b95.color = [0, 0, 0];
+				b95.center = [-40, -140, 0];
+				r.add(b95);
+
+				b96 = new X.cube();
+				b96.color = [0, 0, 0];
+				b96.center = [-100, -160, 0];
+				r.add(b96);
+
+				b97 = new X.cube();
+				b97.color = [0, 0, 0];
+				b97.center = [-120, -180, 0];
+				r.add(b97);
+
+				b98 = new X.cube();
+				b98.color = [0, 0, 0];
+				b98.center = [-140, -200, 0];
+				r.add(b98);
+
+				b99 = new X.cube();
+				b99.color = [0, 0, 0];
+				b99.center = [-140, -220, 0];
+				r.add(b99);
+
+				b100 = new X.cube();
+				b100.color = [0, 0, 0];
+				b100.center = [-120, -220, 0];
+				r.add(b100);
+
+				b101 = new X.cube();
+				b101.color = [0, 0, 0];
+				b101.center = [-100, -220, 0];
+				r.add(b101);
+
+				b102 = new X.cube();
+				b102.color = [0, 0, 0];
+				b102.center = [-80, -220, 0];
+				r.add(b102);
+
+				b103 = new X.cube();
+				b103.color = [0, 0, 0];
+				b103.center = [-60, -220, 0];
+				r.add(b103);
+
+				b104 = new X.cube();
+				b104.color = [0, 0, 0];
+				b104.center = [-40, -220, 0];
+				r.add(b104);
+
+				b105 = new X.cube();
+				b105.color = [0, 0, 0];
+				b105.center = [-20, -220, 0];
+				r.add(b105);
+
+				b106 = new X.cube();
+				b106.color = [0, 0, 0];
+				b106.center = [0, -220, 0];
+				r.add(b106);
+
+				b107 = new X.cube();
+				b107.color = [0, 0, 0];
+				b107.center = [0, -200, 0];
+				r.add(b107);
+
+				b108 = new X.cube();
+				b108.color = [0, 0, 0];
+				b108.center = [0, -180, 0];
+				r.add(b108);
+
+				b109 = new X.cube();
+				b109.color = [0, 0, 0];
+				b109.center = [-20, -180, 0];
+				r.add(b109);
+
+				b110 = new X.cube();
+				b110.color = [0, 0, 0];
+				b110.center = [-40, -180, 0];
+				r.add(b110);
+
+				b111 = new X.cube();
+				b111.color = [0, 0, 0];
+				b111.center = [20, -200, 0];
+				r.add(b111);
+
+				b112 = new X.cube();
+				b112.color = [0, 0, 0];
+				b112.center = [40, -200, 0];
+				r.add(b112);
+
+				b113 = new X.cube();
+				b113.color = [0, 0, 0];
+				b113.center = [60, -200, 0];
+				r.add(b113);
+
+				b114 = new X.cube();
+				b114.color = [0, 0, 0];
+				b114.center = [80, -200, 0];
+				r.add(b114);
+
+				b115 = new X.cube();
+				b115.color = [0, 0, 0];
+				b115.center = [100, -200, 0];
+				r.add(b115);
+
+				b116 = new X.cube();
+				b116.color = [0, 0, 0];
+				b116.center = [120, -200, 0];
+				r.add(b116);
+
+				b117 = new X.cube();
+				b117.color = [0, 0, 0];
+				b117.center = [140, -200, 0];
+				r.add(b117);
+
+				b118 = new X.cube();
+				b118.color = [0, 0, 0];
+				b118.center = [160, -200, 0];
+				r.add(b118);
+
+				b119 = new X.cube();
+				b119.color = [0, 0, 0];
+				b119.center = [160, -180, 0];
+				r.add(b119);
+
+				b120 = new X.cube();
+				b120.color = [0, 0, 0];
+				b120.center = [160, -160, 0];
+				r.add(b120);
+
+				b121 = new X.cube();
+				b121.color = [0, 0, 0];
+				b121.center = [140, -140, 0];
+				r.add(b121);
+
+
+
+
+
+
+
+
+
+
+
+
+				w = new X.cube();
+				w.color = [1, 1, 1];
+				w.center = [-80, 60, 0];
+				r.add(w);
+
+				w1 = new X.cube();
+				w1.color = [1, 1, 1];
+				w1.center = [-80, 80, 0];
+				r.add(w1);
+
+				w2 = new X.cube();
+				w2.color = [1, 1, 1];
+				w2.center = [-60, 60, 0];
+				r.add(w2);
+
+				w3 = new X.cube();
+				w3.color = [1, 1, 1];
+				w3.center = [-60, 80, 0];
+				r.add(w3);
+
+				w4 = new X.cube();
+				w4.color = [1, 1, 1];
+				w4.center = [-40, 80, 0];
+				r.add(w4);
+
+				w5 = new X.cube();
+				w5.color = [1, 1, 1];
+				w5.center = [-60, 100, 0];
+				r.add(w5);
+
+				w6 = new X.cube();
+				w6.color = [1, 1, 1];
+				w6.center = [-40, 100, 0];
+				r.add(w6);
+
+				w7 = new X.cube();
+				w7.color = [1, 1, 1];
+				w7.center = [-20, 100, 0];
+				r.add(w7);
+
+				w8 = new X.cube();
+				w8.color = [1, 1, 1];
+				w8.center = [140, -100, 0];
+				r.add(w8);
+
+				w9 = new X.cube();
+				w9.color = [1, 1, 1];
+				w9.center = [0, -80, 0];
+				r.add(w9);
+
+				w10 = new X.cube();
+				w10.color = [1, 1, 1];
+				w10.center = [0, -100, 0];
+				r.add(w10);
+
+				w11 = new X.cube();
+				w11.color = [1, 1, 1];
+				w11.center = [20, -100, 0];
+				r.add(w11);
+
+				w12 = new X.cube();
+				w12.color = [1, 1, 1];
+				w12.center = [40, -100, 0];
+				r.add(w12);
+
+				w13 = new X.cube();
+				w13.color = [1, 1, 1];
+				w13.center = [60, -100, 0];
+				r.add(w13);
+
+				w14 = new X.cube();
+				w14.color = [1, 1, 1];
+				w14.center = [80, -100, 0];
+				r.add(w14);
+
+				w15 = new X.cube();
+				w15.color = [1, 1, 1];
+				w15.center = [60, -80, 0];
+				r.add(w15);
+
+				w16 = new X.cube();
+				w16.color = [1, 1, 1];
+				w16.center = [80, -80, 0];
+				r.add(w16);
+
+				w17 = new X.cube();
+				w17.color = [1, 1, 1];
+				w17.center = [20, -120, 0];
+				r.add(w17);
+
+				w18 = new X.cube();
+				w18.color = [1, 1, 1];
+				w18.center = [60, -120, 0];
+				r.add(w18);
+
+				w19 = new X.cube();
+				w19.color = [1, 1, 1];
+				w19.center = [40, -120, 0];
+				r.add(w19);
+
+				w20 = new X.cube();
+				w20.color = [1, 1, 1];
+				w20.center = [-40, -80, 0];
+				r.add(w20);
+
+				w21 = new X.cube();
+				w21.color = [1, 1, 1];
+				w21.center = [-40, -100, 0];
+				r.add(w21);
+
+				w22 = new X.cube();
+				w22.color = [1, 1, 1];
+				w22.center = [-60, -100, 0];
+				r.add(w22);
+
+				w23 = new X.cube();
+				w23.color = [1, 1, 1];
+				w23.center = [-80, -100, 0];
+				r.add(w23);
+
+				w24 = new X.cube();
+				w24.color = [1, 1, 1];
+				w24.center = [-100, -100, 0];
+				r.add(w24);
+
+				w25 = new X.cube();
+				w25.color = [1, 1, 1];
+				w25.center = [-100, -80, 0];
+				r.add(w25);
+
+				w26 = new X.cube();
+				w26.color = [1, 1, 1];
+				w26.center = [-80, -120, 0];
+				r.add(w26);
+
+				w27 = new X.cube();
+				w27.color = [1, 1, 1];
+				w27.center = [-60, -120, 0];
+				r.add(w27);
+
+				w28 = new X.cube();
+				w28.color = [1, 1, 1];
+				w28.center = [-80, -180, 0];
+				r.add(w28);
+
+				w29 = new X.cube();
+				w29.color = [1, 1, 1];
+				w29.center = [120, -160, 0];
+				r.add(w29);
+
+				w30 = new X.cube();
+				w30.color = [1, 1, 1];
+				w30.center = [100, -160, 0];
+				r.add(w30);
+
+
+
+
+				// render everything!
+				r.camera.position = [0, 0, 900];
+				r.render();
+
+				window.ondblclick = function() {
+					alert('One of the main enemies of the Mega Man is the enemy’s grassroots soldiers.');
+				};
+
+			};
+
+
+		</script>
+	</head>
+	<body>
+		<h1>Enemy</h1>
+		<div id="logo"><img style="height:60px" src="gfx/cs460.png"></div>
+	</body>
+</html>
