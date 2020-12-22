@@ -1,0 +1,542 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+	<title>Journey to the West</title>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+	<style>
+		* {
+			/* background-color: #000; */
+			height: 100%;
+			padding: 0;
+			margin: 0;
+			overflow: hidden !important;
+		}
+	</style>
+
+	<script src="https://threejs.org/build/three.min.js" type="text/javascript"></script>
+</head>
+
+<body>
+	<script type="module">
+
+		import { OrbitControls } from 'https://threejs.org/examples/jsm/controls/OrbitControls.js';
+		import { FBXLoader } from 'https://threejs.org/examples/jsm/loaders/FBXLoader.js';
+		import Stats from 'https://threejs.org/examples/jsm/libs/stats.module.js';
+
+		let camera, camera2, scene, renderer, stats, scene1, scene2;
+
+		const clock = new THREE.Clock();
+
+		let mixers = [];
+		var wukong, monk, monster1, monster2, monster3, monk2;
+		let flag = 0, text_array = [], start_talk_time, jumping = 0;
+		let monsters = [];
+		let action = 0;
+		let attack_start, attacking = 0;
+		let foods = [];
+		let start = 0;
+		let game_over = 0;
+		let ground_done = 0;
+		let sky_box_done = 0;
+
+
+		init();
+
+		animate();
+
+
+		function init() {
+
+			const container = document.createElement('div');
+			document.body.appendChild(container);
+
+			camera = new THREE.PerspectiveCamera(30, window.innerWidth / window.innerHeight, 1, 10000);
+			camera.position.set(0, 800, 2000);
+			camera.target = new THREE.Vector3(0, 0, 0);
+			camera.lookAt(camera.target);
+
+			// ceate loading scene
+			scene1 = new THREE.Scene();
+			scene1.background = new THREE.Color(0xa0a0a0);
+
+			const textloader = new THREE.FontLoader();
+			textloader.load('helvetiker_bold.typeface.json', function (font) {
+
+				const textGeo = new THREE.TextBufferGeometry("L o a d i n g . . . . . . ", {
+
+					font: font,
+
+					size: 25,
+					height: 1,
+
+				});
+
+				textGeo.computeBoundingBox();
+				const centerOffset = - 0.5 * (textGeo.boundingBox.max.x - textGeo.boundingBox.min.x);
+
+				const textMaterial = new THREE.MeshBasicMaterial({ color: 0xff0000, specular: 0xffffff });
+
+				const mesh = new THREE.Mesh(textGeo, textMaterial);
+				mesh.position.x = camera.position.x + - 0.5 * (textGeo.boundingBox.max.x - textGeo.boundingBox.min.x);
+				mesh.position.y = 300;
+
+				mesh.castShadow = true;
+				mesh.receiveShadow = true;
+				scene1.add(mesh);
+
+			});
+
+			// create game over scene
+			scene2 = new THREE.Scene();
+			scene2.background = new THREE.Color(0xa0a0a0);
+			camera2 = new THREE.PerspectiveCamera(30, window.innerWidth / window.innerHeight, 1, 10000);
+			camera2.position.set(0, 0, 1500);
+			camera2.target = new THREE.Vector3(0, 0, 0);
+			camera2.lookAt(camera.target);
+
+			textloader.load('helvetiker_bold.typeface.json', function (font) {
+
+				const textGeo = new THREE.TextBufferGeometry("Game. . . Over. . . ! ! ! " + "\n" + "Left  click  the  window  to  restart !", {
+
+					font: font,
+					size: 25,
+					height: 1,
+
+				});
+
+				textGeo.computeBoundingBox();
+				const centerOffset = - 0.5 * (textGeo.boundingBox.max.x - textGeo.boundingBox.min.x);
+
+				const textMaterial = new THREE.MeshBasicMaterial({ color: 0xff0000, specular: 0xffffff });
+
+				const mesh = new THREE.Mesh(textGeo, textMaterial);
+				mesh.position.x = camera2.position.x + - 0.5 * (textGeo.boundingBox.max.x - textGeo.boundingBox.min.x);
+				mesh.position.y = 300;
+				scene2.add(mesh);
+
+			});
+
+
+			// main scene
+			scene = new THREE.Scene();
+
+			// background
+			scene.background = new THREE.CubeTextureLoader()
+				.setPath('Yokohama2/')
+				.load(['posx.jpg', 'negx.jpg', 'posy.jpg', 'negy.jpg', 'posz.jpg', 'negz.jpg'], () => {
+					sky_box_done = 1;
+				});
+
+
+			// direction light
+			const dirLight = new THREE.DirectionalLight(0xffffff, 1);
+			dirLight.position.set(1, 68, 90); // 0 200 100
+			dirLight.position.multiplyScalar(1.3);
+			dirLight.shadow.mapSize.width = 1024;
+			dirLight.shadow.mapSize.height = 1024;
+			dirLight.castShadow = true;
+			dirLight.shadow.camera.top = 1000;
+			dirLight.shadow.camera.bottom = - 1000;
+			dirLight.shadow.camera.left = - 5500;
+			dirLight.shadow.camera.right = 5500;
+			scene.add(dirLight);
+
+			// scene.add(new THREE.CameraHelper(dirLight.shadow.camera));
+			addText("Press -> to move forward", 0);
+
+
+			// ground
+			const ground_texture = new THREE.TextureLoader().load('ground_texture.jpg', () => {
+				ground_done = 1;
+			});
+			ground_texture.wrapS = ground_texture.wrapT = THREE.RepeatWrapping;
+			ground_texture.repeat.set(10, 1);
+			ground_texture.anisotropy = 16;
+			ground_texture.encoding = THREE.sRGBEncoding;
+			const mesh = new THREE.Mesh(new THREE.BoxGeometry(20000, 1000, 50), new THREE.MeshLambertMaterial({ color: 0xffffff, map: ground_texture }));
+			mesh.rotation.x = - Math.PI / 2;
+			mesh.position.y = - 250;
+			mesh.receiveShadow = true;
+			scene.add(mesh);
+
+
+			// Wukong Model
+			const objectloader = new FBXLoader();
+			const animloader = new FBXLoader();
+			wukong = new Wukong(-300, -220, 0, objectloader, animloader, scene, mixers);
+
+			// foods
+			const geometry = new THREE.SphereGeometry(20, 32, 32);
+			const material = new THREE.MeshBasicMaterial({ color: 0xffff00 });
+			const sphere1 = new THREE.Mesh(geometry, material);
+			const sphere2 = new THREE.Mesh(geometry, material);
+			const sphere3 = new THREE.Mesh(geometry, material);
+			const sphere4 = new THREE.Mesh(geometry, material);
+			const sphere5 = new THREE.Mesh(geometry, material);
+			sphere1.position.x = 2500;
+			sphere2.position.x = 3000;
+			sphere3.position.x = 3500;
+			sphere4.position.x = 4000;
+			sphere5.position.x = 4500;
+			sphere1.position.y = sphere2.position.y = sphere3.position.y = sphere4.position.y = sphere5.position.y = -220;
+			scene.add(sphere1);
+			scene.add(sphere2);
+			scene.add(sphere3);
+			scene.add(sphere4);
+			scene.add(sphere5);
+			foods.push(sphere1);
+			foods.push(sphere2);
+			foods.push(sphere3);
+			foods.push(sphere4);
+			foods.push(sphere5);
+
+			// monk models
+			monk = new Monk(300, -220, 0);
+			monk.init(objectloader, animloader, scene, mixers, 0);
+
+			monk2 = new Monk(5000, -220, 0);
+			monk2.init(objectloader, animloader, scene, mixers, 1);
+
+			// monsters models
+			monster1 = new Monster(1400, -220, 0, objectloader, animloader, scene, mixers, monsters, 1200, 2000);
+
+			monster2 = new Monster(1950, -220, 0, objectloader, animloader, scene, mixers, monsters, 2000, 2800);
+
+			monster3 = new Monster(2500, -220, 0, objectloader, animloader, scene, mixers, monsters, 2800, 3600);
+
+
+			// renderer
+			renderer = new THREE.WebGLRenderer({ antialias: true });
+			renderer.setPixelRatio(window.devicePixelRatio);
+			renderer.setSize(window.innerWidth, window.innerHeight);
+			renderer.outputEncoding = THREE.sRGBEncoding;
+			renderer.shadowMap.enabled = true;
+			renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+			container.appendChild(renderer.domElement);
+			stats = new Stats();
+			container.appendChild(stats.dom);
+
+			// controls
+			const controls = new OrbitControls(camera, renderer.domElement);
+			controls.target.set(0, 0, 0);
+			controls.update();
+
+			// resize function
+			window.addEventListener('resize', onWindowResize, false);
+
+			// on key listen to move ---- keyup
+			window.onkeyup = function (e) {
+				console.log(e.keyCode)
+				// when user release key left or right set direction x to 0.
+				if (e.keyCode == 39) {
+					// player pressed left or right
+					action = 0;
+				}
+
+			};
+
+
+			// on key listen to move ---- keydown
+			window.onkeydown = function (e) {
+				console.log(e.keyCode);
+				// when user pressed key right direction y to 1.
+				if (e.keyCode == 39) {
+					action = 1;
+				}
+
+				if (e.keyCode == 32) {
+					action = 3;
+				}
+
+
+			};
+
+			// on click listen
+			window.onclick = function () {
+
+				if (game_over == 1) {
+					location.reload()
+				}
+			};
+
+
+		}
+
+
+		// resize window function
+		function onWindowResize() {
+
+			camera.aspect = window.innerWidth / window.innerHeight;
+			camera.updateProjectionMatrix();
+
+			renderer.setSize(window.innerWidth, window.innerHeight);
+
+		}
+
+		// collision check
+		function coll_check() {
+			monsters.map(m => {
+				// console.log(m.position.x);
+				// 		console.log(wukong.body.position.x);
+				if (m.body.position.x <= wukong.body.position.x + 150 && m.dead == 0) {
+
+					game_over = 1;
+				}
+
+			});
+		}
+
+		// get foods
+		function get_food() {
+			foods.map(m => {
+				if (m.position.x == wukong.body.position.x) {
+					m.position.y += 100;
+					scene.remove(m);
+
+				}
+
+			});
+		}
+
+		// attack check
+		function attack_check() {
+			attacking = 1;
+			attack_start = new Date().getTime();
+			monsters.map(m => {
+				if (m.body.position.x <= wukong.body.position.x + 245) {
+					m.die_state();
+					m.dead_start_time = attack_start;
+				}
+
+			});
+		}
+
+		// monster moves function
+		function monsters_move() {
+			if (monsters) {
+				monsters.map(m => {
+					if (m.dead == 0) {
+						m.body.position.x += -0.5;
+					}
+
+				});
+
+			}
+		}
+
+		// add guide Text
+		function addText(text, x) {
+			const textloader = new THREE.FontLoader();
+			textloader.load('gentilis_regular.typeface.json', function (font) {
+
+				const textGeo = new THREE.TextBufferGeometry(text, {
+
+					font: font,
+
+					size: 25,
+					height: 50,
+					// curveSegments: 12,
+
+					// bevelThickness: 2,
+					// bevelSize: 5,
+					// bevelEnabled: true
+
+				});
+
+				textGeo.computeBoundingBox();
+				const centerOffset = - 0.5 * (textGeo.boundingBox.max.x - textGeo.boundingBox.min.x);
+
+				const textMaterial = new THREE.MeshPhongMaterial({ color: 0xff0000, specular: 0xffffff });
+
+				const mesh = new THREE.Mesh(textGeo, textMaterial);
+				mesh.position.x = camera.position.x + - 0.5 * (textGeo.boundingBox.max.x - textGeo.boundingBox.min.x);
+				mesh.position.y = 300;
+
+				mesh.castShadow = true;
+				mesh.receiveShadow = true;
+				mesh.rotation.x = -Math.PI / 9;
+				text_array.push(mesh);
+				scene.add(mesh);
+
+			});
+		}
+
+		// animate
+		// var monster_move_start = new Date().getTime();
+		// flag 0 inital state
+		// flag 1-7 cut-scene
+		// flag 8 game play
+		// flag 9-10 cut-scene
+		// action 0 idle
+		// action 1 move
+		// action 3 attack 
+		function animate() {
+
+			requestAnimationFrame(animate);
+			stats.update();
+
+			const delta = clock.getDelta();
+
+			if (mixers) {
+
+				var attack_end = new Date().getTime();
+
+				// collision check runs at start of animations
+				coll_check();
+
+				if (flag == 8) {
+					monsters_move();
+				}
+
+				// remove dead monsters
+				if (monsters) {
+
+					monsters.map(m => {
+						if (m.dead == 1 && attack_end >= m.dead_start_time + 2000) {
+							scene.remove(m.body);
+						}
+					});
+				}
+
+
+				// if attacking then keep attacking animation for 2 seconds
+				if (attacking == 1) {
+					if (attack_end >= attack_start + 2000) {
+						attacking = 0;
+						action = 0;
+					}
+				
+				
+				} else {
+					// if not, checking move or idle with position x less than 150
+					if (action == 1 && wukong && wukong.run && wukong.idle && wukong.body.position.x < 150) {
+						wukong.move();
+
+						wukong.body.position.x = wukong.body.position.x + 5;
+						camera.position.x += 5;
+					}
+					else if (action == 0 && wukong && wukong.run && wukong.idle && wukong.body.position.x < 150) {
+						wukong.idle_state();
+					}
+
+
+					if (wukong) {
+						var now = new Date().getTime();
+
+						// if position x bigger than 150 flag to 1 enter cut-scene
+						if (wukong.body && wukong.body.position.x >= 150 && flag < 1) {
+							wukong.idle_state();
+							flag = 1;
+							scene.remove(text_array[0]);
+							start_talk_time = new Date().getTime();
+
+						}
+						else if (wukong.body && wukong.body.position.x >= 150 && flag == 1 && (now >= start_talk_time + 500)) {
+							addText("Wukong : Master,  what  happened  to  you?", 250)
+							flag = 2;
+						}
+						else if (wukong.body && wukong.body.position.x >= 150 && flag == 2 && (now >= start_talk_time + 2500)) {
+							flag = 3;
+							scene.remove(text_array[1]);
+							addText("Master : . . . . . . ", 250);
+
+						}
+						else if (wukong.body && wukong.body.position.x >= 150 && flag == 3 && (now >= start_talk_time + 4500)) {
+							flag = 4;
+							scene.remove(text_array[2]);
+							addText("Wukong : Master  must  be  too  hungry . . .", 250);
+
+						}
+
+						else if (wukong.body && wukong.body.position.x >= 150 && flag == 4 && (now >= start_talk_time + 6500)) {
+							flag = 5;
+							scene.remove(text_array[3]);
+							addText("Wukong :  I  have  to  find  some  food  for  him . . .", 250);
+
+						}
+						else if (wukong.body && wukong.body.position.x >= 150 && (flag == 5 || flag == 6) && (now >= start_talk_time + 8500)) {
+
+							if (flag == 5) {
+								scene.remove(text_array[4]);
+								flag = 6;
+							} else if (flag == 6) {
+								camera.position.x += 5;
+								if (camera.position.x == 1100) {
+									scene.remove(monk.body);
+									addText("Space to attack, -> to move, try to defeat monsters and find yellow balls", 250);
+									flag = 7;
+								}
+							}
+						}
+						else if (wukong.body && wukong.body.position.x >= 150 && flag == 7) {
+							wukong.move();
+							wukong.body.position.x = wukong.body.position.x + 10;
+
+							// cut scene end, entering in game play
+							if (wukong.body.position.x == 800) {
+								flag = 8;
+							}
+
+						
+						} else if (wukong.body && wukong.body.position.x >= 150 && flag == 8) {
+							if (wukong.body.position.x >= 4800) {
+								flag = 9;
+							}
+							if (action == 1 && wukong && wukong.run && wukong.idle) {
+
+								get_food();
+								wukong.move();
+
+								wukong.body.position.x = wukong.body.position.x + 5;
+								camera.position.x += 5;
+							}
+							else if (action == 0 && wukong && wukong.run && wukong.idle) {
+								wukong.idle_state();
+								get_food();
+							}
+							else if (action == 3 && wukong && wukong.run && wukong.idle) {
+								wukong.attack_state();
+								attack_check();
+							}
+							// entering cut-scene.
+						} else if (wukong.body && flag == 9) {
+							addText("Wukong found some foods ! YOU WIN ! " + "\n" +
+								"Thanks for playing this little game ! ", 250);
+							flag = 10;
+						} else if (wukong.body && flag == 10) {
+							monk2.body.rotation.y = 0;
+							wukong.body.rotation.y = 0;
+							wukong.happy_state();
+						}
+					}
+				}
+
+				mixers.map(m => m.update(delta));
+			}
+
+			// if models not ready, render scene 1
+			// if game over render scene 2
+			if (wukong.done == 1 && monster1.done == 1 && monster2.done == 1 && monster3.done == 1 && monk2.done == 1 && monk.done == 1 && game_over == 0 && sky_box_done == 1 && ground_done == 1) {
+				scene1 = null;
+				renderer.render(scene, camera);
+			} else if (game_over == 1) {
+				renderer.render(scene2, camera2);
+			} else {
+				renderer.render(scene1, camera2);
+			}
+
+		}
+
+
+
+
+
+	</script>
+	<script src='./Wukong.js' type="text/javascript"></script>
+	<script src='./Monk.js' type="text/javascript"></script>
+	<script src='./Monster.js' type="text/javascript"></script>
+</body>
+
+</html>
