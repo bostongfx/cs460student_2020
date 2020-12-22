@@ -1,88 +1,214 @@
 <html>
-  <head>
-    <meta charset="UTF-8" />
-    <style>
-      html, body { 
-        background-color:#000;
-        margin: 0;
-        padding: 0;
-        height: 100%;
-        overflow: hidden !important;  
+<head>
+	<meta charset="UTF-8" />
+	<style>
+		html, body {
+			background-color: #000;
+			margin: 0;
+			padding: 0;
+			height: 100%;
+			overflow: hidden !important;
+			/*
+			background-image: url(img/alley.gif);
+			background-repeat: no-repeat;
+			background-size: 100% 100%;
+			*/
+		}
 
-        background-image: url(sky.jpg);
-        background-repeat: no-repeat;
-        background-size: 100% 100%;
-      }
-    </style>
+		#discoball {
+			position: absolute;
+			visibility: hidden;
+			left: 0;
+			right: 0;
+			margin-left: auto;
+			margin-right: auto;
+			text-align: center;
+		}
 
-    <script src="https://threejs.org/build/three.min.js" type="text/javascript"></script>
-    <script src="https://threejs.org/examples/js/controls/TrackballControls.js" type="text/javascript"></script>
-    <script src="https://threejs.org/examples/js/effects/AnaglyphEffect.js" type="text/javascript"></script>
+		#ball {
+			margin-top: -1px;
+			animation: flip 1.5s infinite;
+			animation-timing-function: linear;
+		}
 
+		@keyframes flip {
+			0%   { transform: scaleX(-1); }
+			100% { transform: scaleX(1);  }
+		}
+	</style>
 
-    <script>
+	<script src="https://threejs.org/build/three.min.js" type="text/javascript"></script>
+	<script src="https://threejs.org/examples/js/controls/TrackballControls.js" type="text/javascript"></script>
+	<script src="https://threejs.org/examples/js/effects/AnaglyphEffect.js" type="text/javascript"></script>
+	<script src="https://threejs.org/examples/js/libs/dat.gui.min.js" type="text/javascript"></script>
+	<script src="robot.js" type="text/javascript"></script>
 
-      var scene, camera, renderer, ambientLight, light, controls;
-      var floor;
+	<script>
+		var controls, renderer, scene, floor, camera;
+		let context = new (window.AudioContext || window.webkitAudioContext)();
 
-      window.onload = function() {
+		window.onload = function() {
+			//------------
+			// setup scene
+			//------------
+			scene = new THREE.Scene();
 
-        scene = new THREE.Scene();
+			// load background through Three.js so it works with the anaglyph effect
+			scene.background = new THREE.TextureLoader().load('img/alley.gif');
 
-        var fov = 60;
-        var ratio = window.innerWidth / window.innerHeight;
-        var zNear = 1;
-        var zFar = 10000;
-        camera = new THREE.PerspectiveCamera(fov, ratio, zNear, zFar);
-        camera.position.set( 0, 0, 500);
+			// camera
+			var fov = 60;
+			var ratio = window.innerWidth / window.innerHeight;
+			var zNear = 1;
+			var zFar = 10000;
+			camera = new THREE.PerspectiveCamera(fov, ratio, zNear, zFar);
+			camera.position.set(0, 50, 350);
 
-        renderer = new THREE.WebGLRenderer({ alpha: true });
-        renderer.setSize( window.innerWidth, window.innerHeight );
-        document.body.appendChild( renderer.domElement );
-        
-        ambientLight = new THREE.AmbientLight();
-        scene.add( ambientLight );
+			// default renderer
+			renderer = new THREE.WebGLRenderer({ alpha: true });
+			renderer.setSize(window.innerWidth, window.innerHeight);
+			document.body.appendChild(renderer.domElement);
 
-        light = new THREE.DirectionalLight( 0xffffff, 5.0 );
-        light.position.set( 10, 100, 10 );
-        scene.add( light );
+			// anaglyph effect
+			effect = new THREE.AnaglyphEffect(renderer);
+			effect.setSize(window.innerWidth, window.innerHeight);
 
+			// lighting
+			var ambientLight = new THREE.AmbientLight();
+			scene.add(ambientLight);
 
-        var floorTexture = new THREE.TextureLoader().load( 'board.jpg' );
-        var floorGeometry = new THREE.PlaneBufferGeometry( 1000, 1000 );
-        var floorMaterial = new THREE.MeshBasicMaterial( {
-          map: floorTexture,
-          side: THREE.DoubleSide
-        } );
-        floor = new THREE.Mesh( floorGeometry, floorMaterial );
-        floor.position.y = -100;
-        floor.rotateX(-30);
-        scene.add( floor );
+			var directionalLight = new THREE.DirectionalLight(0xffffff, 5.0);
+			directionalLight.position.set(10, 100, 10);
+			scene.add(directionalLight);
 
-        controls = new THREE.TrackballControls( camera, renderer.domElement );
+			// floor plane (changed from 2D -> 3D)
+			var floorTexture = new THREE.TextureLoader().load('img/bricks.jpg');
+			var floorGeometry = new THREE.BoxBufferGeometry(1000, 50, 1000);
+			var floorMaterial = new THREE.MeshBasicMaterial({
+				map: floorTexture,
+				side: THREE.DoubleSide
+			});
+			floor = new THREE.Mesh(floorGeometry, floorMaterial);
+			floor.position.y = -100;
+			// floor.rotateX(-30);
+			scene.add(floor);
 
+			// trackball controls
+			controls = new THREE.TrackballControls(camera, renderer.domElement);
 
-        // ROBOT GOES HERE!
+			//-------------
+			// create robot
+			//-------------
+			robot = new Robot(0, 0, 0);
+			robot.show(scene);
 
+			//------------------
+			// dance mode music!
+			//------------------
+			music = document.querySelector('audio');
+			track = context.createMediaElementSource(music);
+		    track.connect(context.destination);
 
+			//------------------
+			// add dat.GUI menus
+			//------------------
+			var gui = new dat.GUI();
 
-        animate();
+			controller = {
+				anaglyph: false,
+				dance: function() { robot.dance(); }
+			};
 
+			left_controller = {
+				'raise arm': function() { robot.raiseLeftArm() },
+				'lower arm': function() { robot.lowerLeftArm() },
+				'kick': function() { robot.leftKick() }
+			};
 
-      };
+			right_controller = {
+				'raise arm': function() { robot.raiseRightArm() },
+				'lower arm': function() { robot.lowerRightArm() },
+				'kick': function() { robot.rightKick() }
+			};
 
-      function animate() {
+			// toggle between default renderer and anaglyph renderer
+			var rendering = gui.addFolder('Rendering');
+			rendering.add(controller, 'anaglyph');
+			rendering.open();
 
-        requestAnimationFrame( animate );
+			// robot movement: generic
+			var moving = gui.addFolder('Movement');
+			moving.add(robot.head.position, 'x', -1000, 1000).listen();
+			moving.add(robot.head.position, 'y', -1000, 1000).listen();
+			moving.add(robot.head.position, 'z', -1000, 1000).listen();
+			// dancing can be stopped by pressing the button again
+			moving.add(controller, 'dance').onChange(function() {
+			    context.resume();
+				(robot.dancing) ? music.pause() : music.play();
+			});
+			moving.open();
 
-        // TODO
+			// robot movement: left side
+			var left = gui.addFolder('Left');
+			left.add(left_controller, 'raise arm');
+			left.add(left_controller, 'lower arm');
+			left.add(left_controller, 'kick');
+			left.open();
 
-        controls.update();
-        renderer.render( scene, camera );
+			// robot movement: right side
+			var right = gui.addFolder('Right');
+			right.add(right_controller, 'raise arm');
+			right.add(right_controller, 'lower arm');
+			right.add(right_controller, 'kick');
+			right.open();
 
-      };
+			animate();
+		}
 
-    </script>
-  </head>
-  <body></body>
+		//-------------------------------------------
+		// raycaster to change robot's floor position
+		//-------------------------------------------
+		window.onclick = function(e) {
+			if (!e.shiftKey) {
+				e.preventDefault();
+				return false;
+			}
+
+			pixelCoords = new THREE.Vector2(e.clientX, e.clientY);
+
+			vpCoords = new THREE.Vector2(
+				(pixelCoords.x / window.innerWidth) * 2 - 1,
+				- (pixelCoords.y / window.innerHeight) * 2 + 1
+			);
+			vpCoordsNear = new THREE.Vector3(vpCoords.x, vpCoords.y, 0);
+
+			raycaster = new THREE.Raycaster();
+			raycaster.setFromCamera(vpCoordsNear, camera);
+			intersect = raycaster.intersectObject(floor);
+
+			robot.head.position.set(
+				intersect[0].point.x,
+				intersect[0].point.y + 75,
+				intersect[0].point.z
+			);
+		}
+
+	function animate() {
+		requestAnimationFrame(animate);
+		robot.onAnimate();
+		controls.update();
+		(controller.anaglyph) ? effect.render(scene, camera) : renderer.render(scene, camera);
+	}
+	</script>
+</head>
+<body id="body">
+	<!-- source: Marvin Gaye - Got To Give It Up -->
+	<audio src="sound/marvin.mp3"></audio>
+	<div id="discoball">
+		<!-- <img id="disco" src="img/discoball.png" /> -->
+		<img id="disco" src="img/disco.png" />
+		<br>
+		<img id="ball" src="img/ball.png" />
+	</div>
+</body>
 </html>

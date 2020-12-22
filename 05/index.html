@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<title>Scene control and transformations</title>
+
+		<style>
+			html, body {
+				background-color: #000;
+				margin: 0;
+				padding: 0;
+				height: 100%;
+				overflow: hidden !important;
+			}
+
+			#r1 {
+				width: 50%;
+				height: 100%;
+				float: left;
+			}
+
+			#r2 {
+				width: 50%;
+				height: 100%;
+				float: left;
+			}
+		</style>
+
+		<script src="https://get.goXTK.com/xtk_edge.js" type="text/javascript"></script>
+		<script src="https://get.goxtk.com/xtk_xdat.gui.js" type="text/javascript" ></script>
+		<script src="https://threejs.org/build/three.min.js" type="text/javascript"></script>
+		<script src="https://threejs.org/examples/js/controls/TrackballControls.js" type="text/javascript"></script>
+
+		<script type="text/javascript">
+			window.onload = function() {
+				//-----------
+				// set up XTK
+				//-----------
+				xtkRender = new X.renderer3D();
+				xtkRender.container = 'r1';
+				xtkRender.init();
+
+				//----------------
+				// set up THREE.js
+				//----------------
+				r2 = document.getElementById('r2');
+
+				threeScene = new THREE.Scene();
+
+				fov = 75;
+				ratio = r2.clientWidth / r2.clientHeight;
+				zNear = 1;
+				zFar = 10000;
+				threeCamera = new THREE.PerspectiveCamera(fov, ratio, zNear, zFar);
+				threeCamera.position.set(0, 0, 75);
+
+				threeRender = new THREE.WebGLRenderer({ antialias: true });
+				threeRender.setSize(r2.clientWidth, r2.clientHeight);
+				r2.appendChild(threeRender.domElement);
+
+				ambientLight = new THREE.AmbientLight(0x808080, 1);
+				threeScene.add(ambientLight);
+				directionalLight = new THREE.DirectionalLight(0xffffff, 0.5);
+				directionalLight.position.set(0, 0, 25);
+				threeScene.add(directionalLight);
+
+				threeControls = new THREE.TrackballControls(threeCamera, r2);
+
+				//----------
+				// add cubes
+				//----------
+				xtkCube = new X.cube();
+				xtkRender.add(xtkCube);
+				xtkCube.center = [0, 0, 0];
+				xtkRender.camera.position = [0, 0, -100];
+
+				geometry = new THREE.BoxBufferGeometry(20, 20, 20);
+				material = new THREE.MeshStandardMaterial({ color: 0xffffff });
+				threeCube = new THREE.Mesh(geometry, material);
+				threeScene.add(threeCube);
+
+				//-----------------
+				// add dat.GUI menu
+				//-----------------
+				gui = new dat.GUI();
+
+				controller = {
+					'threejs_color': 0xffffff,
+					// Three.js rotations have been changed to follow XTK more closely
+					'rotateX': function() {
+						xtkCube.transform.rotateX(20);
+						threeCube.rotateX(-20.08);
+					},
+					'rotateY': function() {
+						xtkCube.transform.rotateY(20);
+						threeCube.rotateY(20.08);
+					},
+					'rotateZ': function() {
+						xtkCube.transform.rotateZ(20);
+						threeCube.rotateZ(20.08);
+					},
+					'add new': function() {
+						var pos = [50, 50, 50];
+
+						newXtkCube = new X.cube();
+						newXtkCube.center = pos;
+						xtkRender.add(newXtkCube);
+
+						newMaterial = new THREE.MeshStandardMaterial({ color: 0xffffff });
+						newThreeCube = new THREE.Mesh(geometry, newMaterial);
+						newThreeCube.position.set(pos[0], pos[1], pos[2]);
+						threeScene.add(newThreeCube);
+					}
+				}
+
+				// ...for XTK cube
+				xtkGui = gui.addFolder('XTK cube');
+				xtkGui.open();
+				xtkGui.add(xtkCube, 'visible');
+				xtkGui.add(xtkCube, 'opacity', 0, 1);
+				xtkGui.addColor(xtkCube, 'color');
+
+				// ...for Three.js cube
+				threeGui = gui.addFolder('Three.js cube');
+				threeGui.open();
+				threeGui.add(threeCube, 'visible');
+				threeGui.add(threeCube.material, 'opacity', 0, 1).onChange(function() {
+					threeCube.material.transparent = true
+				});
+				threeGui.addColor(controller, 'threejs_color').onChange(function() {
+					threeCube.material.color.set(controller.threejs_color)
+				});
+
+				// ...for both cubes
+				bothGui = gui.addFolder('Both cubes');
+				bothGui.open();
+				bothGui.add(controller, 'rotateX');
+				bothGui.add(controller, 'rotateY');
+				bothGui.add(controller, 'rotateZ');
+				bothGui.add(controller, 'add new');
+
+				//-----------------------------
+				// last step: render the scenes
+				//-----------------------------
+				xtkRender.render();
+				animate();
+			}
+
+			function animate() {
+				requestAnimationFrame(animate);
+				threeControls.update();
+				threeRender.render(threeScene, threeCamera);
+			};
+		</script>
+	</head>
+	<body>
+		<div id="r1"></div>
+		<div id="r2"></div>
+	</body>
+</html>
