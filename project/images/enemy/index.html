@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <script type="text/javascript">
+              window.onload = function() {
+                  var bigImg = document.createElement("img");
+
+                  bigImg.src = "./metoll.jpg";
+                  // bigImg.width="320";
+                  var myp = document.getElementById('myp');
+                  myp.appendChild(bigImg);
+
+              };
+
+              function myFunction(){
+                  window.open('./original/index.html');
+              };
+        </script>
+  </head>
+  <body>
+      <div id="myp" style="border:1px solid #eee;width:320px;height:100px;"></div>
+      <button onclick="myFunction()">3D Pixel</button>
+  </body>
+
+</html>
