@@ -1,0 +1,570 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<title>CS480 intro</title>
+		<style>
+			body {
+				margin: 0;
+				padding: 0;
+				height: 100%;
+				overflow: hidden !important;
+				background-color: #000;
+			}
+			video, audio {
+				display: none;
+			}
+			#hbcover {
+				background: #000;
+				opacity: 0.6;
+				position: absolute;
+				width: 100%;
+				height: 100%;
+				visibility: hidden;
+			}
+		</style>
+
+		<script src="js/three.min.js"></script>
+		<script src="js/three.anaglyphEffect.js"></script>
+		<script src="js/three.objLoader.js"></script>
+		<script src="js/tween.umd.js"></script>
+		<script src="js/three.trackballControls.js"></script>
+		<script src="js/stats.min.js"></script>
+
+		<script>
+			// user-configurable values
+			var volume = 0.35;
+			var anaglyph = false;
+			var debug = false;
+
+			let renderer, effect, scene, camera, ambientLight;
+			let controls, stats;
+
+			let umbLogoMesh, csLogoTextMesh, csLogoIconMesh, brainMesh;
+			let umbLogo, csLogoText, csLogoIcon, csLogoGroup = new THREE.Group();
+
+			THREE.Cache.enabled = true;
+			let objLoader = promisifyLoader(new THREE.OBJLoader());
+			let fontLoader = promisifyLoader(new THREE.FontLoader());
+
+			let music, voiceOver, textToSpeech;
+			let heartbeat, heartbeatTexture;
+
+			let synth = window.speechSynthesis;
+			let utter = new SpeechSynthesisUtterance();
+			utter.lang = 'en-US';
+
+			let started = false;
+
+
+			function promisifyLoader(loader, onProgress) {
+				function promiseLoader(url) {
+					return new Promise((resolve, reject) => {
+						loader.load(url, resolve, onProgress, reject);
+					});
+				}
+				return {
+					originalLoader: loader,
+					load: promiseLoader
+				};
+			}
+
+
+			function centerGroup(group) {
+				new THREE.Box3().setFromObject(group).getCenter(group.position).multiplyScalar(-1);
+			}
+
+
+			function speak(text) {
+				utter.text = text;
+				synth.speak(utter);
+			}
+
+
+			function setupMedia() {
+				music = document.getElementById('music');
+				voiceOver = document.getElementById('voiceOver');
+				heartbeat = document.getElementById('heartbeat');
+				heartbeatTexture = new THREE.VideoTexture(heartbeat);
+			}
+
+
+			// IMAGE 1
+			let floorTexture = new THREE.TextureLoader().load( '/img/image1.jpg' );
+        	let floorGeometry = new THREE.PlaneBufferGeometry( 600, 600 );
+        	let floorMaterial = new THREE.MeshBasicMaterial( {
+          		map: floorTexture,
+          		side: THREE.DoubleSide
+			} );
+			let image1 = new THREE.Mesh( floorGeometry, floorMaterial );
+
+			// IMAGE 2
+			let floorTexture2 = new THREE.TextureLoader().load( '/img/image2.png' );
+			let floorMaterial2 = new THREE.MeshBasicMaterial( {
+        		map: floorTexture2,
+      			side: THREE.DoubleSide
+    		} );
+			let image2 = new THREE.Mesh( floorGeometry, floorMaterial2 );
+
+			// IMAGE 3
+			let floorTexture3 = new THREE.TextureLoader().load( '/img/image3.png' );
+			let floorMaterial3 = new THREE.MeshBasicMaterial( {
+          		map: floorTexture3,
+          		side: THREE.DoubleSide
+    		} );
+			let image3 = new THREE.Mesh( floorGeometry, floorMaterial3 );
+
+			// 	IMAGE 4
+			let floorTexture4 = new THREE.TextureLoader().load( '/img/image4.jpg' );
+			let floorMaterial4 = new THREE.MeshBasicMaterial( {
+          		map: floorTexture4,
+          		side: THREE.DoubleSide
+    		} );
+			let image4 = new THREE.Mesh( floorGeometry, floorMaterial4 );
+
+			window.onload = function() {
+				setupCanvas();
+				setupMedia();
+
+				umbLogo = objLoader.load('model/umb.obj').then(function(object) {
+					umbLogoMesh = object.children[0];
+					umbLogoMesh.material = new THREE.MeshStandardMaterial({
+						color: 0x2aa0f5,
+						transparent: true
+					});
+					umbLogoMesh.scale.x = umbLogoMesh.scale.y = umbLogoMesh.scale.z = 1.5;
+					return umbLogoMesh;
+				});
+
+				csLogoText = fontLoader.load('font/bungee.typeface.json').then(function(font) {
+					let textProperties = {
+						font: font, size: 80,
+						height: 30, curveSegments: 8,
+						bevelEnabled: false,
+						bevelThickness: 6, bevelSize: 3,
+						bevelOffset: 0, bevelSegments: 4
+					}
+
+					let textCSGeometry = new THREE.TextBufferGeometry('CS', textProperties);
+					let text480Geometry = new THREE.TextBufferGeometry('480', textProperties);
+
+					let textMaterial = new THREE.MeshNormalMaterial({
+						transparent: true
+					});
+
+					CSMesh = new THREE.Mesh(textCSGeometry, textMaterial);
+					fourEightyMesh = new THREE.Mesh(text480Geometry, textMaterial);
+
+					CSMesh.position.x = -220;
+					fourEightyMesh.position.x = 75;
+
+					CSMesh.visible = false;
+					fourEightyMesh.visible = false;
+
+					csLogoGroup.add(CSMesh);
+					csLogoGroup.add(fourEightyMesh);
+
+					return { CSMesh, fourEightyMesh };
+				});
+
+				csLogoIcon = objLoader.load('model/monitor.obj').then(function(object) {
+					csLogoIconMesh = object.children[0];
+					csLogoIconMesh.material = new THREE.MeshNormalMaterial({
+						transparent: true,
+						opacity: 0
+					});
+					csLogoIconMesh.visible = false;
+					csLogoIconMesh.position.y = 30;
+					csLogoGroup.add(csLogoIconMesh);
+					return csLogoIconMesh;
+				});
+
+				Promise.all([csLogoText, csLogoIcon]).then(function() {
+					centerGroup(csLogoGroup);
+					scene.add(csLogoGroup);
+				});
+
+				brain = objLoader.load('model/brain.obj').then(function(object) {
+					brainMesh = object.children[0];
+					brainMesh.material = new THREE.MeshNormalMaterial();
+					brainMesh.material.wireframe = true;
+					brainMesh.scale.x = brainMesh.scale.y = brainMesh.scale.z = 200;
+					return brainMesh;
+				});
+
+				animate();
+			}
+
+
+			window.onclick = function() {
+				if (!started) {
+					started = true;
+
+					music.play();
+					music.volume = volume;
+					heartbeat.play();
+
+					startAnimation();
+				}
+			}
+
+
+			function setupCanvas() {
+				// renderer
+				renderer = new THREE.WebGLRenderer({
+					antialias: true,
+					powerPreference: 'high-performance'
+				});
+				renderer.setSize(window.innerWidth, window.innerHeight);
+				document.body.appendChild(renderer.domElement);
+
+				// anaglyph effect
+				effect = new THREE.AnaglyphEffect(renderer);
+				effect.setSize(window.innerWidth, window.innerHeight);
+
+				// automatically resize canvas with browser
+				window.addEventListener('resize', window.onresize, false);
+
+				// scene
+				scene = new THREE.Scene();
+
+				// light
+				ambientLight = new THREE.AmbientLight(0xfff);
+				scene.add(ambientLight);
+
+				// camera
+				let fov = 75;
+				let ratio = window.innerWidth / window.innerHeight;
+				let zNear = 1;
+				let zFar = 10000;
+				camera = new THREE.PerspectiveCamera(fov, ratio, zNear, zFar);
+				camera.position.z = 500;
+
+				if (debug) {
+					// mouse controls
+					controls = new THREE.TrackballControls(camera, renderer.domElement);
+					controls.rotateSpeed = 5.0;
+
+					// FPS counter
+					stats = new Stats();
+					stats.showPanel(0);
+					document.body.appendChild(stats.domElement);
+				}
+			}
+
+
+			function onresize() {
+				let width = window.innerWidth;
+				let height = window.innerHeight;
+				camera.aspect = width / height;
+				camera.updateProjectionMatrix();
+				renderer.setSize(width, height);
+				if (anaglyph) effect.setSize(width, height);
+			}
+
+
+			function startAnimation() {
+				let umbLogoTween, iconTween, textTween, image1Tween;
+
+ 				(function umbLogoAnimation() {
+					let start = { opacity: 1, spinSpeed: 0 };
+					let end = { opacity: 0, spinSpeed: 1 };
+					umbLogoTween = new TWEEN.Tween(start).to(end, 2000);
+					umbLogo.then(mesh => { scene.add(mesh) });
+					umbLogoTween.delay(1500);
+					umbLogoTween.onUpdate(function() {
+						umbLogo.then(mesh => {
+							mesh.material.opacity = start.opacity;
+							mesh.rotation.y += start.spinSpeed * 0.15;
+						});
+					});
+					umbLogoTween.onComplete(function() {
+						umbLogo.then(mesh => {
+							mesh.visible = false;
+						});
+					});
+				})();
+
+				(function csLogoAnimation() {
+					let iconStart = { opacity: 0, spin: -3 };
+					let iconEnd = { opacity: 1, spin: 0 };
+					iconTween = new TWEEN.Tween(iconStart).to(iconEnd, 1300);
+					iconTween.easing(TWEEN.Easing.Sinusoidal.Out);
+					iconTween.onStart(function() {
+						csLogoIcon.then(mesh => {
+							mesh.visible = true;
+						});
+					});
+					iconTween.onUpdate(function() {
+						csLogoIcon.then(mesh => {
+							mesh.material.opacity = iconStart.opacity;
+							mesh.rotation.y = iconStart.spin;
+						});
+					});
+
+
+					//Text bounces in
+					let textStart = { y_cs: 600, y_480: -600 };
+					let textEnd = { y_cs: 0, y_480: 0 };
+					textTween = new TWEEN.Tween(textStart).to(textEnd, 1500);
+					textTween.easing(TWEEN.Easing.Bounce.InOut);
+					textTween.onStart(function() {
+					 	csLogoText.then(object => {
+							object.CSMesh.visible = true;
+							object.fourEightyMesh.visible = true;
+						 })
+					 });
+ 					 textTween.onUpdate(function() {
+					 	csLogoText.then(object => {
+							 object.CSMesh.position.y = textStart.y_cs;
+							 object.fourEightyMesh.position.y = textStart.y_480;
+					 	});
+					});
+
+
+					//Fade out the text or make the text smaller over time
+					let fadeTextStart = { z_cs: 0, z_480: 0, opacity: 1 };
+					let fadeTextEnd = { z_cs: 200, z_480: 200, opacity: 1};
+					fadeTextTween = new TWEEN.Tween(fadeTextStart).to(fadeTextEnd, 4220);
+					fadeTextTween.easing(TWEEN.Easing.Quadratic.InOut);
+					fadeTextTween.onStart(function() {
+						csLogoText.then(object => {
+							object.CSMesh.position.z = fadeTextStart.z_cs;
+							object.fourEightyMesh.position.z = fadeTextStart.z_480;
+							object.CSMesh.material.opacity = fadeTextStart.opacity;
+							object.fourEightyMesh.material.opacity = fadeTextStart.opacity;
+						})
+					});
+					fadeTextTween.onUpdate(function() {
+						csLogoText.then(object => {
+							object.CSMesh.position.z = fadeTextStart.z_cs;
+							object.fourEightyMesh.position.z = fadeTextStart.z_480;
+							object.CSMesh.material.opacity -= fadeTextStart.opacity * 0.01;
+							object.fourEightyMesh.material.opacity -= fadeTextStart.opacity * 0.01;
+						})
+					});
+					//make the three meshes (cs, 480, and monitor icon) invisible
+					fadeTextTween.onComplete(function() {
+						csLogoText.then(object => {
+							object.CSMesh.visible = false;
+							object.fourEightyMesh.visible = false;
+
+						})
+						csLogoIcon.then(object => {
+							object.visible = false;
+						})
+					})
+
+				})();
+
+ 				(function brainAnimation() {
+					let start = { opacity: 0, spinSpeed: 1 };
+					let end = { opacity: 1, spinSpeed: 1 };
+					brainTween = new TWEEN.Tween(start).to(end, 3500);
+					brainTween.delay(1600);
+					brainTween.onStart(function() {
+						brain.then(mesh => {
+							scene.add(mesh)
+							mesh.material.opacity = end.opacity;
+							mesh.position.z = -125;
+							mesh.position.y = 20;
+						});
+						csLogoIcon.then(object => {
+							object.visible = true;
+							object.material.opacity = 1;
+							object.position.x = 340;
+							object.position.y = 0;
+							object.position.z = -25;
+						});
+						csLogoText.then(object => {
+							object.CSMesh.visible = true;
+							object.fourEightyMesh.visible = true;
+							object.CSMesh.material.opacity = 1;
+							object.fourEightyMesh.material.opacity = 1;
+							object.fourEightyMesh.position.x = 15;
+							object.fourEightyMesh.position.y = -30;
+							object.fourEightyMesh.position.z = -25;
+							object.CSMesh.position.x = -135;
+							object.CSMesh.position.y = -30;
+							object.CSMesh.position.z = -25;
+						});
+						umbLogo.then(object => {
+							object.visible = true;
+							object.material.opacity = 1;
+							object.position.x = -290
+							object.position.y = -30
+							object.position.z = -25
+							object.rotation.y = 0;
+						})
+					});
+					brainTween.onUpdate(function() {
+						brain.then(mesh => {
+							mesh.rotation.y += start.spinSpeed * 0.07;
+						});
+					});
+
+					brainTween.onComplete(function() {
+						scene.background = heartbeatTexture;
+					});
+
+					fadeout = new TWEEN.Tween(start).to(end, 3000);
+					fadeout.onUpdate(function() {
+						brain.then(mesh => {
+							mesh.rotation.y += start.spinSpeed * 0.1;
+						});
+						csLogoIcon.then(object => {
+							object.visible = true;
+							object.material.opacity -= end.opacity * 0.2;
+							object.position.z += 1;
+						});
+						csLogoText.then(object => {
+							object.CSMesh.visible = true;
+							object.fourEightyMesh.visible = true;
+							object.CSMesh.material.opacity -= end.opacity * 0.2;
+							object.fourEightyMesh.material.opacity -= end.opacity * 0.2;
+							object.fourEightyMesh.position.z += 1;
+							object.CSMesh.position.z += 1;
+						});
+						umbLogo.then(object => {
+							object.visible = true;
+							object.material.opacity -= end.opacity * 0.2;
+							object.position.z += 1
+						})
+					});
+					fadeout.onComplete(function() {
+						startContent();
+						voiceOver.play();
+					});
+
+					rotateBrain = new TWEEN.Tween(start).to(end, 15000);
+					rotateBrain.onUpdate(function() {
+						brain.then(mesh => {
+							mesh.rotation.y += start.spinSpeed * 0.1;
+						});
+					});
+
+
+				})();
+
+				// boom boom boom the images
+ 				(function imageBoomboom() {
+					let start = { opacity: 1 };
+					let end = { opacity: 1 };							//as long as you start it on the right start sound, the images will play accordingly
+					image1Tween = new TWEEN.Tween(start).to(end, 350); //(270) DO NOT CHANGE this number has been adjusted relative to other images
+					image1Tween.delay(1125);
+					image1Tween.onStart(function() {
+						scene.add(image1);
+					});
+					image1Tween.onComplete(function() {
+						image1.visible = false;
+					});
+					// image2
+					image2Tween = new TWEEN.Tween(start).to(end, 350); //(270)DO NOT CHANGE this number has been adjusted relative to other images
+					image2Tween.onStart(function() {
+						scene.add(image2);
+					});
+					image2Tween.onComplete(function() {
+						image2.visible = false;
+					});
+					// image3
+					image3Tween = new TWEEN.Tween(start).to(end, 250); //(230)DO NOT CHANGE this number has been adjusted relative to other images
+					image3Tween.onStart(function() {
+						scene.add(image3);
+					});
+					image3Tween.onComplete(function() {
+						image3.visible = false;
+					});
+					// image4
+					image4Tween = new TWEEN.Tween(start).to(end, 1630); //(2120) The last image stays longer for this amount of time in correspondence to music
+					image4Tween.onStart(function() {
+						scene.add(image4);
+					});
+					image4Tween.onComplete(function() {
+						image4.visible = false;
+					});
+
+				})();
+
+				umbLogoTween.chain(iconTween);
+				iconTween.chain(textTween);
+				textTween.chain(fadeTextTween);
+				fadeTextTween.chain(image1Tween);
+				image1Tween.chain(image2Tween);
+				image2Tween.chain(image3Tween);
+				image3Tween.chain(image4Tween);
+				image4Tween.chain(brainTween);
+				brainTween.chain(fadeout);
+				fadeout.chain(rotateBrain);
+				umbLogoTween.start();
+			}
+
+
+			function animate() {
+				if (debug) stats.begin();
+				requestAnimationFrame(animate);
+				if (debug) controls.update();
+				(anaglyph) ?
+					effect.render(scene, camera)
+					: renderer.render(scene, camera);
+				TWEEN.update();
+				if (debug) stats.end();
+			}
+
+
+			function startContent() {
+				frames = ['content1', 'content2', 'content3', 'content4', 'content5', null];
+				times = [0, // Today...
+                	1000, //
+                	4200, // And
+                	6000, //
+                	10000, // this is lecture <number>
+					14000];
+				for (var f in frames) {
+					setTimeout(function(f) {
+	  					if (f > 0) {
+							document.getElementById(frames[f-1]).style.display = 'none';
+	  					}
+	  					if (frames[f] != null) {
+							document.getElementById(frames[f]).style.display = 'block';
+	  					} else {
+							//music.volume = .1;
+							setTimeout(function(f) {
+		  						fadeout = setInterval(function(f) {
+									if (music.volume <= 0.) {
+			  							clearInterval(fadeout);
+			  							return;
+									}
+		  						}, 500);
+							},3000);
+	  					}
+
+					}.bind(this,f), times[f]);
+  				}
+			}
+
+		</script>
+	</head>
+	<body>
+		<audio id="music">
+			<source src="sound/music.mp3" autoplay>
+		</audio>
+		<audio id="voiceOver">
+			<source src="sound/lecture.mp3">
+			</audio>
+		<video id="heartbeat">
+			<source src="video/heartbeat.mp4">
+		</video>
+		<div id="hbcover"></div>
+
+		<div id='content1' style='display:none;position: absolute;color:white;top10%;left:30%;margin-left:50px;font-size:440%'>Today...</div>
+
+		<div id='content2' style='display:none;position: absolute;color:white;top:60%;left:20%;margin-left:50px;font-size:440%'>We will learn more about medical imaging...</div>
+
+		<div id='content3' style='display:none;position: absolute;color:white;top:10%;left:10%;margin-left:50px;font-size:440%'>And...</div>
+
+		<div id='content4' style='display:none;position: absolute;color:white;top:60%;left:20%;margin-left:50px;font-size:440%'>We will learn how to use 3D Slicer!</div>
+
+		<div id='content5' style='display:none;position: absolute;color:white;top:55%;left:40%;margin-left:50px;font-size:440%'>This is lecture 2.</div>
+	</body>
+</html>
