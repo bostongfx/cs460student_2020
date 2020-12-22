@@ -40,6 +40,8 @@
 		let game_over = 0;
 		let ground_done = 0;
 		let sky_box_done = 0;
+		let ready = 0;
+		var controls;
 
 
 		init();
@@ -219,7 +221,7 @@
 			container.appendChild(stats.dom);
 
 			// controls
-			const controls = new OrbitControls(camera, renderer.domElement);
+			controls = new OrbitControls(camera, renderer.domElement);
 			controls.target.set(0, 0, 0);
 			controls.update();
 
@@ -243,6 +245,15 @@
 				console.log(e.keyCode);
 				// when user pressed key right direction y to 1.
 				if (e.keyCode == 39) {
+					if(ready == 0) {
+						camera = new THREE.PerspectiveCamera(30, window.innerWidth / window.innerHeight, 1, 10000);
+						camera.position.set(0, 800, 2000);
+						camera.target = new THREE.Vector3(0, 0, 0);
+						camera.lookAt(camera.target);
+						controls.enabled = false;
+						ready = 1;
+						action = 1;
+					}
 					action = 1;
 				}
 
@@ -264,7 +275,6 @@
 
 		}
 
-
 		// resize window function
 		function onWindowResize() {
 
@@ -280,7 +290,7 @@
 			monsters.map(m => {
 				// console.log(m.position.x);
 				// 		console.log(wukong.body.position.x);
-				if (m.body.position.x <= wukong.body.position.x + 150 && m.dead == 0) {
+				if (m.body.position.x <= wukong.body.position.x + 10 && m.dead == 0) {
 
 					game_over = 1;
 				}
@@ -460,6 +470,7 @@
 
 							if (flag == 5) {
 								scene.remove(text_array[4]);
+
 								flag = 6;
 							} else if (flag == 6) {
 								camera.position.x += 5;
@@ -509,6 +520,7 @@
 							monk2.body.rotation.y = 0;
 							wukong.body.rotation.y = 0;
 							wukong.happy_state();
+							
 						}
 					}
 				}
