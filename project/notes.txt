@@ -5,15 +5,11 @@ https://threejs.org/docs/#examples/en/loaders/OBJLoader
 https://3dc.io/
 
 
-To-Do:
-- Finish Artwork 
-- Position the objects a little better --> spread them out, put them at an angle
 
 Ideas:
 - Make artwork so that users can insert objects (maybe people or trees or other stuff)
     - ^ partially done, but now you need to draw these little objects
 - Set up a controller/dat gui
-- Set it up so that when a user clicks on an image, they get a pop up with info on it.
 
 --> Shift + Click on the ground to add plants and people (ensure that it only intersects the ground and not other objects)
 --> Shift + Click on a structure to learn more
