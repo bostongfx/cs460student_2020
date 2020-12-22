@@ -20,6 +20,9 @@
 
       let scene, camera, renderer, effect, ambientLight, directionalLight, light, mesh, toonMaterial, controls, controller;
 
+      let light1, light2, obj1, obj2, light1_obj, light2_obj;
+      let directionalLightsCount = 0;
+
       window.onload = function() {
 
 
@@ -42,36 +45,103 @@
 
         // TODO Part 3 (add 2 pointlights)
 
+        const sphere = new THREE.SphereBufferGeometry( 8, 16, 8 );
+
+        light1 = new THREE.PointLight( 0xff0040, 20, 100, 2 );
+        light1_obj = new THREE.Mesh( sphere, new THREE.MeshBasicMaterial( { color: 0xff0040 } ) );
+				light1.add(light1_obj );
+				scene.add( light1 );
+
+				light2 = new THREE.PointLight( 0x0040ff, 20, 100, 2 );
+        light2_obj = new THREE.Mesh( sphere, new THREE.MeshBasicMaterial( { color: 0x0040ff } ) );
+				light2.add( light2_obj );
+				scene.add( light2 );
 
 
+        // the radius of two objects is 165.
         var loader = new PLYLoader();
         loader.load('armadillo.ply', function (geometry) {
 
           geometry.computeVertexNormals();
 
           toonMaterial = new THREE.MeshToonMaterial( {
-             color: 0x21ce70
+             color: 0xf110f
           } );
 
           mesh = new THREE.Mesh( geometry, toonMaterial );
-          
+          obj1 = mesh;
+
+
           scene.add( mesh );
 
         } );
 
-        // TODO Part 1, load another mesh
-        // TODO Part 2, use a different material for this mesh
+        // Part 1, load another mesh
+        // Part 2, use a different material for this mesh
+
+        var loader = new PLYLoader();
+        loader.load('armadillo.ply', function (geometry) {
+
+          geometry.computeVertexNormals();
+
+          toonMaterial = new THREE.MeshPhongMaterial( {
+             color: 0x2d2d2f
+          } );
+
+          mesh = new THREE.Mesh( geometry, toonMaterial );
+          mesh.position.x = -150;
+          obj2 = mesh;
+
+          scene.add( mesh );
+
+        } );
 
 
+        
 
-        controller = {
-          'color': 0xffffff // we can use this single color
-                            // container for all colors in the scene 
-                            // if we modify the onChange callback (see below)
 
           // TODO Bonus Part 1
           // TODO Bonus Part 2
+        controller = {
+          'color': 0xffffff, // we can use this single color
+                            // container for all colors in the scene 
+                            // if we modify the onChange callback (see below)
+          'light1Color' : 0xff0040,
+          'light2Color': 0x0040ff,
+          'leftObject': 0xf110f,
+          'rightObject': 0x2d2d2f,
+          'obj1Material': 'toon',
+          'obj2Material': 'phong',
+          'new_directional_light': function(){
+
+              var Configuracion = function(newDirectionalLight, newSubDirectionalFolder, directionalFolder){
+                this.color = 0xffffff;
+                this.newDirectionalLight = newDirectionalLight;
+                this.newSubDirectionalFolder = newSubDirectionalFolder;
+                this.directionalFolder = directionalFolder;
+              }
+              Configuracion.prototype.remove = function() {
+                this.directionalFolder.removeFolder(this.newSubDirectionalFolder);
+                scene.remove(this.newDirectionalLight);
+              }
+
+              var newDirectionalLight = new THREE.DirectionalLight( 0xffffff, 5.0 );
+              newDirectionalLight.position.set( 10, 100, -100 );
+              scene.add( newDirectionalLight );
+              directionalLightsCount++;
+              var newSubDirectionalFolder = directionalFolder.addFolder('Directional Light ' + directionalLightsCount);
+
+              var configuracion = new Configuracion(newDirectionalLight, newSubDirectionalFolder, directionalFolder);
+
+              newSubDirectionalFolder.addColor(configuracion, 'color').onChange( function(value) { newDirectionalLight.color.setHex(value); }).listen();
+              newSubDirectionalFolder.add(newDirectionalLight.position, 'x', -100, 100);
+              newSubDirectionalFolder.add(newDirectionalLight.position, 'y', -100, 100);
+              newSubDirectionalFolder.add(newDirectionalLight.position, 'z', -100, 100);
+              newSubDirectionalFolder.add(configuracion, 'remove');
+              newSubDirectionalFolder.open();
+          },
         }
+
 
 
         var gui = new GUI();
@@ -80,15 +150,70 @@
         ambientFolder.open();
 
         var directionalFolder = gui.addFolder('Directional Light');
-        directionalFolder.addColor(controller, 'color').onChange( function(value) { directionalLight.color.setHex(value); });
-        directionalFolder.add(directionalLight.position, 'x', -100, 100);
-        directionalFolder.add(directionalLight.position, 'y', -100, 100);
-        directionalFolder.add(directionalLight.position, 'z', -100, 100);
+        directionalFolder.add(controller, 'new_directional_light').name('add new');
+        var subDirectionalFolder = directionalFolder.addFolder('Directional Light ' + directionalLightsCount);
+        subDirectionalFolder.addColor(controller, 'color').onChange( function(value) { directionalLight.color.setHex(value); });
+        subDirectionalFolder.add(directionalLight.position, 'x', -100, 100);
+        subDirectionalFolder.add(directionalLight.position, 'y', -100, 100);
+        subDirectionalFolder.add(directionalLight.position, 'z', -100, 100);
         directionalFolder.open();
+        subDirectionalFolder.open();
 
         // TODO Part 4 (control the color and position of point lights)
 
+        var point1Folder = gui.addFolder('Point Light 1');
+        point1Folder.addColor(controller, 'light1Color').onChange( function(value) { light1.color.setHex(value); light1_obj.material.color.setHex( value );});
+        point1Folder.add(light1.position, 'x', -300, 100).listen();
+        point1Folder.add(light1.position, 'y', -100, 100).listen();
+        point1Folder.add(light1.position, 'z', -100, 100).listen();
+        point1Folder.open();
+
+        var point2Folder = gui.addFolder('Point Light 2');
+        point2Folder.addColor(controller, 'light2Color').onChange( function(value) { light2.color.setHex(value); light2_obj.material.color.setHex( value );});
+        point2Folder.add(light2.position, 'x', -300, 100).listen();
+        point2Folder.add(light2.position, 'y', -100, 100).listen();
+        point2Folder.add(light2.position, 'z', -100, 100).listen();
+        point2Folder.open();
+
         // TODO Part 5 (control the color of both materials in the scene)
+
+        var leftObject = gui.addFolder('Left Object');
+        leftObject.addColor(controller, 'leftObject').onChange( function(value) {obj1.material.color.setHex( value );});
+        leftObject.add(controller, 'obj1Material', ['toon', 'standard', 'phong']).onChange(function(value) {
+          if(value == 'toon') {
+            obj1.material = new THREE.MeshToonMaterial( {
+             color: 0xf110f
+            } ); 
+          } else if(value == 'standard') {
+            obj1.material = new THREE.MeshStandardMaterial( {
+             color: 0xf110f
+            } );
+          } else if(value == 'phong') {
+            obj1.material = new THREE.MeshPhongMaterial( {
+             color: 0xf110f
+            } );
+          }
+        });
+        leftObject.open();
+
+        var rightObject = gui.addFolder('Right Object');
+        rightObject.addColor(controller, 'rightObject').onChange( function(value) {obj2.material.color.setHex( value );});
+        rightObject.add(controller, 'obj2Material', ['toon', 'standard', 'phong']).onChange(function(value) {
+          if(value == 'toon') {
+            obj2.material = new THREE.MeshToonMaterial( {
+             color: 0x2d2d2f
+            } ); 
+          } else if(value == 'standard') {
+            obj2.material = new THREE.MeshStandardMaterial( {
+             color: 0x2d2d2f
+            } );
+          } else if(value == 'phong') {
+            obj2.material = new THREE.MeshPhongMaterial( {
+             color: 0x2d2d2f
+            } );
+          }
+        });
+        rightObject.open();
 
         gui.open();
 
@@ -110,6 +235,17 @@
 
         renderer.render( scene, camera );
         
+        const time = Date.now() * 0.0005;
+
+        light1.position.z = -20;
+        light2.position.z = -40;
+				light1.position.x = Math.sin( time * 0.7 ) * 165 - 75;
+				light1.position.y = Math.cos( time * 0.5 ) * 50;
+				// light1.position.z = Math.cos( time * 0.3 ) * 165;
+
+				light2.position.x = Math.cos( time * 0.3 ) * 165 - 75;
+				light2.position.y = Math.sin( time * 0.5 ) * 50;
+				// light2.position.z = Math.sin( time * 0.7 ) * 165;
 
       };
 
