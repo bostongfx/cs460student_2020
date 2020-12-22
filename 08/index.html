@@ -1,0 +1,262 @@
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <style>
+      html, body { 
+        background-color:#000;
+        margin: 0;
+        padding: 0;
+        height: 100%;
+        overflow: hidden !important;  
+
+        background-image: url(sky.jpg);
+        background-repeat: no-repeat;
+        background-size: 100% 100%;
+      }
+    </style>
+
+    <script src="https://threejs.org/build/three.min.js" type="text/javascript"></script>
+    <script src="https://threejs.org/examples/js/controls/TrackballControls.js" type="text/javascript"></script>
+    <script src="https://threejs.org/examples/js/effects/AnaglyphEffect.js" type="text/javascript"></script>
+
+    <script src="https://threejs.org/examples/js/libs/dat.gui.min.js" type="text/javascript"></script>
+
+    <script src="robot.js" type="text/javascript"></script>
+    <script src="helper.js" type="text/javascript"></script>
+    <script>
+
+      var scene, camera, renderer, effect, ambientLight, light, controls;
+      var floor;
+
+      window.onload = function() {
+
+
+        scene = new THREE.Scene();
+
+        var fov = 60;
+        var ratio = window.innerWidth / window.innerHeight;
+        var zNear = 1;
+        var zFar = 10000;
+        camera = new THREE.PerspectiveCamera(fov, ratio, zNear, zFar);
+        camera.position.set( 0, 0, 500);
+
+        renderer = new THREE.WebGLRenderer({ alpha: true });
+        renderer.setSize( window.innerWidth, window.innerHeight );
+        document.body.appendChild( renderer.domElement );
+        
+        effect = new THREE.AnaglyphEffect( renderer );
+        effect.setSize( window.innerWidth, window.innerHeight );
+
+        ambientLight = new THREE.AmbientLight();
+        scene.add( ambientLight );
+
+        light = new THREE.DirectionalLight( 0xffffff, 5.0 );
+        light.position.set( 10, 100, 10 );
+        scene.add( light );
+
+
+        //bouns1
+        class ColorGUIHelper {
+          constructor(object, prop) {
+            this.object = object;
+            this.prop = prop;
+          }
+          get value() {
+            return `#${this.object[this.prop].getHexString()}`;
+          }
+          set value(hexString) {
+            this.object[this.prop].set(hexString);
+          }
+        }
+
+        function makeXYZGUI(gui, vector3, name, onChangeFn) {
+          const folder = gui.addFolder(name);
+          folder.add(vector3, 'x', -10, 10).onChange(onChangeFn);
+          folder.add(vector3, 'y', 0, 10).onChange(onChangeFn);
+          folder.add(vector3, 'z', -10, 10).onChange(onChangeFn);
+          folder.open();
+        }
+
+        //extra pointlight 1
+
+        var color1 = 0xfff778;
+        var intensity = 10;
+        var distance = 150;
+        var light1 = new THREE.PointLight(color1, intensity);
+        light1.position.set(200, -65, 70);
+        scene.add(light1);
+         
+        var helper = new THREE.PointLightHelper(light1);
+        scene.add(helper);
+
+        //extra pointlight 2
+
+        var color2 = 0xc3fbff;
+        var light2 = new THREE.PointLight(color2, intensity);
+        light2.position.set(-60, -65, 70);
+        scene.add(light2);
+         
+        var helper2 = new THREE.PointLightHelper(light2);
+        scene.add(helper2);
+
+        function updateLight() {
+          helper.update();
+          helper2.update();
+        }
+
+        //mesh
+        const cubeGeo = new THREE.BoxBufferGeometry(70, 70, 70);
+        const cubeMat = new THREE.MeshPhongMaterial({color: '#000000'});
+        const mesh = new THREE.Mesh(cubeGeo, cubeMat);
+        mesh.position.set(70, -65, 70);
+        scene.add(mesh);
+
+
+        var floorTexture = new THREE.TextureLoader().load( 'board.jpg' );
+        var floorGeometry = new THREE.PlaneBufferGeometry( 1000, 1000 );
+        var floorMaterial = new THREE.MeshBasicMaterial( {
+          map: floorTexture,
+          side: THREE.DoubleSide
+        } );
+        floor = new THREE.Mesh( floorGeometry, floorMaterial );
+        floor.position.y = -100;
+        floor.rotateX(Math.PI/2);
+        scene.add( floor );
+
+        r = new Robot(0, -30, 0);
+        r.show(scene);
+        robots = [r];
+
+
+
+        controller = {
+          anaglyph: false,
+          "raise_left_arm": function() {
+            for (var o in robots){
+              robots[o].raise_left_arm();
+            }
+          },
+          "lower_left_arm": function() {
+            for (var o in robots){
+              robots[o].lower_left_arm();
+            }
+          },
+          "kick": function() {
+            for (var o in robots){
+              robots[o].kick();
+            }
+          },
+          "dance": function() {
+            for (var o in robots){
+              robots[o].dance();
+            }
+          },
+          "walk": function() {
+            for (var o in robots) {
+              robots[o].walk();
+            }
+          },
+          "stand": function() {
+            for (var o in robots) {
+              robots[o].stand();
+            }
+          }
+        };
+
+        var gui = new dat.GUI();
+        //rendering gui
+        var rendering = gui.addFolder( "Rendering" );
+        rendering.add( controller, 'anaglyph' );
+        rendering.open();
+        //moving gui
+        var moving = gui.addFolder( "Movement" );
+        moving.add( r.root.position, "x", -1000, 1000 ).listen();
+        moving.add( r.root.position, "y", -1000, 1000 ).listen();
+        moving.add( r.root.position, "z", -1000, 1000 ).listen();
+        moving.add( controller, "raise_left_arm" );
+        moving.add( controller, "lower_left_arm" );
+        moving.add( controller, "kick" );
+        moving.add( controller, "dance" );
+        moving.add( controller, "walk");
+        moving.add( controller, "stand");
+        //pointlight gui
+        var pointlight = gui.addFolder( "point light1");
+        pointlight.addColor(new ColorGUIHelper(light1, 'color'), 'value').name('color');
+        pointlight.add(light1, 'intensity', 0, 2, 0.01);
+        pointlight.add(light1, 'distance', 0, 1000).onChange(updateLight);
+        makeXYZGUI(pointlight, light1.position, 'light1 position');
+
+        var pointlight2 = gui.addFolder( "point light2");
+        pointlight2.addColor(new ColorGUIHelper(light2, 'color'), 'value').name('color');
+        pointlight2.add(light2, 'intensity', 0, 2, 0.01);
+        pointlight2.add(light2, 'distance', 0, 1000).onChange(updateLight);
+        makeXYZGUI(pointlight2, light2.position, 'light2 position');
+        moving.open();
+
+
+
+        controls = new THREE.TrackballControls( camera, renderer.domElement );
+
+
+        animate();
+
+
+      };
+
+      window.onclick = function(e) {
+
+          if (!e.shiftKey) {
+
+            e.preventDefault();
+            return false;
+          }
+
+          pixel_coords = new THREE.Vector2( e.clientX, e.clientY );
+
+          vp_coords = new THREE.Vector2( ( pixel_coords.x / window.innerWidth ) * 2 - 1,
+                                        -( pixel_coords.y / window.innerHeight ) * 2 + 1);
+
+          vp_coords_near = new THREE.Vector3( vp_coords.x, vp_coords.y, 0);
+
+          raycaster = new THREE.Raycaster();
+          raycaster.setFromCamera(vp_coords_near, camera);
+          intersects = raycaster.intersectObject(floor);
+
+          if (intersects.length > 0) {
+
+              r2 = new Robot(intersects[0].point.x, 
+                                  intersects[0].point.y + 60,
+                                  intersects[0].point.z)
+              r2.show(scene);
+              robots.push(r2);
+
+          }
+
+      };
+
+      function animate() {
+
+        requestAnimationFrame( animate );
+
+        for (var o in robots) {
+            robots[o].onAnimate();
+        }
+
+        controls.update();
+
+        if (controller.anaglyph) {
+            renderer.setClearAlpha(1);
+            effect.render( scene, camera );
+        } else {
+            renderer.setClearAlpha(0);
+            renderer.render( scene, camera );
+        }
+        
+
+      };
+
+    </script>
+  </head>
+  <body>
+  </body>
+</html>
