@@ -1,0 +1,81 @@
+<html>
+  <head>
+    <meta content="text/html;charset=utf-8" http-equiv="Content-Type">
+    <meta content="utf-8" http-equiv="encoding">
+
+    <style>
+      html, body { 
+        background-color: #000;
+        margin: 0;
+        padding: 0;
+        height: 100%;
+        overflow: hidden !important;  
+      }
+    </style>
+
+    <script type="text/javascript" src="https://get.goXTK.com/xtk_edge.js"></script>
+    <script type="text/javascript" src="http://get.goXTK.com/xtk_xdat.gui.js"></script>
+
+
+    <script type="text/javascript">
+
+      var r,c;
+
+      window.onload = function() {
+
+        r = new X.renderer3D();
+        r.container = 'r1'; // only use the r1 div container for XTK
+        r.init();
+
+        c = new X.cube();
+
+        r.add(c);
+
+        r.render();
+
+		// create the User Interface
+		
+		//HELPER OBJECT
+		controller = {
+			'rotateX': function() {
+				c.transform.rotateX(45);
+			}
+			'rotateY': function() {
+				c.transform.rotateX(45);
+			}
+			'rotateZ': function() {
+				c.transform.rotateX(45);
+			}
+		}
+		
+        var gui = new dat.GUI();
+        var cubeGui = gui.addFolder('Cube');
+        cubeGui.add(c, 'visible');
+        cubeGui.add(c, 'opacity', 0, 1);
+        cubeGui.addColor(c, 'color');
+        cubeGui.add(c, 'lengthX', 0, 100).onChange( 
+          function() {
+          
+          c.modified(); // modify event of XTL's cube since
+          				// we modify the vertices
+          }
+        );
+	    cubeGui.add(c, 'transform.rotateX');
+	    cubeGui.add(c, 'transform.rotateY');
+	    cubeGui.add(c, 'transform.rotateZ');
+	    cubeGui.open();
+
+      };
+
+    </script>
+
+
+  </head>
+
+  <body>
+  	<div id='r1'></div>
+  	<div id='r2'></div>
+
+  </body>
+
+</html>

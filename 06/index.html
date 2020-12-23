@@ -19,11 +19,19 @@
     <script src="https://threejs.org/examples/js/controls/TrackballControls.js" type="text/javascript"></script>
     <script src="https://threejs.org/examples/js/effects/AnaglyphEffect.js" type="text/javascript"></script>
 
+    <script src="robot.js"></script>
+    <script src="https://threejs.org/examples/js/libs/dat.gui.min.js" type="text/javascript"></script>
 
     <script>
 
       var scene, camera, renderer, ambientLight, light, controls;
       var floor;
+
+      // make this global
+      var controller = {
+          anaglyph: false
+        };
+
 
       window.onload = function() {
 
@@ -34,7 +42,7 @@
         var zNear = 1;
         var zFar = 10000;
         camera = new THREE.PerspectiveCamera(fov, ratio, zNear, zFar);
-        camera.position.set( 0, 0, 500);
+        camera.position.set( 0, 0, 300);
 
         renderer = new THREE.WebGLRenderer({ alpha: true });
         renderer.setSize( window.innerWidth, window.innerHeight );
@@ -55,31 +63,108 @@
           side: THREE.DoubleSide
         } );
         floor = new THREE.Mesh( floorGeometry, floorMaterial );
-        floor.position.y = -100;
+        floor.position.y = -80;
         floor.rotateX(-30);
         scene.add( floor );
 
         controls = new THREE.TrackballControls( camera, renderer.domElement );
 
 
-        // ROBOT GOES HERE!
-
-
-
+        // create a robot at x, y, z world coordinates
+        robots = [];
+        r = new Robot(50, 0, 0);
+        r.name = 'Daniel';
+        r.show(scene);
+        robots.push(r);
+        
+        
+        //r2 = new Robot(100, 0, 0);
+        //r2.name = 'Loraine';
+        //r2.show(scene);
+        //robots.push(r2);
+               
         animate();
+        
+        // ANAGLYPH and DAT.GUI
+        var gui = new dat.GUI();
+        var rendering = gui.addFolder( "rendering" );
+        rendering.add( controller, 'anaglyph' );
+        rendering.open();
+        
+        //moving sliders
+        var moving = gui.addFolder( "Movement" );
+        moving.add( r.head.position, "x", -1000, 1000 ).listen() ;
+        moving.add( r.head.position, "y", -1000, 1000 ).listen() ;
+        moving.add( r.head.position, "z", -1000, 1000 ).listen() ;
+        moving.open();
+        var action = gui.addFolder( "Action" );
+        action.add( r, 'raiseLeftArm');
+        action.add( r, 'lowerLeftArm');
+        action.add( r, 'raiseRightArm');
+        action.add( r, 'lowerRightArm');
+        action.add( r, 'rightKick' );
+        action.add( r, 'leftKick' );
+        action.add( r, 'Dance' );
+        action.open();
+        
+        //fix slider bug by setting up trackball controls on the domElement
+        controls = new THREE.TrackballControls( camera, renderer.domElement );
+        
+        
+        // RAYCASTER CODE MODIFIED FROM ASSIGNMENT 3
+        renderer.domElement.onclick = function(e) {
+          if (!e.shiftKey) {
+            e.preventDefault();
+            return false;
+          }
+          console.log('yes! you clicked!');
+          pixel_coords = new THREE.Vector2( e.clientX, e.clientY );
 
+          console.log('Pixel coordinates', pixel_coords);
 
+          vp_coords = new THREE.Vector2( ( pixel_coords.x / window.innerWidth ) * 2 - 1,
+                                        -( pixel_coords.y / window.innerHeight ) * 2 + 1);
+
+          console.log('Viewport coordinates', vp_coords);
+
+          vp_coords_near = new THREE.Vector3( vp_coords.x, vp_coords.y, 0);
+
+          raycaster = new THREE.Raycaster();
+          raycaster.setFromCamera(vp_coords_near, camera);
+          intersects = raycaster.intersectObject(floor);
+          //mesh.position.set(intersects[0].point.x, intersects[0].point.y,intersects[0].point.z)
+          r.head.position.set(intersects[0].point.x, intersects[0].point.y + 80,intersects[0].point.z); 
+          //add 80 to y value so that the robot is not below the floor
+        }
       };
 
       function animate() {
 
         requestAnimationFrame( animate );
-
+        for (var o in robots) {
+            o = robots[o];
+            o.onAnimate();
+            //o.raiseLeftArm();
+            //o.kick();
+        }
+        // setup Keyframe 2
         // TODO
-
+        // r.onAnimate();
+    
+    
+        
+        //ON PART 11 NOWJFKDSJFDKLAJFDKSJALFDKSAJFLKDSA
+        
+        
+        
         controls.update();
-        renderer.render( scene, camera );
-
+        if (controller.anaglyph) {
+            renderer.setClearAlpha(1);
+            effect.render(scene, camera );
+            
+        } else {
+            renderer.render( scene, camera );
+        }
       };
 
     </script>
