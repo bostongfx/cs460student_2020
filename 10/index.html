@@ -1,195 +1,189 @@
 <html>
-	<head>
-	<script src='base64.js' type='text/javascript'></script>
+
+<head>
+  <script src='base64.js' type='text/javascript'></script>
   <script>
 
-    window.onload = function() {
+    window.onload = function () {
+      let codeElem = document.getElementById('code');
+      fetch('x20.obj')
+        .then(response => {
 
-      VERTICES = new Float32Array([0.,0.,0., 0.,1.,0., 1.,0.,0.])
-      INDICES = new Uint16Array([0,1,2])
+          if (!response.ok) {
+            codeElem.innerText = 'Error: could not load file'
+          }
+          response.text()
+            .then(text => text.split('\n'))
+            .then(lines => {
+              window.lines = lines
 
-      HOWMANY = 3
-      MAX_X = 1. 
-      MAX_Y = 1.
-      MAX_Z = 0.
-      MIN_X = 0.
-      MIN_Y =  0.
-      MIN_Z = 0.
-      MAX = 2
-      MIN = 0
+              
+              let MAX_X = -Infinity
+              let MAX_Y = -Infinity
+              let MAX_Z = -Infinity
+              let MIN_X = Infinity
+              let MIN_Y = Infinity
+              let MIN_Z = Infinity
 
-      HOWMANYBYTES_V = 9*4
-      HOWMANYBYTES_I = 3*2
+              
+              let MAX = -Infinity
+              let MIN = Infinity
 
-      BASE64_Vertices = base64.b64encode(VERTICES);
-      BASE64_Indices = base64.b64encode(INDICES);
+              vertices = []
+              indices = []
 
+              for (let line of lines) {
+                if (line[0] == 'v' && line[1] == ' ') { // line describes a vertex (exclude vertex normals and uvs)
+                  let [_, x, y, z] = line.match(/^v (-?\d\.\d+) (-?\d\.\d+) (-?\d\.\d+)$/)
+                    .map(parseFloat)
+                  if(isNaN(x) || isNaN(y) || isNaN(z)) {
+                    console.log('error parsing: ' + line)
+                  }
+                  if (x > MAX_X) {
+                    MAX_X = x
+                  }
+                  if (y > MAX_Y) {
+                    MAX_Y = y
+                  }
+                  if (z > MAX_Z) {
+                    MAX_Z = z
+                  }
 
-      gltf = {
+                  if (x < MIN_X) {
+                    MIN_X = x
+                  }
+                  if (y < MIN_Y) {
+                    MIN_Y = y
+                  }
+                  if (z < MIN_Z) {
+                    MIN_Z = z
+                  }
 
-        "asset": {
-      	    "version": "2.0",
-            "generator": "CS460 Magic Fingers"
-    	},
-
-        "accessors": [
-        
-              {
-        
-                  "bufferView": 0,
-        
-                  "byteOffset": 0,
-        
-                  "componentType": 5126,
-        
-                  "count": HOWMANY,
-        
-                  "type": "VEC3",
-        
-                  "max": [MAX_X, MAX_Y, MAX_Z],
-        
-                  "min": [MIN_X, MIN_Y, MIN_Z]
-        
-              },
-        
-              {
-        
-                  "bufferView": 1,
-        
-                  "byteOffset": 0,
-        
-                  "componentType": 5123,
-        
-                  "count": HOWMANY,
-        
-                  "type": "SCALAR",
-        
-                  "max": [MAX],
-        
-                  "min": [MIN]
-        
+                  vertices.push(x, y, z)
+                } else if (line[0] == 'f') { // line is a face (no valid lines start with f and are not faces)
+                  let [_, a, b, c] = line.match(/^f (\d+)(?:\/\d*(?:\/\d*)) (\d+)(?:\/\d*(?:\/\d*)) (\d+)(?:\/\d*(?:\/\d*))$/)
+                    .map(i => parseInt(i)) // need to manually repass to avoid weirdness
+                  for (let v of [a, b, c]) {
+                    v = v - 1 // obj is one-indexed
+                    if (v > MAX) {
+                      MAX = v
+                    }
+                    if (v < MIN) {
+                      MIN = v
+                    }
+                    indices.push(v)
+                  }
+                }
               }
-        
-          ], 
-        
-       
-        
-          "bufferViews": [
-        
-              {
-        
-                  "buffer": 0,
-        
-                  "byteOffset": 0,
-        
-                  "byteLength": HOWMANYBYTES_V,
-        
-                  "target": 34962
-        
-              },
-        
-              {
-        
-                  "buffer": 1,
-        
-                  "byteOffset": 0,
-        
-                  "byteLength": HOWMANYBYTES_I,
-        
-                  "target": 34963
-        
-              }
-        
-          ],
-        
-          
-        
-          "buffers": [
-        
-              {
-        
-                  "uri": "data:application/octet-stream;base64," + BASE64_Vertices,
-        
-                  "byteLength": HOWMANYBYTES_V
-        
-              },
-        
-              {
-        
-                  "uri": "data:application/octet-stream;base64," + BASE64_Indices,
-        
-                  "byteLength": HOWMANYBYTES_I
-        
-              }
-        
-          ],
-        
-        
-        
-          "meshes": [
-        
-              { 
-        
-                  "primitives": [{
-        
-                       "mode": 4,
-        
-                       "attributes": {
-        
-                           "POSITION": 0
-        
-                       },
-        
-                       "indices": 1
-        
-                  }]
-                
-              }
-        
-          ],
-        
-       
-        
-          "nodes": [
-        
-              {
-        
-                  "mesh": 0
-        
-              }
-        
-          ],
-        
-       
-        
-          "scenes": [
-        
-              {
-        
-                  "nodes": [
-        
+
+              
+              let VERTICES = new Float32Array(vertices)
+              let INDICES = new Uint16Array(indices)
+
+              let HOWMANY = VERTICES.length / 3;
+
+              let HOWMANYBYTES_V = VERTICES.length * 4
+              let HOWMANYBYTES_I = INDICES.length * 2
+
+              let BASE64_Vertices = base64.b64encode(VERTICES);
+              let BASE64_Indices = base64.b64encode(INDICES);
+
+
+              gltf = {
+
+                "asset": {
+                  "version": "2.0",
+                  "generator": "CS460 Magic Fingers"
+                },
+
+                "accessors": [
+                  {
+                    "bufferView": 0,
+                    "byteOffset": 0,
+                    "componentType": 5126,
+                    "count": HOWMANY,
+                    "type": "VEC3",
+                    "max": [MAX_X, MAX_Y, MAX_Z],
+                    "min": [MIN_X, MIN_Y, MIN_Z]
+                  },
+                  {
+                    "bufferView": 1,
+                    "byteOffset": 0,
+                    "componentType": 5123,
+                    "count": HOWMANY,
+                    "type": "SCALAR",
+                    "max": [MAX],
+                    "min": [MIN]
+                  }
+                ],
+
+                "bufferViews": [
+                  {
+                    "buffer": 0,
+                    "byteOffset": 0,
+                    "byteLength": HOWMANYBYTES_V,
+                    "target": 34962
+                  },
+                  {
+                    "buffer": 1,
+                    "byteOffset": 0,
+                    "byteLength": HOWMANYBYTES_I,
+                    "target": 34963
+                  }
+                ],
+
+                "buffers": [
+                  {
+                    "uri": "data:application/octet-stream;base64," + BASE64_Vertices,
+                    "byteLength": HOWMANYBYTES_V
+                  },
+                  {
+                    "uri": "data:application/octet-stream;base64," + BASE64_Indices,
+                    "byteLength": HOWMANYBYTES_I
+                  }
+                ],
+
+                "meshes": [
+                  {
+                    "primitives": [{
+                      "mode": 4,
+                      "attributes": {
+                        "POSITION": 0
+                      },
+                      "indices": 1
+                    }]
+
+                  }
+                ],
+
+                "nodes": [
+                  {
+                    "mesh": 0
+                  }
+                ],
+
+                "scenes": [
+                  {
+                    "nodes": [
                       0
-        
-                  ]
-        
+                    ]
+                  }
+                ],
+
+                "scene": 0
               }
-        
-          ],
-        
-       
-        
-          "scene": 0
-        
-      }
 
-    window.document.body.innerHTML = JSON.stringify(gltf)
-
-    };
+              codeElem.innerText = JSON.stringify(gltf, null, 2);
+            })
+        })
+    }
 
 
   </script>
-	</head>
-	<body>
+</head>
 
-	</body>
+<body>
+  <pre id="code"></pre>
+</body>
+
 </html>

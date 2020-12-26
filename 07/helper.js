@@ -24,7 +24,7 @@ HELPER.cylinderSkeletonMesh = function(howmany, howwide, color) {
     height, // height
     8, // radiusSegments
     howmany * 3, // heightSegments
-    true // openEnded
+    false // openEnded
   );
 
   var position = geometry.attributes.position;

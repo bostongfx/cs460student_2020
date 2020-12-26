@@ -22,3 +22,11 @@ base64.b64decode = function (str) {
     return new Float32Array(new Uint8Array(array).buffer);
 
 };
+
+base64.b64decode2 = function (str) {
+    
+    array = atob(str).split('').map(function (c) { return c.charCodeAt(0); });
+
+    return new Uint16Array(new Uint8Array(array).buffer);
+
+};
