@@ -1,5 +1,6 @@
 # cs460student
-CS460 Computer Graphics at UMass Boston.
+CS460: Computer Graphics at UMass Boston, Fall 2020
+Professor Daniel Haehn
 
 <a href="https://ayahea.github.io/cs460student/02/index.html" title="A2">Assignment 02: Purple Flower Pixel Art</a>
 
