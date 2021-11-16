@@ -1,120 +1,207 @@
 <html>
-  <head>
-    <meta charset="UTF-8" />
-    <style>
-      html, body { 
-        background-color:#000;
-        margin: 0;
-        padding: 0;
-        height: 100%;
-        overflow: hidden !important;  
+
+<head>
+  <meta charset="UTF-8" />
+  <style>
+    html,
+    body {
+      background-color: #000;
+      margin: 0;
+      padding: 0;
+      height: 100%;
+      overflow: hidden !important;
+    }
+  </style>
+
+
+  <script type='module'>
+
+    import * as THREE from 'https://threejs.org/build/three.module.js';
+    import { GUI } from 'https://threejs.org/examples/jsm/libs/dat.gui.module.js';
+    import { TrackballControls } from 'https://threejs.org/examples/jsm/controls/TrackballControls.js';
+    import { PLYLoader } from 'https://threejs.org/examples/jsm/loaders/PLYLoader.js';
+    import { OBJLoader } from 'https://threejs.org/examples/jsm/loaders/OBJLoader.js';
+
+    let scene, camera, renderer, effect, ambientLight, directionalLight, light, mesh, toonMaterial, controls, controller, material2, mesh2;
+    var tree; //aea
+
+    window.onload = function () {
+
+
+      scene = new THREE.Scene();
+
+      camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 1, 10000);
+      camera.position.set(0, 0, -500);
+
+      renderer = new THREE.WebGLRenderer({});
+      renderer.setSize(window.innerWidth, window.innerHeight);
+      document.body.appendChild(renderer.domElement);
+
+      ambientLight = new THREE.AmbientLight();
+      scene.add(ambientLight);
+
+      directionalLight = new THREE.DirectionalLight(0xffffff, 5.0);
+      directionalLight.position.set(10, 100, -100);
+      scene.add(directionalLight);
+
+
+      // TODO Part 3 (add 2 pointlights)
+
+      const purple = 0xEAD6FD;
+      const intensity = 1;
+      var pointlight = new THREE.PointLight(purple, intensity);
+      pointlight.position.set(350, 225, -450);
+      scene.add(pointlight);
+
+      const helper = new THREE.PointLightHelper(pointlight, 10);
+      scene.add(helper);
+
+      // second point light:
+      const pink = 0xF9D6FD;
+      var pointlight2 = new THREE.PointLight(pink, intensity);
+      pointlight2.position.set(-100, 150, -275);
+      scene.add(pointlight2);
+
+      const helper2 = new THREE.PointLightHelper(pointlight2, 10);
+      scene.add(helper2);
+
+      function updateLights() {
+        helper.update();
+        helper2.update();
       }
-    </style>
-
-    <script type='module'>
-
-      import * as THREE from 'https://threejs.org/build/three.module.js';
-      import { GUI } from 'https://threejs.org/examples/jsm/libs/dat.gui.module.js';
-      import { TrackballControls } from 'https://threejs.org/examples/jsm/controls/TrackballControls.js';
-      import { PLYLoader } from 'https://threejs.org/examples/jsm/loaders/PLYLoader.js';
-
-      let scene, camera, renderer, effect, ambientLight, directionalLight, light, mesh, toonMaterial, controls, controller;
-
-      window.onload = function() {
 
 
-        scene = new THREE.Scene();
+      var loader = new PLYLoader();
+      loader.load('armadillo.ply', function (geometry) {
 
-        camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 1, 10000);
-        camera.position.set( 0, 0, -500);
+        geometry.computeVertexNormals();
 
-        renderer = new THREE.WebGLRenderer({ });
-        renderer.setSize( window.innerWidth, window.innerHeight );
-        document.body.appendChild( renderer.domElement );
-        
-        ambientLight = new THREE.AmbientLight();
-        scene.add( ambientLight );
+        toonMaterial = new THREE.MeshToonMaterial({
+          color: 0x9C1C62
+        });
 
-        directionalLight = new THREE.DirectionalLight( 0xffffff, 5.0 );
-        directionalLight.position.set( 10, 100, -100 );
-        scene.add( directionalLight );
+        mesh = new THREE.Mesh(geometry, toonMaterial);
 
+        scene.add(mesh);
 
-        // TODO Part 3 (add 2 pointlights)
+      });
 
+      // Part 1: load another object
+      var loader2 = new PLYLoader();
+      loader2.load('dolphins.ply', function (geometry) {
 
+        geometry.computeVertexNormals();
 
-        var loader = new PLYLoader();
-        loader.load('armadillo.ply', function (geometry) {
+        // part 2: load another mesh
+        material2 = new THREE.MeshPhongMaterial({
+          color: 0x0B11D9
+        });
 
-          geometry.computeVertexNormals();
+        mesh2 = new THREE.Mesh(geometry, material2);
 
-          toonMaterial = new THREE.MeshToonMaterial( {
-             color: 0x21ce70
-          } );
+        mesh2.rotation.x = -Math.PI/2;
 
-          mesh = new THREE.Mesh( geometry, toonMaterial );
-          
-          scene.add( mesh );
+        mesh2.position.x = 50;
+        mesh2.position.y = -100;
+        mesh2.position.z = 200;
 
-        } );
+        scene.add(mesh2);
 
-        // TODO Part 1, load another mesh
-        // TODO Part 2, use a different material for this mesh
+      });
 
 
 
-        controller = {
-          'color': 0xffffff // we can use this single color
-                            // container for all colors in the scene 
-                            // if we modify the onChange callback (see below)
 
-          // TODO Bonus Part 1
-          // TODO Bonus Part 2
+      controller = {
+        'color': 0xffffff // we can use this single color
+        // container for all colors in the scene 
+        // if we modify the onChange callback (see below)
+
+        // TODO Bonus Part 1
+        // TODO Bonus Part 2
+      }
+
+
+      var gui = new GUI();
+      var ambientFolder = gui.addFolder('Ambient Light');
+      ambientFolder.addColor(controller, 'color').onChange(function (value) { ambientLight.color.setHex(value); });
+      ambientFolder.open();
+
+      var directionalFolder = gui.addFolder('Directional Light');
+      directionalFolder.addColor(controller, 'color').onChange(function (value) { directionalLight.color.setHex(value); });
+      directionalFolder.add(directionalLight.position, 'x', -100, 100);
+      directionalFolder.add(directionalLight.position, 'y', -100, 100);
+      directionalFolder.add(directionalLight.position, 'z', -100, 100);
+      directionalFolder.open();
+
+
+
+      // TODO Part 5 (control the color of both materials in the scene)
+      var materialColors = gui.addFolder('Material Colors');
+      materialColors.addColor(controller, 'color').onChange(function (value) {toonMaterial.color.setHex(value); });
+     // aea: NOW DO ONE FOR THE OTHER MATERIAL
+     materialColors.addColor(controller, 'color').onChange(function (value) {material2.color.setHex(value); });
+     
+      materialColors.open();
+      gui.open();
+
+
+
+      // aea part 3 (via hw8)
+      class ColorGUIHelper {
+        constructor(object, prop) {
+          this.object = object;
+          this.prop = prop;
         }
+        get value() {
+          return `#${this.object[this.prop].getHexString()}`;
+        }
+        set value(hexString) {
+          this.object[this.prop].set(hexString);
+        }
+      }
+
+      var lightsFolder = gui.addFolder(" Point Lights");
+
+      // TODO Part 4 (control the color and position of point lights)
+      lightsFolder.addColor(controller, 'color').onChange(function (value) {
+        pointlight.color.setHex(value);
+      });
+      lightsFolder.add(pointlight.position, 'x', -700, 700);
+      lightsFolder.add(pointlight.position, 'y', -700, 700);
+      lightsFolder.add(pointlight.position, 'z', -700, 700);
+      
+
+      lightsFolder.addColor(controller, 'color').onChange(function (value) {
+        pointlight2.color.setHex(value);
+      });
+      lightsFolder.add(pointlight2.position, 'x', -700, 700);
+      lightsFolder.add(pointlight2.position, 'y', -700, 700);
+      lightsFolder.add(pointlight2.position, 'z', -700, 700);
+
+      lightsFolder.open();
+      controls = new TrackballControls(camera, renderer.domElement);
+
+      animate();
+
+    };
 
 
-        var gui = new GUI();
-        var ambientFolder = gui.addFolder('Ambient Light');
-        ambientFolder.addColor(controller, 'color').onChange( function(value) { ambientLight.color.setHex(value); });
-        ambientFolder.open();
+    function animate() {
 
-        var directionalFolder = gui.addFolder('Directional Light');
-        directionalFolder.addColor(controller, 'color').onChange( function(value) { directionalLight.color.setHex(value); });
-        directionalFolder.add(directionalLight.position, 'x', -100, 100);
-        directionalFolder.add(directionalLight.position, 'y', -100, 100);
-        directionalFolder.add(directionalLight.position, 'z', -100, 100);
-        directionalFolder.open();
+      requestAnimationFrame(animate);
 
-        // TODO Part 4 (control the color and position of point lights)
+      controls.update();
 
-        // TODO Part 5 (control the color of both materials in the scene)
-
-        gui.open();
+      renderer.render(scene, camera);
 
 
+    };
 
+  </script>
+</head>
 
-        controls = new TrackballControls( camera, renderer.domElement );
+<body>
+</body>
 
-        animate();
-
-      };
-
-
-      function animate() {
-
-        requestAnimationFrame( animate );
-
-        controls.update();
-
-        renderer.render( scene, camera );
-        
-
-      };
-
-    </script>
-  </head>
-  <body>
-  </body>
 </html>

@@ -1,0 +1,36 @@
+Library for loading OBJ objects/files:
+https://threejs.org/docs/#examples/en/loaders/OBJLoader
+
+3D Object Builder:
+https://3dc.io/
+
+
+
+Ideas:
+- Make artwork so that users can insert objects (maybe people or trees or other stuff)
+    - ^ partially done, but now you need to draw these little objects
+- Set up a controller/dat gui
+
+--> Shift + Click on the ground to add plants and people (ensure that it only intersects the ground and not other objects)
+--> Shift + Click on a structure to learn more
+
+Questions/Issues:
+
+- The planes I use to load the images: 
+    0. when I zoom in/out or move the scene to certain positions, it seems like the "transparent" function of the plane temporarily turns off
+        so it blocks off some neighboring planes/images. just a glitch maybe?
+    1. I need to manually set the dimensions. Is there a way the dimensions can be automatically calculated from the image itself?
+		- Just checked the actualy dimensions of the image and used those instead of guessing what a good dimension would be.
+    2. The transparent parts of the image on the plane just show the background image of the scene instead of
+        showing the other planes/objects behind it. Is there a way to make the other objects/planes visible through 
+        the empty parts of another plane?
+
+        Tried to convert the image into a glb file using 3D paint and then loaded it using the following link but I couldn't
+        see the object on the scene. Maybe has to do with the colors again
+
+			https://threejs.org/docs/#examples/en/loaders/GLTFLoader
+	        include following two lines at the top of the file:
+    	    <script src="https://threejs.org/examples/js/loaders/GLTFLoader.js" type="text/javascript"></script>
+  			<script src="https://threejs.org/examples/js/loaders/DRACOLoader.js" type="text/javascript"></script>
+
+   
